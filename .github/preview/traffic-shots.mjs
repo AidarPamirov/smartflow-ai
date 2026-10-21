@@ -52,6 +52,14 @@ for (let i = 0; i < 4; i++) { await p.click('[aria-label="Отдалить"]'); 
 await p.waitForTimeout(2500);
 log('zoomed out', JSON.stringify(await stats(p)));
 await p.screenshot({ path: `${OUT}/06-zoomed-out.png` });
+const pausedFps = await (async () => { await p.click('.traffic-play'); await p.waitForTimeout(500); const f = await fps(p, 3000); await p.click('.traffic-play'); return f; })();
+log('fps paused traffic', pausedFps);
+log('map error banner after all steps (must be null)', JSON.stringify((await stats(p)).mapErr));
+// перекрёсток крупно в плане: точки и силуэты на дорогах графа
+await p.click('[aria-label="Вернуться к центру Бишкека"]'); await p.waitForTimeout(3000);
+await p.click('[aria-label="Приблизить"]'); await p.waitForTimeout(600);
+await p.click('[aria-label="Приблизить"]'); await p.waitForTimeout(5000);
+await p.screenshot({ path: `${OUT}/09-plan-z17-graph.png` });
 log('fps (swiftshader, только для сравнения): без трафика', fpsNoTraffic, '| 250 машин', fps250, '| 1000 машин', fps1000);
 log('desktop errors', JSON.stringify(errs));
 
