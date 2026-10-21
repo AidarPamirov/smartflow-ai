@@ -11,8 +11,7 @@ export interface PhaseObs {
 }
 
 export const DETECTOR_ZONE = 40;
-export const YELLOW = 3;
-export const ALL_RED = 2;
+export { ALL_RED, YELLOW } from './signalMachine';
 
 export interface FixedSpec {
   kind: 'fixed';

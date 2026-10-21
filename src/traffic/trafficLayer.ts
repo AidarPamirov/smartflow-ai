@@ -96,6 +96,12 @@ export class TrafficLayer {
 
   get isAttached() { return this.attached; }
 
+  /** Показать или скрыть машины (модель продолжает считаться). */
+  setVisible(visible: boolean) {
+    if (!this.attached) return;
+    for (const id of [L_DOTS, L_CARS]) if (this.map.getLayer(id)) this.map.setLayoutProperty(id, 'visibility', visible ? 'visible' : 'none');
+  }
+
   setNetworkVisible(visible: boolean) {
     if (this.attached && this.map.getLayer(L_NETWORK)) this.map.setLayoutProperty(L_NETWORK, 'visibility', visible ? 'visible' : 'none');
   }

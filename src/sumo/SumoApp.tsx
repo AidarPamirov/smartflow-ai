@@ -47,6 +47,7 @@ export default function SumoApp() {
         <nav className="sumo-nav">
           <a className="top-link" href="#">← Карта Бишкека</a>
           <a className="top-link" href="#lab">Лаборатория перекрёстка</a>
+          <a className="top-link" href="#signal=tls-244504528">Этот светофор на карте города</a>
         </nav>
       </header>
       {st.kind === 'loading' && <div className="panel empty">Загружаю записи симуляции…</div>}

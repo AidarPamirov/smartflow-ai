@@ -1,9 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
-import type { Map as MlMap } from 'maplibre-gl';
-import { COUNTS, SPEEDS, TrafficController, type TrafficState } from './controller';
+import { useState } from 'react';
+import { COUNTS, SPEEDS, type TrafficController, type TrafficState } from './controller';
 import { MIN_ZOOM } from './trafficLayer';
-
-const NETWORK_URL = `${import.meta.env.BASE_URL}data/bishkek-roads.json`;
 
 const fmtTime = (t: number) => {
   const h = Math.floor(t / 3600), m = Math.floor((t % 3600) / 60), s = Math.floor(t % 60);
@@ -12,23 +9,10 @@ const fmtTime = (t: number) => {
 const nf = (n: number) => n.toLocaleString('ru-RU');
 
 /**
- * Панель демо-трафика. Только интерфейс: всю работу делает TrafficController.
- * Подключается после загрузки стиля карты (mapReady).
+ * Панель демо-трафика. Только интерфейс: всю работу делает TrafficController (общий с панелями светофоров).
  */
-export function TrafficPanel({ map, mapReady }: { map: MlMap | null; mapReady: boolean }) {
-  const ctrl = useRef<TrafficController | null>(null);
-  const [st, setSt] = useState<TrafficState | null>(null);
+export function TrafficPanel({ ctrl: c, st, mapReady }: { ctrl: TrafficController | null; st: TrafficState | null; mapReady: boolean }) {
   const [open, setOpen] = useState(true);
-
-  useEffect(() => {
-    if (!map || !mapReady) return;
-    const c = new TrafficController(map, NETWORK_URL, setSt);
-    ctrl.current = c;
-    void c.init();
-    return () => { c.destroy(); ctrl.current = null; };
-  }, [map, mapReady]);
-
-  const c = ctrl.current;
   const ready = st?.phase === 'ready';
 
   return (
@@ -92,8 +76,8 @@ export function TrafficPanel({ map, mapReady }: { map: MlMap | null; mapReady: b
               {st.meta ? ` (центр Бишкека, ${nf(Math.round(st.meta.km))} км дорог, ${nf(st.meta.edges)} участков)` : ''}.
             </p>
             <p>
-              Светофоры, правила приоритета и перестроения не моделируются: на перекрёстках машины не уступают друг другу.
-              Скорости — условные для каждого класса дороги.
+              На перекрёстках, где в OpenStreetMap отмечен светофор, машины останавливаются на красный виртуального
+              светофора. Правил приоритета между направлениями и перестроений нет. Скорости — условные для каждого класса дороги.
             </p>
           </details>
         </>

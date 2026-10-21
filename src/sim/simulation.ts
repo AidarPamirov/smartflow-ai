@@ -1,10 +1,11 @@
 import { bodyCorners, conflictTable, polysOverlap, type Conflict, type ConflictTable } from './conflicts';
-import { ALL_RED, DETECTOR_ZONE, YELLOW, makeController, type Controller, type ControllerSpec, type PhaseObs } from './controllers';
+import { DETECTOR_ZONE, makeController, type Controller, type ControllerSpec, type PhaseObs } from './controllers';
 import { DIRS, LANES_PER_APPROACH, MANEUVERS, STOP_S, lanesFor, type Dir, type LaneUse, type Maneuver } from './geometry';
 import { Metrics, type Summary } from './metrics';
 import { NO_UTURNS, buildPlan, validatePlan, type LeftMode, type MoveStatus, type Phase, type UturnAllowed } from './phases';
 import { expInterval, mulberry32, streamSeed, type Rng } from './rng';
 import { PATHS, V_FREE, approachLink, pathId, poseAt, vlimAt, type Path } from './routes';
+import { initialSignal, stepSignal, type SignalState } from './signalMachine';
 import { B_YELLOW_DECIDE, IDM, STOP_SPEED, VEHICLE_LEN, idmAccel, type Vehicle } from './vehicle';
 
 export type Flows = Record<Dir, number>; // авто/ч на подход
@@ -14,13 +15,7 @@ export type Turns = Record<Dir, TurnShares>;
 /** G — защищённый зелёный, g — зелёный с уступкой, Y — жёлтый, R — красный. */
 export type MoveLight = 'G' | 'g' | 'Y' | 'R';
 
-export interface SignalState {
-  phase: number; // индекс текущей (или последней) зелёной фазы в плане
-  next: number; // фаза, которая включится после «все красные»
-  stage: 'green' | 'yellow' | 'allred';
-  elapsed: number;
-  cycle: number; // счётчик жёлтых фаз
-}
+export type { SignalState } from './signalMachine';
 
 export interface SimConfig {
   seed: number;
@@ -101,7 +96,7 @@ export class Simulation {
   readonly laneUse: LaneUse;
   readonly phases: Phase[];
   readonly conflicts: ConflictTable = conflictTable();
-  signal: SignalState = { phase: 0, next: 0, stage: 'green', elapsed: 0, cycle: 0 };
+  signal: SignalState = initialSignal(0);
   controller: Controller;
   metrics = new Metrics();
   generated = 0;
@@ -296,19 +291,10 @@ export class Simulation {
   }
 
   private updateSignal(dt: number): void {
-    const s = this.signal;
-    s.elapsed += dt;
-    if (s.stage === 'green') {
+    stepSignal(this.signal, dt, (phase, elapsed) => {
       const obs = this.observe();
-      if (this.controller.shouldEndGreen(s.phase, s.elapsed, obs, this.phases)) {
-        s.next = this.controller.nextPhase(s.phase, obs, this.phases);
-        s.stage = 'yellow'; s.elapsed = 0; s.cycle++;
-      }
-    } else if (s.stage === 'yellow') {
-      if (s.elapsed >= YELLOW - 1e-9) { s.stage = 'allred'; s.elapsed = 0; }
-    } else if (s.elapsed >= ALL_RED - 1e-9) {
-      s.phase = s.next; s.stage = 'green'; s.elapsed = 0;
-    }
+      return this.controller.shouldEndGreen(phase, elapsed, obs, this.phases) ? this.controller.nextPhase(phase, obs, this.phases) : null;
+    });
   }
 
   private indexByPath(): void {

@@ -3,6 +3,9 @@ import { Map as MlMap, ScaleControl } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import './map.css';
 import { TrafficPanel } from '../traffic/TrafficPanel';
+import { useCity } from '../traffic/useCity';
+import { SignalPanel } from '../signals/SignalPanel';
+import { LayersPanel } from './LayersPanel';
 import { ATTRIBUTION, BISHKEK, DEFAULT_BUILDING_HEIGHT, LEVEL_HEIGHT, buildStyle, buildingVisibility, type MapMode } from './style';
 
 type Status = 'loading' | 'ready' | 'error';
@@ -15,8 +18,9 @@ const ROTATE_STEP = 30;
 const fmt = (n: number, d = 0) => n.toLocaleString('ru-RU', { minimumFractionDigits: d, maximumFractionDigits: d });
 
 /**
- * Цифровой двойник: 3D-карта Бишкека (этап 1) и слой синтетического демо-трафика (этап 2, src/traffic).
- * Карта не зависит от трафика: при ошибке загрузки дорожной сети она продолжает работать.
+ * Цифровой двойник: 3D-карта Бишкека (этап 1), синтетический демо-трафик (этап 2, src/traffic)
+ * и виртуальные светофоры на перекрёстках, где светофор есть в OSM (этап 4, src/signals).
+ * Карта не зависит от трафика и светофоров: при ошибке их загрузки она продолжает работать.
  */
 export default function MapApp() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -147,6 +151,28 @@ export default function MapApp() {
   };
 
   const disabled = !mapObj;
+  const { ctrl, st } = useCity(mapObj, status === 'ready');
+  const selected = st?.signals.selected ?? null;
+
+  // ссылка на светофор: #signal=tls-…
+  const signalsReady = st?.signals.phase === 'ready';
+  useEffect(() => {
+    if (!signalsReady || !ctrl) return;
+    const go = () => {
+      const m = /^#signal=([\w-]+)$/.exec(location.hash);
+      if (m) ctrl.selectSignalById(m[1]);
+    };
+    go();
+    window.addEventListener('hashchange', go);
+    return () => window.removeEventListener('hashchange', go);
+  }, [signalsReady, ctrl]);
+
+  useEffect(() => {
+    if (!selected || !ctrl) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') ctrl.selectSignal(null); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [selected, ctrl]);
 
   return (
     <div className="map-root">
@@ -160,7 +186,7 @@ export default function MapApp() {
             <p>Бишкек · цифровой двойник дорожной сети</p>
           </div>
         </div>
-        <span className="map-stage">Этап 2 · демо-трафик</span>
+        <span className="map-stage">Этап 4 · светофоры</span>
       </header>
 
       <nav className="map-panel map-controls" aria-label="Управление картой">
@@ -202,17 +228,23 @@ export default function MapApp() {
         <span className="map-coord">{view.lat.toFixed(4)}° N, {view.lng.toFixed(4)}° E</span>
       </div>
 
+      <div className="map-side">
       <details className="map-panel map-info">
         <summary>О данных</summary>
         <p><b>Карта:</b> улицы, вода, зелень и контуры зданий из OpenStreetMap, векторные тайлы OpenFreeMap (схема OpenMapTiles).</p>
         <p><b>Высота зданий:</b> из OSM — тег <code>height</code> или этажность × {fmt(LEVEL_HEIGHT, 2)} м. Если данных нет, здание показано условно низким ({DEFAULT_BUILDING_HEIGHT} м).</p>
         <p><b>Трафик:</b> синтетический демонстрационный слой — случайные поездки по реальной сети дорог OSM. Это не данные о реальном движении.</p>
+        <p><b>Светофоры:</b> стоят только там, где светофор отмечен в OSM. Фазы и очереди — модель, а не данные городских систем: к реальным светофорам и камерам проект не подключён.</p>
         <p className="map-hint">Вращение и наклон: правая кнопка мыши или Ctrl + перетаскивание; на телефоне — двумя пальцами.</p>
         <a className="map-link" href="#lab">Лаборатория перекрёстка →</a>
         <a className="map-link" href="#sumo">Эксперимент SUMO: перекрёсток Чуй × Манаса →</a>
       </details>
+      <LayersPanel ctrl={ctrl} st={st} />
+      </div>
 
-      <TrafficPanel map={mapObj} mapReady={status === 'ready'} />
+      {selected && ctrl && <SignalPanel ctrl={ctrl} sel={selected} />}
+
+      <TrafficPanel ctrl={ctrl} st={st} mapReady={status === 'ready'} />
 
       {status === 'loading' && !failed && (
         <div className="map-overlay" role="status"><span className="map-spinner" aria-hidden="true" />Загружаю карту Бишкека…</div>
