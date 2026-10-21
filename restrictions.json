@@ -1,0 +1,118 @@
+{
+ "center": {
+  "lat": 42.877856,
+  "lon": 74.562291
+ },
+ "radius_m": 80.0,
+ "osm_base": "2026-10-21T09:45:35Z",
+ "restrictions_at_intersection": [
+  {
+   "id": 2700742,
+   "tags": {
+    "restriction": "no_right_turn",
+    "type": "restriction"
+   },
+   "from": [
+    {
+     "type": "way",
+     "id": 63944307,
+     "name": "улица Манаса",
+     "highway": "secondary",
+     "dist_m": 33.0
+    }
+   ],
+   "via": [
+    {
+     "type": "node",
+     "id": 244504527,
+     "name": null,
+     "highway": null,
+     "dist_m": 7.2
+    }
+   ],
+   "to": [
+    {
+     "type": "way",
+     "id": 1418073172,
+     "name": "Чуй проспект",
+     "highway": "primary",
+     "dist_m": 15.5
+    }
+   ],
+   "via_within_radius": true
+  },
+  {
+   "id": 17994656,
+   "tags": {
+    "restriction": "only_straight_on",
+    "type": "restriction"
+   },
+   "from": [
+    {
+     "type": "way",
+     "id": 63944307,
+     "name": "улица Манаса",
+     "highway": "secondary",
+     "dist_m": 33.0
+    }
+   ],
+   "via": [
+    {
+     "type": "node",
+     "id": 2109381123,
+     "name": null,
+     "highway": "speed_camera",
+     "dist_m": 58.8
+    }
+   ],
+   "to": [
+    {
+     "type": "way",
+     "id": 1312551817,
+     "name": "улица Манаса",
+     "highway": "secondary",
+     "dist_m": 136.3
+    }
+   ],
+   "via_within_radius": true
+  }
+ ],
+ "restrictions_nearby_other": [
+  {
+   "id": 2700741,
+   "tags": {
+    "restriction": "only_right_turn",
+    "type": "restriction"
+   },
+   "from": [
+    {
+     "type": "way",
+     "id": 193544599,
+     "name": "Киевская улица",
+     "highway": "tertiary",
+     "dist_m": 279.1
+    }
+   ],
+   "via": [
+    {
+     "type": "node",
+     "id": 1846944282,
+     "name": null,
+     "highway": null,
+     "dist_m": 214.4
+    }
+   ],
+   "to": [
+    {
+     "type": "way",
+     "id": 1312551817,
+     "name": "улица Манаса",
+     "highway": "secondary",
+     "dist_m": 136.3
+    }
+   ],
+   "via_within_radius": false
+  }
+ ],
+ "attribution": "© OpenStreetMap contributors, ODbL"
+}
