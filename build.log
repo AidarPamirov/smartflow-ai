@@ -1,0 +1,20 @@
+
+> smartflow-ai@0.3.0 build
+> tsc -p tsconfig.json && vite build
+
+[36mvite v5.4.21 [32mbuilding for production...[36m[39m
+transforming...
+[32m✓[39m 58 modules transformed.
+rendering chunks...
+computing gzip size...
+[2mdist/[22m[32mindex.html                  [39m[1m[2m  0.79 kB[22m[1m[22m[2m │ gzip:   0.52 kB[22m
+[2mdist/[22m[2massets/[22m[35mindex-Dd9mIyhw.css   [39m[1m[2m  9.54 kB[22m[1m[22m[2m │ gzip:   2.80 kB[22m
+[2mdist/[22m[2massets/[22m[35mMapApp-Dy4Vg_yk.css  [39m[1m[2m 73.03 kB[22m[1m[22m[2m │ gzip:  11.08 kB[22m
+[2mdist/[22m[2massets/[22m[36mindex-RIjkF75D.js    [39m[1m[2m194.12 kB[22m[1m[22m[2m │ gzip:  65.71 kB[22m
+[2mdist/[22m[2massets/[22m[36mMapApp-CVKDTULA.js   [39m[1m[33m833.05 kB[39m[22m[2m │ gzip: 229.83 kB[22m
+[33m
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.[39m
+[32m✓ built in 4.20s[39m

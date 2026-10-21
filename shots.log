@@ -1,0 +1,17 @@
+ready {"clock":"00:02","stats":"на экране 86 · поездок 0 · ср. скорость в модели 42 км/ч","msg":null,"mapErr":null}
+pause clock 00:07 00:07 OK
+10x clock after 3 s 00:27 delta 20
+after reset 00:00
+1000 {"clock":"00:02","stats":"на экране 383 · поездок 0 · ср. скорость в модели 37 км/ч","msg":null,"mapErr":null}
+close {"clock":"00:14","stats":"на экране 27 · поездок 0 · ср. скорость в модели 44 км/ч","msg":null,"mapErr":null}
+zoomed out {"clock":"00:31","stats":"Приблизьте карту (зум ≥ 12), чтобы увидеть машины · поездок 3 · ср. скорость в модели 44 км/ч","msg":null,"mapErr":null}
+fps paused traffic 60.3
+map error banner after all steps (must be null) null
+fps (swiftshader, только для сравнения): без трафика 22.3 | 250 машин 2.3 | 1000 машин 2.8
+desktop errors []
+error state {"clock":null,"stats":null,"msg":"Трафик недоступен: файл дорожной сети не найден (HTTP 404). Карта при этом работает.Повторить","mapErr":null} map canvas true
+after retry {"clock":"00:00","stats":"на экране 72 · поездок 0 · ср. скорость в модели 30 км/ч","msg":null,"mapErr":null}
+corrupt file {"clock":null,"stats":null,"msg":"Трафик недоступен: в файле сети нет рамки (bbox). Карта при этом работает.Повторить","mapErr":null}
+error page errors ["Failed to load resource: the server responded with a status of 404 (Not Found)"]
+phone hscroll false {"clock":"00:01","stats":"на экране 27 · поездок 0 · ср. скорость в модели 34 км/ч","msg":null,"mapErr":null}
+phone errors []
