@@ -1,0 +1,224 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Map as MlMap, ScaleControl } from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
+import './map.css';
+import { ATTRIBUTION, BISHKEK, DEFAULT_BUILDING_HEIGHT, LEVEL_HEIGHT, buildStyle, buildingVisibility, type MapMode } from './style';
+
+type Status = 'loading' | 'ready' | 'error';
+
+interface View { zoom: number; pitch: number; bearing: number; lng: number; lat: number }
+
+const PITCH_3D = BISHKEK.pitch;
+const ROTATE_STEP = 30;
+
+const fmt = (n: number, d = 0) => n.toLocaleString('ru-RU', { minimumFractionDigits: d, maximumFractionDigits: d });
+
+/**
+ * Этап 1 цифрового двойника: базовая 3D-карта Бишкека.
+ * Только картография — без трафика, симуляции и бэкенда.
+ */
+export default function MapApp() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<MlMap | null>(null);
+  const modeRef = useRef<MapMode>('3d');
+  const [status, setStatus] = useState<Status>('loading');
+  /** Карта создана: камерой можно управлять даже до загрузки данных. */
+  const [hasMap, setHasMap] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  /** Были ошибки загрузки: заставку больше не показываем, даже если баннер скрыт. */
+  const [failed, setFailed] = useState(false);
+  const [mode, setMode] = useState<MapMode>('3d');
+  const [view, setView] = useState<View>({
+    zoom: BISHKEK.zoom, pitch: BISHKEK.pitch, bearing: BISHKEK.bearing, lng: BISHKEK.center[0], lat: BISHKEK.center[1],
+  });
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    let map: MlMap;
+    try {
+      map = new MlMap({
+        container: el,
+        style: buildStyle(),
+        center: BISHKEK.center,
+        zoom: BISHKEK.zoom,
+        pitch: BISHKEK.pitch,
+        bearing: BISHKEK.bearing,
+        maxBounds: BISHKEK.maxBounds,
+        minZoom: BISHKEK.minZoom,
+        maxZoom: BISHKEK.maxZoom,
+        maxPitch: BISHKEK.maxPitch,
+        // Атрибуция задана явно, чтобы она была видна всегда, даже если данные ещё не загрузились.
+        attributionControl: { compact: false, customAttribution: ATTRIBUTION },
+        antialias: true,
+      });
+    } catch (e) {
+      setStatus('error');
+      setError(
+        'Не удалось запустить 3D-карту: браузеру нужен WebGL. Включите аппаратное ускорение в настройках браузера или откройте страницу в другом браузере.' +
+          (e instanceof Error ? ` (${e.message})` : ''),
+      );
+      return;
+    }
+    mapRef.current = map;
+    setHasMap(true);
+    map.addControl(new ScaleControl({ maxWidth: 120, unit: 'metric' }), 'bottom-left');
+
+    let raf = 0;
+    const sync = () => {
+      raf = 0;
+      const c = map.getCenter();
+      setView({ zoom: map.getZoom(), pitch: map.getPitch(), bearing: map.getBearing(), lng: c.lng, lat: c.lat });
+    };
+    map.on('move', () => { if (!raf) raf = requestAnimationFrame(sync); });
+    map.on('load', () => setStatus((s) => (s === 'error' ? s : 'ready')));
+    const slow = window.setTimeout(() => {
+      if (!map.loaded()) setFailed(true);
+      if (!map.loaded()) setError((prev) => prev ?? 'Карта загружается дольше обычного. Проверьте подключение к интернету или обновите страницу.');
+    }, 20000);
+    map.on('error', (ev) => {
+      setFailed(true);
+      // Ошибки сети и тайлов: показываем один понятный баннер, карта продолжает работать с тем, что загрузилось.
+      const msg = ev.error instanceof Error ? ev.error.message : String(ev.error ?? '');
+      setError((prev) =>
+        prev ??
+          `Часть данных карты не загрузилась с tiles.openfreemap.org. Проверьте подключение к интернету и обновите страницу.${msg ? ` (${msg})` : ''}`,
+      );
+    });
+
+    return () => {
+      if (raf) cancelAnimationFrame(raf);
+      window.clearTimeout(slow);
+      map.remove();
+      mapRef.current = null;
+      setHasMap(false);
+    };
+  }, []);
+
+  /** Переключение 3D / план: видимость слоёв зданий, наклон и вращение. */
+  const applyMode = useCallback((next: MapMode) => {
+    modeRef.current = next;
+    setMode(next);
+    const map = mapRef.current;
+    if (!map) return;
+    const vis = buildingVisibility(next);
+    if (map.getLayer('building-3d')) map.setLayoutProperty('building-3d', 'visibility', vis.extruded);
+    if (map.getLayer('building-flat')) map.setLayoutProperty('building-flat', 'visibility', vis.flat);
+    if (next === '2d') {
+      map.dragRotate.disable();
+      map.touchZoomRotate.disableRotation();
+      map.keyboard.disableRotation();
+      map.easeTo({ pitch: 0, bearing: 0, duration: 700 });
+      map.once('moveend', () => { if (modeRef.current === '2d') map.setMaxPitch(0); });
+    } else {
+      map.setMaxPitch(BISHKEK.maxPitch);
+      map.dragRotate.enable();
+      map.touchZoomRotate.enableRotation();
+      map.keyboard.enableRotation();
+      map.easeTo({ pitch: PITCH_3D, bearing: map.getBearing() === 0 ? BISHKEK.bearing : map.getBearing(), duration: 700 });
+    }
+  }, []);
+
+  // Видимость слоёв задаётся и после загрузки стиля (если режим переключили до неё).
+  useEffect(() => {
+    const map = mapRef.current;
+    if (status !== 'ready' || !map) return;
+    const vis = buildingVisibility(modeRef.current);
+    map.setLayoutProperty('building-3d', 'visibility', vis.extruded);
+    map.setLayoutProperty('building-flat', 'visibility', vis.flat);
+  }, [status]);
+
+  const zoomBy = (d: number) => {
+    const map = mapRef.current;
+    if (!map) return;
+    if (d > 0) map.zoomIn({ duration: 300 }); else map.zoomOut({ duration: 300 });
+  };
+  const rotateBy = (deg: number) => mapRef.current?.easeTo({ bearing: (mapRef.current?.getBearing() ?? 0) + deg, duration: 400 });
+  const resetNorth = () => mapRef.current?.easeTo({ bearing: 0, duration: 400 });
+  const resetView = () => {
+    const is3d = modeRef.current === '3d';
+    mapRef.current?.flyTo({
+      center: BISHKEK.center, zoom: BISHKEK.zoom, pitch: is3d ? PITCH_3D : 0, bearing: is3d ? BISHKEK.bearing : 0, duration: 1600,
+    });
+  };
+
+  const disabled = !hasMap;
+
+  return (
+    <div className="map-root">
+      <div ref={containerRef} className="map-canvas" aria-label="Интерактивная карта Бишкека" />
+
+      <header className="map-panel map-head">
+        <div className="map-brand">
+          <span className="map-logo" aria-hidden="true"><i /><i /><i /></span>
+          <div>
+            <h1>SmartFlow AI</h1>
+            <p>Бишкек · цифровой двойник дорожной сети</p>
+          </div>
+        </div>
+        <span className="map-stage">Этап 1 · базовая карта</span>
+      </header>
+
+      <nav className="map-panel map-controls" aria-label="Управление картой">
+        <div className="map-seg" role="group" aria-label="Режим карты">
+          <button className={mode === '3d' ? 'on' : ''} aria-pressed={mode === '3d'} onClick={() => applyMode('3d')} disabled={disabled}>3D</button>
+          <button className={mode === '2d' ? 'on' : ''} aria-pressed={mode === '2d'} onClick={() => applyMode('2d')} disabled={disabled}>План</button>
+        </div>
+        <div className="map-group">
+          <button onClick={() => zoomBy(1)} disabled={disabled} aria-label="Приблизить" title="Приблизить">+</button>
+          <button onClick={() => zoomBy(-1)} disabled={disabled} aria-label="Отдалить" title="Отдалить">−</button>
+        </div>
+        {mode === '3d' && (
+          <div className="map-group">
+            <button onClick={() => rotateBy(-ROTATE_STEP)} disabled={disabled} aria-label="Повернуть против часовой стрелки" title="Повернуть на 30° влево">⟲</button>
+            <button onClick={() => rotateBy(ROTATE_STEP)} disabled={disabled} aria-label="Повернуть по часовой стрелке" title="Повернуть на 30° вправо">⟳</button>
+          </div>
+        )}
+        <div className="map-group">
+          <button onClick={resetNorth} disabled={disabled || mode === '2d'} aria-label="Повернуть на север" title="На север">
+            <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" style={{ transform: `rotate(${-view.bearing}deg)` }}>
+              <path d="M9 2 12 9H6Z" fill="var(--map-accent)" />
+              <path d="M9 16 6 9h6Z" fill="currentColor" opacity=".55" />
+            </svg>
+          </button>
+          <button onClick={resetView} disabled={disabled} aria-label="Вернуться к центру Бишкека" title="К центру (площадь Ала-Тоо)">
+            <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+              <circle cx="9" cy="9" r="5.5" fill="none" stroke="currentColor" strokeWidth="1.6" />
+              <circle cx="9" cy="9" r="1.8" fill="currentColor" />
+              <path d="M9 0v3M9 15v3M0 9h3M15 9h3" stroke="currentColor" strokeWidth="1.6" />
+            </svg>
+          </button>
+        </div>
+      </nav>
+
+      <div className="map-panel map-readout" aria-live="off">
+        <span>z {fmt(view.zoom, 1)}</span>
+        <span>наклон {fmt(view.pitch)}°</span>
+        <span>азимут {fmt(((view.bearing % 360) + 360) % 360)}°</span>
+        <span className="map-coord">{view.lat.toFixed(4)}° N, {view.lng.toFixed(4)}° E</span>
+      </div>
+
+      <details className="map-panel map-info">
+        <summary>О данных</summary>
+        <p><b>Карта:</b> улицы, вода, зелень и контуры зданий из OpenStreetMap, векторные тайлы OpenFreeMap (схема OpenMapTiles).</p>
+        <p><b>Высота зданий:</b> из OSM — тег <code>height</code> или этажность × {fmt(LEVEL_HEIGHT, 2)} м. Если данных нет, здание показано условно низким ({DEFAULT_BUILDING_HEIGHT} м).</p>
+        <p><b>Трафик:</b> не подключён. Этап 1 — только базовая карта.</p>
+        <p className="map-hint">Вращение и наклон: правая кнопка мыши или Ctrl + перетаскивание; на телефоне — двумя пальцами.</p>
+        <a className="map-link" href="#lab">Лаборатория перекрёстка →</a>
+      </details>
+
+      {status === 'loading' && !failed && (
+        <div className="map-overlay" role="status"><span className="map-spinner" aria-hidden="true" />Загружаю карту Бишкека…</div>
+      )}
+      {error && (
+        <div className="map-panel map-error" role="alert">
+          <p>{error}</p>
+          <div className="map-error-actions">
+            <button onClick={() => location.reload()}>Обновить страницу</button>
+            {status !== 'error' && <button onClick={() => setError(null)}>Скрыть</button>}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

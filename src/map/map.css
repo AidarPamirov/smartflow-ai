@@ -1,0 +1,172 @@
+/* Карта Бишкека: единый тёмный вид «цифрового двойника» (сознательно одна тема). */
+.map-root {
+  --map-bg: #0f141b;
+  --map-panel: rgba(16, 22, 30, 0.86);
+  --map-border: rgba(160, 185, 215, 0.16);
+  --map-text: #e6ecf3;
+  --map-muted: #8d9bb0;
+  --map-accent: #6fb6ff;
+  --map-err: #ff8a80;
+  --map-mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+  position: fixed;
+  inset: 0;
+  background: var(--map-bg);
+  color: var(--map-text);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  color-scheme: dark;
+  overflow: hidden;
+}
+.map-canvas { position: absolute; inset: 0; }
+
+.map-panel {
+  position: absolute;
+  z-index: 2;
+  background: var(--map-panel);
+  border: 1px solid var(--map-border);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.map-head {
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  left: 12px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 14px;
+  max-width: calc(100% - 24px - 64px);
+}
+.map-brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.map-brand h1 { margin: 0; font-size: 17px; font-weight: 650; letter-spacing: -0.01em; }
+.map-brand p { margin: 2px 0 0; font-size: 12.5px; color: var(--map-muted); }
+.map-logo { display: inline-flex; flex-direction: column; gap: 3px; padding: 5px 4px; border-radius: 5px; background: #0a0e13; border: 1px solid var(--map-border); }
+.map-logo i { width: 6px; height: 6px; border-radius: 50%; background: #2b333e; }
+.map-logo i:nth-child(1) { background: #e34948; }
+.map-logo i:nth-child(2) { background: #eda100; }
+.map-logo i:nth-child(3) { background: #1baf7a; }
+.map-stage { font-family: var(--map-mono); font-size: 11.5px; color: var(--map-accent); border: 1px solid rgba(111, 182, 255, 0.35); padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
+
+.map-controls {
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  right: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+}
+.map-group, .map-seg { display: flex; flex-direction: column; border: 1px solid var(--map-border); border-radius: 8px; overflow: hidden; }
+.map-controls button {
+  font: inherit;
+  font-size: 18px;
+  line-height: 1;
+  width: 40px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  color: var(--map-text);
+  border: 0;
+  cursor: pointer;
+}
+.map-group button + button, .map-seg button + button { border-top: 1px solid var(--map-border); }
+.map-seg button { font-size: 12px; font-weight: 600; }
+.map-seg button.on { background: var(--map-accent); color: #08111c; }
+.map-controls button:hover:not(:disabled):not(.on) { background: rgba(255, 255, 255, 0.07); }
+.map-controls button:disabled { opacity: 0.4; cursor: not-allowed; }
+.map-root button:focus-visible, .map-root a:focus-visible, .map-root summary:focus-visible { outline: 2px solid var(--map-accent); outline-offset: 2px; }
+
+.map-readout {
+  left: 12px;
+  bottom: calc(40px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  padding: 6px 10px;
+  font-family: var(--map-mono);
+  font-size: 11.5px;
+  color: var(--map-muted);
+  font-variant-numeric: tabular-nums;
+  max-width: calc(100% - 24px);
+}
+
+.map-info {
+  top: calc(84px + env(safe-area-inset-top, 0px));
+  left: 12px;
+  width: min(340px, calc(100% - 24px - 64px));
+  padding: 8px 14px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.map-info summary { cursor: pointer; color: var(--map-muted); font-size: 12.5px; padding: 2px 0; }
+.map-info[open] summary { margin-bottom: 6px; }
+.map-info p { margin: 0 0 8px; }
+.map-info b { font-weight: 600; }
+.map-info code { font-family: var(--map-mono); font-size: 12px; color: var(--map-text); }
+.map-hint { color: var(--map-muted); font-size: 12px; }
+.map-link { display: inline-block; margin: 2px 0 6px; color: var(--map-accent); text-decoration: none; font-weight: 600; }
+.map-link:hover { text-decoration: underline; }
+
+.map-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: grid;
+  place-content: center;
+  grid-auto-flow: column;
+  gap: 12px;
+  align-items: center;
+  color: var(--map-muted);
+  font-size: 14px;
+  background: var(--map-bg);
+}
+.map-spinner { width: 16px; height: 16px; border: 2px solid var(--map-border); border-top-color: var(--map-accent); border-radius: 50%; animation: map-spin 0.9s linear infinite; }
+@keyframes map-spin { to { transform: rotate(360deg); } }
+
+.map-error {
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+  width: min(520px, calc(100% - 24px));
+  padding: 12px 14px;
+  border-color: rgba(255, 138, 128, 0.5);
+  font-size: 13.5px;
+  z-index: 4;
+}
+.map-error p { margin: 0 0 10px; }
+.map-error-actions { display: flex; gap: 8px; }
+.map-error button { font: inherit; font-size: 13px; padding: 6px 12px; border-radius: 7px; border: 1px solid var(--map-border); background: rgba(255, 255, 255, 0.06); color: var(--map-text); cursor: pointer; }
+
+/* Встроенные элементы MapLibre в тон интерфейсу */
+.map-root .maplibregl-ctrl-attrib {
+  background: var(--map-panel);
+  color: var(--map-muted);
+  font-size: 11px;
+  border-top-left-radius: 8px;
+}
+.map-root .maplibregl-ctrl-attrib a { color: var(--map-text); }
+.map-root .maplibregl-ctrl-scale {
+  background: var(--map-panel);
+  border-color: var(--map-muted);
+  color: var(--map-text);
+  font-family: var(--map-mono);
+  font-size: 10.5px;
+}
+.map-root .maplibregl-ctrl-bottom-left { padding-bottom: env(safe-area-inset-bottom, 0px); }
+.map-root .maplibregl-ctrl-bottom-right { padding-bottom: env(safe-area-inset-bottom, 0px); }
+
+@media (max-width: 640px) {
+  .map-head { padding: 8px 10px; gap: 10px; flex-wrap: wrap; }
+  .map-brand p { display: none; }
+  .map-stage { font-size: 10.5px; }
+  /* Снизу вверх: атрибуция (2 строки) → масштаб → координаты → «О данных». */
+  .map-root .maplibregl-ctrl-bottom-left { bottom: 40px; }
+  .map-readout .map-coord { display: none; }
+  .map-readout { bottom: calc(74px + env(safe-area-inset-bottom, 0px)); }
+  .map-info { top: auto; bottom: calc(110px + env(safe-area-inset-bottom, 0px)); }
+  .map-error { bottom: calc(110px + env(safe-area-inset-bottom, 0px)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-spinner { animation: none; }
+}
