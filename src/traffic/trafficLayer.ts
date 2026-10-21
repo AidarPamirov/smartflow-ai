@@ -38,10 +38,13 @@ function carImage(): ImageData {
   c.width = w; c.height = h;
   const g = c.getContext('2d')!;
   g.fillStyle = TRAFFIC_COLOR;
+  g.strokeStyle = '#0f141b';
+  g.lineWidth = 2;
   g.beginPath();
   if (typeof g.roundRect === 'function') g.roundRect(1, 1, w - 2, h - 2, 6);
   else g.rect(1, 1, w - 2, h - 2); // старые браузеры без roundRect
   g.fill();
+  g.stroke();
   g.fillStyle = 'rgba(15, 20, 27, 0.55)'; // лобовое и заднее стекло
   g.fillRect(4, 9, w - 8, 6);
   g.fillRect(4, h - 11, w - 8, 4);
@@ -69,9 +72,9 @@ export class TrafficLayer {
       id: L_DOTS, type: 'circle', source: SRC_TRAFFIC, minzoom: MIN_ZOOM, maxzoom: CAR_ZOOM,
       paint: {
         'circle-color': TRAFFIC_COLOR,
-        'circle-radius': ['interpolate', ['linear'], ['zoom'], MIN_ZOOM, 1.8, 15, 3, CAR_ZOOM, 3.8],
+        'circle-radius': ['interpolate', ['linear'], ['zoom'], MIN_ZOOM, 2.2, 15, 3.4, CAR_ZOOM, 4.2],
         'circle-stroke-color': '#0f141b',
-        'circle-stroke-width': 0.6,
+        'circle-stroke-width': 0.8,
         'circle-pitch-alignment': 'map',
       },
     }, before);
@@ -84,8 +87,8 @@ export class TrafficLayer {
         'icon-pitch-alignment': 'map',
         'icon-allow-overlap': true,
         'icon-ignore-placement': true,
-        // Силуэт примерно в 1,4 раза крупнее реальной машины (4,6 м), иначе его плохо видно на тёмной карте.
-        'icon-size': ['interpolate', ['exponential', 2], ['zoom'], CAR_ZOOM, 0.6, 18, 0.75, 20, 3],
+        // Силуэт примерно в 1,8 раза крупнее реальной машины (4,6 м), иначе его плохо видно на тёмной карте.
+        'icon-size': ['interpolate', ['exponential', 2], ['zoom'], CAR_ZOOM, 0.8, 18, 0.95, 20, 3.8],
       },
     }, before);
     this.attached = true;
