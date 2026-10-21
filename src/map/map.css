@@ -159,12 +159,53 @@
   .map-head { padding: 8px 10px; gap: 10px; flex-wrap: wrap; }
   .map-brand p { display: none; }
   .map-stage { font-size: 10.5px; }
-  /* Снизу вверх: атрибуция (2 строки) → масштаб → координаты → «О данных». */
-  .map-root .maplibregl-ctrl-bottom-left { bottom: 40px; }
-  .map-readout .map-coord { display: none; }
-  .map-readout { bottom: calc(74px + env(safe-area-inset-bottom, 0px)); }
-  .map-info { top: auto; bottom: calc(110px + env(safe-area-inset-bottom, 0px)); }
-  .map-error { bottom: calc(110px + env(safe-area-inset-bottom, 0px)); }
+  /* Телефон: снизу атрибуция (2 строки) и панель трафика; «О данных» — под шапкой; координаты и масштаб скрыты. */
+  .map-readout, .map-root .maplibregl-ctrl-scale { display: none; }
+  .map-info { top: calc(96px + env(safe-area-inset-top, 0px)); }
+  .map-error { bottom: auto; top: calc(140px + env(safe-area-inset-top, 0px)); }
+}
+
+/* Панель демо-трафика */
+.traffic {
+  right: 12px;
+  bottom: calc(30px + env(safe-area-inset-bottom, 0px));
+  width: min(360px, calc(100% - 24px));
+  padding: 10px 12px;
+  font-size: 13px;
+  display: grid;
+  gap: 8px;
+}
+.traffic-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.traffic-title { all: unset; cursor: pointer; font-weight: 650; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; }
+.traffic-title:focus-visible { outline: 2px solid var(--map-accent); outline-offset: 2px; border-radius: 4px; }
+.traffic-badge { font-family: var(--map-mono); font-size: 10.5px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: #ffc35c; border: 1px solid rgba(255, 195, 92, 0.5); padding: 1px 6px; border-radius: 999px; }
+.traffic-clock { font-family: var(--map-mono); font-size: 12px; color: var(--map-muted); font-variant-numeric: tabular-nums; }
+.traffic-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.traffic button, .traffic select {
+  font: inherit; font-size: 12.5px; color: var(--map-text); background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--map-border); border-radius: 7px; padding: 5px 9px; cursor: pointer;
+}
+.traffic select { padding: 4px 6px; }
+.traffic button:hover { background: rgba(255, 255, 255, 0.11); }
+.traffic .traffic-play { background: var(--map-accent); color: #08111c; border-color: var(--map-accent); font-weight: 650; min-width: 86px; }
+.traffic-seg { display: inline-flex; border: 1px solid var(--map-border); border-radius: 7px; overflow: hidden; }
+.traffic-seg button { border: 0; border-radius: 0; padding: 5px 8px; font-family: var(--map-mono); font-size: 11.5px; }
+.traffic-seg button + button { border-left: 1px solid var(--map-border); }
+.traffic-seg button.on { background: var(--map-text); color: #0f141b; }
+.traffic-check { display: inline-flex; align-items: center; gap: 5px; margin-left: auto; color: var(--map-muted); font-size: 12.5px; cursor: pointer; }
+.traffic-stats { margin: 0; font-family: var(--map-mono); font-size: 11.5px; color: var(--map-muted); font-variant-numeric: tabular-nums; }
+.traffic-msg { margin: 0; color: var(--map-muted); display: grid; gap: 6px; }
+.traffic-msg progress { width: 100%; accent-color: var(--map-accent); }
+.traffic-err { color: var(--map-text); }
+.traffic-err p { margin: 0; color: var(--map-err); }
+.traffic-err button { justify-self: start; }
+.traffic-note { color: var(--map-muted); font-size: 12px; line-height: 1.45; }
+.traffic-note summary { cursor: pointer; }
+.traffic-note p { margin: 6px 0 0; }
+.traffic.collapsed { gap: 4px; }
+@media (max-width: 640px) {
+  .traffic { left: 12px; right: 12px; width: auto; bottom: calc(40px + env(safe-area-inset-bottom, 0px)); }
+  .traffic-stats { font-size: 11px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

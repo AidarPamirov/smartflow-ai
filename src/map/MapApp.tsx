@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Map as MlMap, ScaleControl } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import './map.css';
+import { TrafficPanel } from '../traffic/TrafficPanel';
 import { ATTRIBUTION, BISHKEK, DEFAULT_BUILDING_HEIGHT, LEVEL_HEIGHT, buildStyle, buildingVisibility, type MapMode } from './style';
 
 type Status = 'loading' | 'ready' | 'error';
@@ -14,8 +15,8 @@ const ROTATE_STEP = 30;
 const fmt = (n: number, d = 0) => n.toLocaleString('ru-RU', { minimumFractionDigits: d, maximumFractionDigits: d });
 
 /**
- * Этап 1 цифрового двойника: базовая 3D-карта Бишкека.
- * Только картография — без трафика, симуляции и бэкенда.
+ * Цифровой двойник: 3D-карта Бишкека (этап 1) и слой синтетического демо-трафика (этап 2, src/traffic).
+ * Карта не зависит от трафика: при ошибке загрузки дорожной сети она продолжает работать.
  */
 export default function MapApp() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -23,7 +24,7 @@ export default function MapApp() {
   const modeRef = useRef<MapMode>('3d');
   const [status, setStatus] = useState<Status>('loading');
   /** Карта создана: камерой можно управлять даже до загрузки данных. */
-  const [hasMap, setHasMap] = useState(false);
+  const [mapObj, setMapObj] = useState<MlMap | null>(null);
   const [error, setError] = useState<string | null>(null);
   /** Были ошибки загрузки: заставку больше не показываем, даже если баннер скрыт. */
   const [failed, setFailed] = useState(false);
@@ -61,7 +62,7 @@ export default function MapApp() {
       return;
     }
     mapRef.current = map;
-    setHasMap(true);
+    setMapObj(map);
     map.addControl(new ScaleControl({ maxWidth: 120, unit: 'metric' }), 'bottom-left');
 
     let raf = 0;
@@ -91,7 +92,7 @@ export default function MapApp() {
       window.clearTimeout(slow);
       map.remove();
       mapRef.current = null;
-      setHasMap(false);
+      setMapObj(null);
     };
   }, []);
 
@@ -142,7 +143,7 @@ export default function MapApp() {
     });
   };
 
-  const disabled = !hasMap;
+  const disabled = !mapObj;
 
   return (
     <div className="map-root">
@@ -156,7 +157,7 @@ export default function MapApp() {
             <p>Бишкек · цифровой двойник дорожной сети</p>
           </div>
         </div>
-        <span className="map-stage">Этап 1 · базовая карта</span>
+        <span className="map-stage">Этап 2 · демо-трафик</span>
       </header>
 
       <nav className="map-panel map-controls" aria-label="Управление картой">
@@ -202,10 +203,12 @@ export default function MapApp() {
         <summary>О данных</summary>
         <p><b>Карта:</b> улицы, вода, зелень и контуры зданий из OpenStreetMap, векторные тайлы OpenFreeMap (схема OpenMapTiles).</p>
         <p><b>Высота зданий:</b> из OSM — тег <code>height</code> или этажность × {fmt(LEVEL_HEIGHT, 2)} м. Если данных нет, здание показано условно низким ({DEFAULT_BUILDING_HEIGHT} м).</p>
-        <p><b>Трафик:</b> не подключён. Этап 1 — только базовая карта.</p>
+        <p><b>Трафик:</b> синтетический демонстрационный слой — случайные поездки по реальной сети дорог OSM. Это не данные о реальном движении.</p>
         <p className="map-hint">Вращение и наклон: правая кнопка мыши или Ctrl + перетаскивание; на телефоне — двумя пальцами.</p>
         <a className="map-link" href="#lab">Лаборатория перекрёстка →</a>
       </details>
+
+      <TrafficPanel map={mapObj} mapReady={status === 'ready'} />
 
       {status === 'loading' && !failed && (
         <div className="map-overlay" role="status"><span className="map-spinner" aria-hidden="true" />Загружаю карту Бишкека…</div>
