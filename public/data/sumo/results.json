@@ -21,7 +21,7 @@
   ]
  },
  "sumo_version": "SUMO 1.28.0",
- "generated": "2026-10-21T11:58:06+00:00",
+ "generated": "2026-10-21T15:19:49+00:00",
  "params": {
   "loads_veh_h": {
    "low": {
@@ -174,6 +174,10 @@
    ],
    "safety_overrides": 0,
    "fallbacks": 0,
+   "clearance_hold_s": [
+    0.0,
+    0.0
+   ],
    "decision_reasons": {
     "фиксированный план": 456
    }
@@ -265,6 +269,10 @@
    ],
    "safety_overrides": 0,
    "fallbacks": 0,
+   "clearance_hold_s": [
+    0.0,
+    0.0
+   ],
    "decision_reasons": {
     "разрыв потока": 757,
     "защита от голодания": 4
@@ -357,6 +365,10 @@
    ],
    "safety_overrides": 0,
    "fallbacks": 0,
+   "clearance_hold_s": [
+    0.0,
+    0.0
+   ],
    "decision_reasons": {
     "фиксированный план": 458
    }
@@ -448,6 +460,10 @@
    ],
    "safety_overrides": 0,
    "fallbacks": 0,
+   "clearance_hold_s": [
+    0.0,
+    0.0
+   ],
    "decision_reasons": {
     "разрыв потока": 631,
     "максимум зелёного фазы": 7,
@@ -541,6 +557,10 @@
    ],
    "safety_overrides": 0,
    "fallbacks": 0,
+   "clearance_hold_s": [
+    0.0,
+    0.0
+   ],
    "decision_reasons": {
     "фиксированный план": 479
    }
@@ -632,6 +652,10 @@
    ],
    "safety_overrides": 0,
    "fallbacks": 0,
+   "clearance_hold_s": [
+    0.0,
+    0.0
+   ],
    "decision_reasons": {
     "разрыв потока": 395,
     "максимум зелёного фазы": 60,
@@ -691,6 +715,7 @@
    "fallback_at": null,
    "fallback_reason": null,
    "safety_overrides": 0,
+   "clearance_hold_s": 0.0,
    "fixed_cycle": {
     "greens": [
      22.0,
@@ -752,6 +777,7 @@
    "fallback_at": null,
    "fallback_reason": null,
    "safety_overrides": 0,
+   "clearance_hold_s": 0.0,
    "fixed_cycle": null,
    "states": null
   },
@@ -806,6 +832,7 @@
    "fallback_at": null,
    "fallback_reason": null,
    "safety_overrides": 0,
+   "clearance_hold_s": 0.0,
    "fixed_cycle": {
     "greens": [
      22.0,
@@ -868,6 +895,7 @@
    "fallback_at": null,
    "fallback_reason": null,
    "safety_overrides": 0,
+   "clearance_hold_s": 0.0,
    "fixed_cycle": null,
    "states": null
   },
@@ -922,6 +950,7 @@
    "fallback_at": null,
    "fallback_reason": null,
    "safety_overrides": 0,
+   "clearance_hold_s": 0.0,
    "fixed_cycle": {
     "greens": [
      22.0,
@@ -984,6 +1013,7 @@
    "fallback_at": null,
    "fallback_reason": null,
    "safety_overrides": 0,
+   "clearance_hold_s": 0.0,
    "fixed_cycle": null,
    "states": null
   },
@@ -1038,6 +1068,7 @@
    "fallback_at": null,
    "fallback_reason": null,
    "safety_overrides": 0,
+   "clearance_hold_s": 0.0,
    "fixed_cycle": {
     "greens": [
      22.0,
@@ -1101,6 +1132,7 @@
    "fallback_at": null,
    "fallback_reason": null,
    "safety_overrides": 0,
+   "clearance_hold_s": 0.0,
    "fixed_cycle": null,
    "states": null
   },
@@ -1155,6 +1187,7 @@
    "fallback_at": null,
    "fallback_reason": null,
    "safety_overrides": 0,
+   "clearance_hold_s": 0.0,
    "fixed_cycle": {
     "greens": [
      22.0,
@@ -1216,6 +1249,7 @@
    "fallback_at": null,
    "fallback_reason": null,
    "safety_overrides": 0,
+   "clearance_hold_s": 0.0,
    "fixed_cycle": null,
    "states": null
   },
@@ -1270,6 +1304,7 @@
    "fallback_at": null,
    "fallback_reason": null,
    "safety_overrides": 0,
+   "clearance_hold_s": 0.0,
    "fixed_cycle": {
     "greens": [
      22.0,
@@ -1332,6 +1367,7 @@
    "fallback_at": null,
    "fallback_reason": null,
    "safety_overrides": 0,
+   "clearance_hold_s": 0.0,
    "fixed_cycle": null,
    "states": null
   },
@@ -1386,6 +1422,7 @@
    "fallback_at": null,
    "fallback_reason": null,
    "safety_overrides": 0,
+   "clearance_hold_s": 0.0,
    "fixed_cycle": {
     "greens": [
      22.0,
@@ -1449,6 +1486,7 @@
    "fallback_at": null,
    "fallback_reason": null,
    "safety_overrides": 0,
+   "clearance_hold_s": 0.0,
    "fixed_cycle": null,
    "states": null
   },
@@ -1503,6 +1541,7 @@
    "fallback_at": null,
    "fallback_reason": null,
    "safety_overrides": 0,
+   "clearance_hold_s": 0.0,
    "fixed_cycle": {
     "greens": [
      22.0,
@@ -1566,6 +1605,7 @@
    "fallback_at": null,
    "fallback_reason": null,
    "safety_overrides": 0,
+   "clearance_hold_s": 0.0,
    "fixed_cycle": null,
    "states": null
   },
@@ -1620,6 +1660,7 @@
    "fallback_at": null,
    "fallback_reason": null,
    "safety_overrides": 0,
+   "clearance_hold_s": 0.0,
    "fixed_cycle": {
     "greens": [
      22.0,
@@ -1683,9 +1724,10 @@
    "fallback_at": null,
    "fallback_reason": null,
    "safety_overrides": 0,
+   "clearance_hold_s": 0.0,
    "fixed_cycle": null,
    "states": null
   }
  ],
- "elapsed_s": 417.4
+ "elapsed_s": 136.3
 }

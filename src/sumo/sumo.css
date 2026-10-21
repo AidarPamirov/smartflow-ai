@@ -32,3 +32,41 @@
 .sumo-decisions { list-style: none; margin: 6px 0 0; padding: 0; font-size: 12px; color: var(--text-secondary); display: grid; gap: 2px; min-height: 3.6em; }
 .sumo-decisions li { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sumo-decisions .mono { color: var(--text-primary); }
+
+/* Коридор */
+.sumo .corr h2 { font-size: 15px; text-transform: none; letter-spacing: 0; color: var(--text-primary); margin: 0 0 8px; }
+.corr-scheme { width: 100%; max-width: 760px; height: auto; display: block; margin: 8px 0 12px; }
+.corr-road { stroke: var(--canvas-road); stroke-width: 10; stroke-linecap: round; }
+.corr-cross { stroke: var(--canvas-road); stroke-width: 5; opacity: 0.6; }
+.corr-node { fill: var(--accent); stroke: var(--surface); stroke-width: 2; }
+.corr-name { font-size: 12px; fill: var(--text-primary); font-family: var(--sans); }
+.corr-dist { font-size: 11px; fill: var(--text-secondary); font-family: var(--mono); }
+.corr-end { font-size: 11px; fill: var(--text-secondary); font-family: var(--sans); }
+.corr-best { font-weight: 700; color: var(--good); }
+.corr-load table td:first-child { white-space: normal; min-width: 180px; }
+.corr-assume summary { cursor: pointer; color: var(--text-secondary); }
+
+/* Сравнение способов управления (столбцы). Цвета — категориальная палитра в фиксированном порядке: 1 синий, 2 оранжевый, 3 бирюзовый. */
+.sumo { --ctl-fixed: #2a78d6; --ctl-coord: #eb6834; --ctl-adaptive: #1baf7a; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .sumo { --ctl-fixed: #3987e5; --ctl-coord: #d95926; --ctl-adaptive: #199e70; }
+}
+:root[data-theme='dark'] .sumo { --ctl-fixed: #3987e5; --ctl-coord: #d95926; --ctl-adaptive: #199e70; }
+.cmp-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.cmp { margin: 0; min-width: 0; }
+.cmp-head { display: flex; flex-direction: column; gap: 8px; margin-bottom: 6px; }
+.cmp-seg { flex-wrap: wrap; align-self: flex-start; }
+.cmp-seg button { font-size: 12px; padding: 5px 8px; }
+.cmp-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: center; font-size: 12.5px; margin-bottom: 4px; }
+.cmp-wrap { position: relative; }
+.cmp-wrap { max-width: 900px; }
+.cmp-wrap svg { width: 100%; height: auto; display: block; overflow: visible; }
+.cmp-grid { stroke: var(--border); stroke-width: 1; }
+.cmp-axis { stroke: var(--text-muted); stroke-width: 1; }
+.cmp-tick, .cmp-x { font-size: 11px; fill: var(--text-secondary); font-family: var(--mono); }
+.cmp-x { font-family: var(--sans); font-size: 12px; }
+.cmp-val { font-size: 10.5px; fill: var(--text-primary); font-family: var(--mono); }
+.cmp-err line { stroke: var(--text-primary); stroke-width: 1.2; opacity: 0.7; }
+.cmp-tip { position: absolute; transform: translate(10px, -110%); background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; font-size: 12px; pointer-events: none; white-space: nowrap; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12); z-index: 2; }
+@media (max-width: 860px) { .cmp-grid-2 { grid-template-columns: 1fr; } }
+.cmp-h2 { font-size: 15px; text-transform: none; letter-spacing: 0; color: var(--text-primary); margin: 0 0 8px; }

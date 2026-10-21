@@ -119,6 +119,8 @@ class Observation:
     wait: Mapping[str, float | None] = field(default_factory=dict)
     #: движущихся машин в зоне детектора перед стоп-линией
     approaching: Mapping[str, int | None] = field(default_factory=dict)
+    #: в зоне перекрёстка стоит или почти стоит машина (выезд занят очередью) — следующий зелёный давать нельзя
+    box_blocked: bool = False
 
 
 class SensorError(ValueError):
@@ -171,6 +173,8 @@ class SignalSupervisor:
         self.stage = "green"
         self.elapsed = 0.0  # время в текущей стадии
         self.switches = 0
+        #: сколько секунд «все красные» продлевались, потому что в зоне перекрёстка стояла машина
+        self.clearance_hold_s = 0.0
 
     @property
     def state(self) -> str:
@@ -180,8 +184,12 @@ class SignalSupervisor:
     def green_elapsed(self) -> float:
         return self.elapsed if self.stage == "green" else 0.0
 
-    def step(self, dt: float, request: int | None) -> str:
-        """Продвигает время на dt и учитывает запрос контроллера. Возвращает состояние на следующий интервал."""
+    def step(self, dt: float, request: int | None, box_blocked: bool = False) -> str:
+        """Продвигает время на dt и учитывает запрос контроллера. Возвращает состояние на следующий интервал.
+
+        box_blocked — в зоне перекрёстка стоит машина (выехать ей некуда): «все красные» продлеваются,
+        пока зона не освободится, иначе поток следующей фазы въедет в неё сбоку.
+        """
         eps = 1e-9
         self.elapsed += dt
         t = self.timing
@@ -197,6 +205,8 @@ class SignalSupervisor:
             if self.elapsed >= t.yellow - eps:
                 self.stage = "allred"
                 self.elapsed = 0.0
+        elif self.elapsed >= t.all_red - eps and box_blocked:
+            self.clearance_hold_s += dt
         elif self.elapsed >= t.all_red - eps:
             self.phase = self.next_phase
             self.stage = "green"
@@ -331,7 +341,13 @@ def tick(sup: SignalSupervisor, ctrl: Controller, obs: Observation, dt: float, l
     """
     req = ctrl.request(sup.phase, sup.green_elapsed + dt, obs, sup.plan) if sup.stage == "green" else None
     was_green, phase = sup.stage == "green", sup.phase
-    state = sup.step(dt, req)
+    hold_before = sup.clearance_hold_s
+    held_last = getattr(sup, "_held_last", False)
+    state = sup.step(dt, req, box_blocked=getattr(obs, "box_blocked", False))
+    held = sup.clearance_hold_s > hold_before
+    sup._held_last = held
+    if log is not None and held and not held_last:
+        log.append(Decision(obs.time, phase, sup.next_phase, "страж", "продление «все красные»: в зоне перекрёстка стоит машина"))
     if log is not None and was_green and sup.stage == "yellow":
         by_ctrl = req is not None and req == sup.next_phase
         reason = getattr(ctrl, "last_reason", "") if by_ctrl else f"страж: жёсткий максимум зелёного {sup.timing.hard_max_green:g} с"

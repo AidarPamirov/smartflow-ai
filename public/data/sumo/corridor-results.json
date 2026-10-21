@@ -1,0 +1,4055 @@
+{
+ "format": "smartflow-sumo-corridor/1",
+ "corridor": {
+  "id": "chui-corridor",
+  "title": "Коридор проспекта Чуй: Интергельпо — Манаса — Кулиева — Бейшеналиевой (схематизированная модель)",
+  "nodes": [
+   {
+    "id": "INT",
+    "title": "Чуй × Интергельпо",
+    "x": -352.0,
+    "osm_site": "tls-633529410"
+   },
+   {
+    "id": "MAN",
+    "title": "Чуй × Манаса",
+    "x": 0.0,
+    "osm_site": "tls-244504528"
+   },
+   {
+    "id": "KUL",
+    "title": "Чуй × Кулиева",
+    "x": 485.0,
+    "osm_site": "tls-373086942"
+   },
+   {
+    "id": "BEI",
+    "title": "Чуй × Бейшеналиевой",
+    "x": 749.0,
+    "osm_site": "tls-373087014"
+   }
+  ],
+  "spacing_m": [
+   352,
+   485,
+   264
+  ],
+  "assumptions": [
+   "Проспект Чуй схематизирован прямой линией запад — восток; расстояния между перекрёстками — по координатам светофорных объектов OSM (352, 485 и 264 м). Разделительная полоса, съезды и примыкания без светофоров не моделируются.",
+   "Каждый перекрёсток — один узел; зона перекрёстка меньше реальной (см. одиночную модель).",
+   "Число полос по тегам OSM, где они есть; иначе — 1 полоса на направление для боковых улиц и 2 — для проспекта. Назначение полос по манёврам — допущение.",
+   "Левые повороты только защищённые; развороты запрещены; правые повороты с улицы Манаса — по съездам (как в одиночной модели).",
+   "Спрос синтетический: потоки на въездах и вероятности поворотов на каждом перекрёстке — допущения, не измерения.",
+   "Пешеходов, общественного транспорта и парковки нет."
+  ],
+  "source": "Светофорные объекты городского слоя (src/signals/inventory.ts) по фактам OSM от 2026-10-21: положения, наличие и направления подходов, число полос по тегу lanes. Остальное — допущения ниже."
+ },
+ "sumo_version": "SUMO 1.28.0",
+ "generated": "2026-10-21T15:17:12+00:00",
+ "params": {
+  "loads_veh_h": {
+   "low": {
+    "W_END": 520,
+    "E_END": 520,
+    "INT_S": 90,
+    "MAN_N": 290,
+    "MAN_S": 140,
+    "KUL_N": 90,
+    "KUL_S": 170,
+    "BEI_N": 70,
+    "BEI_S": 70
+   },
+   "medium": {
+    "W_END": 720,
+    "E_END": 720,
+    "INT_S": 140,
+    "MAN_N": 420,
+    "MAN_S": 200,
+    "KUL_N": 130,
+    "KUL_S": 260,
+    "BEI_N": 110,
+    "BEI_S": 110
+   },
+   "high": {
+    "W_END": 900,
+    "E_END": 900,
+    "INT_S": 190,
+    "MAN_N": 530,
+    "MAN_S": 260,
+    "KUL_N": 180,
+    "KUL_S": 350,
+    "BEI_N": 140,
+    "BEI_S": 140
+   }
+  },
+  "seeds": [
+   1,
+   2,
+   3
+  ],
+  "duration_s": 3600.0,
+  "warmup_s": 300.0,
+  "turns_main": {
+   "L": 0.1,
+   "T": 0.8,
+   "R": 0.1
+  },
+  "turns_cross": {
+   "L": 0.35,
+   "T": 0.3,
+   "R": 0.35
+  },
+  "timing": {
+   "min_green": 8.0,
+   "yellow": 3.0,
+   "all_red": 2.0,
+   "hard_max_green": 120.0
+  },
+  "wave_speed_kmh": 50,
+  "spill_zone_m": 20.0,
+  "incident": {
+   "title": "ДТП на выезде на восток",
+   "flows_veh_h": {
+    "W_END": 1700,
+    "E_END": 300
+   },
+   "duration_s": 900.0,
+   "teleport_s": 900.0,
+   "closures": [
+    {
+     "edge": "BEI_to_E_END",
+     "from_s": 140.0,
+     "to_s": 435.0
+    }
+   ]
+  },
+  "fixed": [
+   {
+    "node": "INT",
+    "greens": [
+     9.0,
+     17.0,
+     19.0
+    ],
+    "cycle": 60.0,
+    "webster_cycle": 60.0,
+    "phases": [
+     "подход с юга",
+     "подход с востока",
+     "подход с запада"
+    ],
+    "offset": 0.0
+   },
+   {
+    "node": "MAN",
+    "greens": [
+     15.0,
+     13.0,
+     21.0,
+     23.0
+    ],
+    "cycle": 92.0,
+    "webster_cycle": 91.4,
+    "phases": [
+     "подход с севера",
+     "подход с юга",
+     "подход с востока",
+     "подход с запада"
+    ],
+    "offset": 0.0
+   },
+   {
+    "node": "KUL",
+    "greens": [
+     8.0,
+     10.0,
+     19.0,
+     24.0
+    ],
+    "cycle": 81.0,
+    "webster_cycle": 81.0,
+    "phases": [
+     "подход с севера",
+     "подход с юга",
+     "подход с востока",
+     "подход с запада"
+    ],
+    "offset": 0.0
+   },
+   {
+    "node": "BEI",
+    "greens": [
+     8.0,
+     8.0,
+     21.0,
+     22.0
+    ],
+    "cycle": 79.0,
+    "webster_cycle": 75.5,
+    "phases": [
+     "подход с севера",
+     "подход с юга",
+     "подход с востока",
+     "подход с запада"
+    ],
+    "offset": 0.0
+   }
+  ],
+  "coordinated": [
+   {
+    "node": "INT",
+    "greens": [
+     15.0,
+     29.0,
+     33.0
+    ],
+    "cycle": 92.0,
+    "phases": [
+     "подход с юга",
+     "подход с востока",
+     "подход с запада"
+    ],
+    "offset": 38.0,
+    "east_phase": 2
+   },
+   {
+    "node": "MAN",
+    "greens": [
+     15.0,
+     13.0,
+     21.0,
+     23.0
+    ],
+    "cycle": 92.0,
+    "phases": [
+     "подход с севера",
+     "подход с юга",
+     "подход с востока",
+     "подход с запада"
+    ],
+    "offset": 53.3,
+    "east_phase": 3
+   },
+   {
+    "node": "KUL",
+    "greens": [
+     10.0,
+     12.0,
+     22.0,
+     28.0
+    ],
+    "cycle": 92.0,
+    "phases": [
+     "подход с севера",
+     "подход с юга",
+     "подход с востока",
+     "подход с запада"
+    ],
+    "offset": 1.3,
+    "east_phase": 3
+   },
+   {
+    "node": "BEI",
+    "greens": [
+     9.0,
+     10.0,
+     26.0,
+     27.0
+    ],
+    "cycle": 92.0,
+    "phases": [
+     "подход с севера",
+     "подход с юга",
+     "подход с востока",
+     "подход с запада"
+    ],
+    "offset": 19.3,
+    "east_phase": 3
+   }
+  ],
+  "plans": [
+   {
+    "node": "INT",
+    "name": "С–Ю по подходам, В–З по подходам",
+    "phases": [
+     "подход с юга",
+     "подход с востока",
+     "подход с запада"
+    ]
+   },
+   {
+    "node": "MAN",
+    "name": "С–Ю по подходам, В–З по подходам",
+    "phases": [
+     "подход с севера",
+     "подход с юга",
+     "подход с востока",
+     "подход с запада"
+    ]
+   },
+   {
+    "node": "KUL",
+    "name": "С–Ю по подходам, В–З по подходам",
+    "phases": [
+     "подход с севера",
+     "подход с юга",
+     "подход с востока",
+     "подход с запада"
+    ]
+   },
+   {
+    "node": "BEI",
+    "name": "С–Ю по подходам, В–З по подходам",
+    "phases": [
+     "подход с севера",
+     "подход с юга",
+     "подход с востока",
+     "подход с запада"
+    ]
+   }
+  ]
+ },
+ "summary": [
+  {
+   "load": "low",
+   "controller": "fixed",
+   "runs": 3,
+   "seeds": [
+    1,
+    2,
+    3
+   ],
+   "mean_wait": [
+    55.97,
+    0.24
+   ],
+   "mean_time_loss": [
+    75.07,
+    0.41
+   ],
+   "p95_travel_time": [
+    251.85,
+    1.87
+   ],
+   "total_time_loss_veh_h": [
+    37.48,
+    0.74
+   ],
+   "mean_stops": [
+    1.95,
+    0.02
+   ],
+   "throughput_veh_h": [
+    1969.07,
+    15.29
+   ],
+   "through_time_eb": [
+    204.88,
+    0.75
+   ],
+   "through_time_wb": [
+    218.88,
+    2.29
+   ],
+   "through_stops_eb": [
+    2.93,
+    0.03
+   ],
+   "through_stops_wb": [
+    3.03,
+    0.09
+   ],
+   "completed": [
+    1958.67,
+    17.79
+   ],
+   "unfinished": [
+    0.0,
+    0.0
+   ],
+   "demand_vehicles": [
+    1958.67,
+    17.79
+   ],
+   "queue_by_node": {
+    "INT": [
+     3.98,
+     0.17
+    ],
+    "MAN": [
+     10.99,
+     0.29
+    ],
+    "KUL": [
+     8.62,
+     0.29
+    ],
+    "BEI": [
+     7.06,
+     0.11
+    ]
+   },
+   "spill_seconds": {
+    "INT_to_MAN": [
+     0.0,
+     0.0
+    ],
+    "MAN_to_KUL": [
+     0.0,
+     0.0
+    ],
+    "KUL_to_BEI": [
+     0.0,
+     0.0
+    ],
+    "MAN_to_INT": [
+     0.0,
+     0.0
+    ],
+    "KUL_to_MAN": [
+     0.0,
+     0.0
+    ],
+    "BEI_to_KUL": [
+     0.0,
+     0.0
+    ]
+   },
+   "max_fill": {
+    "INT_to_MAN": [
+     0.12,
+     0.01
+    ],
+    "MAN_to_KUL": [
+     0.16,
+     0.03
+    ],
+    "KUL_to_BEI": [
+     0.27,
+     0.04
+    ],
+    "MAN_to_INT": [
+     0.11,
+     0.0
+    ],
+    "KUL_to_MAN": [
+     0.13,
+     0.01
+    ],
+    "BEI_to_KUL": [
+     0.21,
+     0.01
+    ]
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "clearance_hold_s": [
+    0.0,
+    0.0
+   ],
+   "collision_details": [],
+   "fallbacks": 0,
+   "decision_reasons": {
+    "фиксированный план": 2208
+   }
+  },
+  {
+   "load": "low",
+   "controller": "coordinated",
+   "runs": 3,
+   "seeds": [
+    1,
+    2,
+    3
+   ],
+   "mean_wait": [
+    56.59,
+    0.29
+   ],
+   "mean_time_loss": [
+    74.7,
+    0.22
+   ],
+   "p95_travel_time": [
+    265.33,
+    4.16
+   ],
+   "total_time_loss_veh_h": [
+    37.3,
+    0.48
+   ],
+   "mean_stops": [
+    1.67,
+    0.01
+   ],
+   "throughput_veh_h": [
+    1977.07,
+    14.21
+   ],
+   "through_time_eb": [
+    142.65,
+    0.81
+   ],
+   "through_time_wb": [
+    254.69,
+    3.06
+   ],
+   "through_stops_eb": [
+    0.95,
+    0.02
+   ],
+   "through_stops_wb": [
+    3.81,
+    0.02
+   ],
+   "completed": [
+    1958.67,
+    17.79
+   ],
+   "unfinished": [
+    0.0,
+    0.0
+   ],
+   "demand_vehicles": [
+    1958.67,
+    17.79
+   ],
+   "queue_by_node": {
+    "INT": [
+     6.9,
+     0.03
+    ],
+    "MAN": [
+     7.96,
+     0.29
+    ],
+    "KUL": [
+     10.41,
+     0.3
+    ],
+    "BEI": [
+     5.87,
+     0.09
+    ]
+   },
+   "spill_seconds": {
+    "INT_to_MAN": [
+     0.0,
+     0.0
+    ],
+    "MAN_to_KUL": [
+     0.0,
+     0.0
+    ],
+    "KUL_to_BEI": [
+     0.0,
+     0.0
+    ],
+    "MAN_to_INT": [
+     0.0,
+     0.0
+    ],
+    "KUL_to_MAN": [
+     0.0,
+     0.0
+    ],
+    "BEI_to_KUL": [
+     0.0,
+     0.0
+    ]
+   },
+   "max_fill": {
+    "INT_to_MAN": [
+     0.04,
+     0.01
+    ],
+    "MAN_to_KUL": [
+     0.06,
+     0.0
+    ],
+    "KUL_to_BEI": [
+     0.08,
+     0.01
+    ],
+    "MAN_to_INT": [
+     0.14,
+     0.01
+    ],
+    "KUL_to_MAN": [
+     0.15,
+     0.03
+    ],
+    "BEI_to_KUL": [
+     0.25,
+     0.02
+    ]
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "clearance_hold_s": [
+    0.0,
+    0.0
+   ],
+   "collision_details": [],
+   "fallbacks": 0,
+   "decision_reasons": {
+    "фиксированный план": 1873
+   }
+  },
+  {
+   "load": "low",
+   "controller": "adaptive",
+   "runs": 3,
+   "seeds": [
+    1,
+    2,
+    3
+   ],
+   "mean_wait": [
+    27.13,
+    1.42
+   ],
+   "mean_time_loss": [
+    44.82,
+    1.69
+   ],
+   "p95_travel_time": [
+    186.65,
+    4.49
+   ],
+   "total_time_loss_veh_h": [
+    22.38,
+    0.91
+   ],
+   "mean_stops": [
+    1.83,
+    0.06
+   ],
+   "throughput_veh_h": [
+    1976.0,
+    17.33
+   ],
+   "through_time_eb": [
+    161.65,
+    3.09
+   ],
+   "through_time_wb": [
+    167.37,
+    3.97
+   ],
+   "through_stops_eb": [
+    2.75,
+    0.2
+   ],
+   "through_stops_wb": [
+    2.84,
+    0.11
+   ],
+   "completed": [
+    1958.67,
+    17.79
+   ],
+   "unfinished": [
+    0.0,
+    0.0
+   ],
+   "demand_vehicles": [
+    1958.67,
+    17.79
+   ],
+   "queue_by_node": {
+    "INT": [
+     1.73,
+     0.21
+    ],
+    "MAN": [
+     5.62,
+     0.21
+    ],
+    "KUL": [
+     4.51,
+     0.45
+    ],
+    "BEI": [
+     3.18,
+     0.26
+    ]
+   },
+   "spill_seconds": {
+    "INT_to_MAN": [
+     0.0,
+     0.0
+    ],
+    "MAN_to_KUL": [
+     0.0,
+     0.0
+    ],
+    "KUL_to_BEI": [
+     0.0,
+     0.0
+    ],
+    "MAN_to_INT": [
+     0.0,
+     0.0
+    ],
+    "KUL_to_MAN": [
+     0.0,
+     0.0
+    ],
+    "BEI_to_KUL": [
+     0.0,
+     0.0
+    ]
+   },
+   "max_fill": {
+    "INT_to_MAN": [
+     0.09,
+     0.01
+    ],
+    "MAN_to_KUL": [
+     0.09,
+     0.01
+    ],
+    "KUL_to_BEI": [
+     0.17,
+     0.01
+    ],
+    "MAN_to_INT": [
+     0.08,
+     0.01
+    ],
+    "KUL_to_MAN": [
+     0.1,
+     0.01
+    ],
+    "BEI_to_KUL": [
+     0.16,
+     0.01
+    ]
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "clearance_hold_s": [
+    0.0,
+    0.0
+   ],
+   "collision_details": [],
+   "fallbacks": 0,
+   "decision_reasons": {
+    "защита от голодания": 83,
+    "максимум зелёного фазы": 41,
+    "разрыв потока": 2862,
+    "страж": 2
+   }
+  },
+  {
+   "load": "medium",
+   "controller": "fixed",
+   "runs": 3,
+   "seeds": [
+    1,
+    2,
+    3
+   ],
+   "mean_wait": [
+    65.94,
+    1.71
+   ],
+   "mean_time_loss": [
+    88.02,
+    2.08
+   ],
+   "p95_travel_time": [
+    264.97,
+    4.38
+   ],
+   "total_time_loss_veh_h": [
+    62.93,
+    2.44
+   ],
+   "mean_stops": [
+    2.11,
+    0.05
+   ],
+   "throughput_veh_h": [
+    2789.8,
+    30.87
+   ],
+   "through_time_eb": [
+    213.57,
+    1.7
+   ],
+   "through_time_wb": [
+    229.2,
+    0.99
+   ],
+   "through_stops_eb": [
+    3.04,
+    0.06
+   ],
+   "through_stops_wb": [
+    3.21,
+    0.02
+   ],
+   "completed": [
+    2803.67,
+    27.1
+   ],
+   "unfinished": [
+    0.0,
+    0.0
+   ],
+   "demand_vehicles": [
+    2803.67,
+    27.1
+   ],
+   "queue_by_node": {
+    "INT": [
+     5.77,
+     0.06
+    ],
+    "MAN": [
+     19.24,
+     0.99
+    ],
+    "KUL": [
+     14.57,
+     0.77
+    ],
+    "BEI": [
+     11.63,
+     0.44
+    ]
+   },
+   "spill_seconds": {
+    "INT_to_MAN": [
+     0.0,
+     0.0
+    ],
+    "MAN_to_KUL": [
+     0.0,
+     0.0
+    ],
+    "KUL_to_BEI": [
+     0.0,
+     0.0
+    ],
+    "MAN_to_INT": [
+     0.0,
+     0.0
+    ],
+    "KUL_to_MAN": [
+     0.0,
+     0.0
+    ],
+    "BEI_to_KUL": [
+     0.0,
+     0.0
+    ]
+   },
+   "max_fill": {
+    "INT_to_MAN": [
+     0.16,
+     0.03
+    ],
+    "MAN_to_KUL": [
+     0.21,
+     0.0
+    ],
+    "KUL_to_BEI": [
+     0.36,
+     0.06
+    ],
+    "MAN_to_INT": [
+     0.15,
+     0.01
+    ],
+    "KUL_to_MAN": [
+     0.16,
+     0.01
+    ],
+    "BEI_to_KUL": [
+     0.28,
+     0.02
+    ]
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "clearance_hold_s": [
+    0.0,
+    0.0
+   ],
+   "collision_details": [],
+   "fallbacks": 0,
+   "decision_reasons": {
+    "фиксированный план": 2222
+   }
+  },
+  {
+   "load": "medium",
+   "controller": "coordinated",
+   "runs": 3,
+   "seeds": [
+    1,
+    2,
+    3
+   ],
+   "mean_wait": [
+    63.4,
+    1.63
+   ],
+   "mean_time_loss": [
+    84.14,
+    1.77
+   ],
+   "p95_travel_time": [
+    275.38,
+    2.27
+   ],
+   "total_time_loss_veh_h": [
+    60.16,
+    2.22
+   ],
+   "mean_stops": [
+    1.79,
+    0.03
+   ],
+   "throughput_veh_h": [
+    2793.47,
+    25.88
+   ],
+   "through_time_eb": [
+    148.4,
+    0.41
+   ],
+   "through_time_wb": [
+    258.72,
+    2.54
+   ],
+   "through_stops_eb": [
+    1.05,
+    0.05
+   ],
+   "through_stops_wb": [
+    3.82,
+    0.03
+   ],
+   "completed": [
+    2803.67,
+    27.1
+   ],
+   "unfinished": [
+    0.0,
+    0.0
+   ],
+   "demand_vehicles": [
+    2803.67,
+    27.1
+   ],
+   "queue_by_node": {
+    "INT": [
+     9.79,
+     0.12
+    ],
+    "MAN": [
+     13.91,
+     0.73
+    ],
+    "KUL": [
+     16.11,
+     0.7
+    ],
+    "BEI": [
+     9.49,
+     0.39
+    ]
+   },
+   "spill_seconds": {
+    "INT_to_MAN": [
+     0.0,
+     0.0
+    ],
+    "MAN_to_KUL": [
+     0.0,
+     0.0
+    ],
+    "KUL_to_BEI": [
+     0.0,
+     0.0
+    ],
+    "MAN_to_INT": [
+     0.0,
+     0.0
+    ],
+    "KUL_to_MAN": [
+     0.0,
+     0.0
+    ],
+    "BEI_to_KUL": [
+     0.0,
+     0.0
+    ]
+   },
+   "max_fill": {
+    "INT_to_MAN": [
+     0.05,
+     0.01
+    ],
+    "MAN_to_KUL": [
+     0.08,
+     0.01
+    ],
+    "KUL_to_BEI": [
+     0.1,
+     0.03
+    ],
+    "MAN_to_INT": [
+     0.16,
+     0.01
+    ],
+    "KUL_to_MAN": [
+     0.19,
+     0.02
+    ],
+    "BEI_to_KUL": [
+     0.31,
+     0.01
+    ]
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "clearance_hold_s": [
+    0.0,
+    0.0
+   ],
+   "collision_details": [],
+   "fallbacks": 0,
+   "decision_reasons": {
+    "фиксированный план": 1881
+   }
+  },
+  {
+   "load": "medium",
+   "controller": "adaptive",
+   "runs": 3,
+   "seeds": [
+    1,
+    2,
+    3
+   ],
+   "mean_wait": [
+    35.62,
+    1.9
+   ],
+   "mean_time_loss": [
+    55.67,
+    2.13
+   ],
+   "p95_travel_time": [
+    205.37,
+    5.84
+   ],
+   "total_time_loss_veh_h": [
+    39.81,
+    2.09
+   ],
+   "mean_stops": [
+    1.94,
+    0.03
+   ],
+   "throughput_veh_h": [
+    2801.1,
+    30.87
+   ],
+   "through_time_eb": [
+    174.69,
+    2.94
+   ],
+   "through_time_wb": [
+    182.6,
+    4.75
+   ],
+   "through_stops_eb": [
+    2.94,
+    0.17
+   ],
+   "through_stops_wb": [
+    3.16,
+    0.09
+   ],
+   "completed": [
+    2803.67,
+    27.1
+   ],
+   "unfinished": [
+    0.0,
+    0.0
+   ],
+   "demand_vehicles": [
+    2803.67,
+    27.1
+   ],
+   "queue_by_node": {
+    "INT": [
+     2.93,
+     0.06
+    ],
+    "MAN": [
+     10.79,
+     0.52
+    ],
+    "KUL": [
+     8.01,
+     0.94
+    ],
+    "BEI": [
+     6.2,
+     0.46
+    ]
+   },
+   "spill_seconds": {
+    "INT_to_MAN": [
+     0.0,
+     0.0
+    ],
+    "MAN_to_KUL": [
+     0.0,
+     0.0
+    ],
+    "KUL_to_BEI": [
+     0.0,
+     0.0
+    ],
+    "MAN_to_INT": [
+     0.0,
+     0.0
+    ],
+    "KUL_to_MAN": [
+     0.0,
+     0.0
+    ],
+    "BEI_to_KUL": [
+     0.0,
+     0.0
+    ]
+   },
+   "max_fill": {
+    "INT_to_MAN": [
+     0.12,
+     0.0
+    ],
+    "MAN_to_KUL": [
+     0.14,
+     0.01
+    ],
+    "KUL_to_BEI": [
+     0.3,
+     0.05
+    ],
+    "MAN_to_INT": [
+     0.1,
+     0.01
+    ],
+    "KUL_to_MAN": [
+     0.14,
+     0.02
+    ],
+    "BEI_to_KUL": [
+     0.26,
+     0.06
+    ]
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "clearance_hold_s": [
+    0.0,
+    0.0
+   ],
+   "collision_details": [],
+   "fallbacks": 0,
+   "decision_reasons": {
+    "защита от голодания": 49,
+    "максимум зелёного фазы": 46,
+    "разрыв потока": 2596
+   }
+  },
+  {
+   "load": "high",
+   "controller": "fixed",
+   "runs": 3,
+   "seeds": [
+    1,
+    2,
+    3
+   ],
+   "mean_wait": [
+    142.03,
+    14.55
+   ],
+   "mean_time_loss": [
+    180.22,
+    18.41
+   ],
+   "p95_travel_time": [
+    479.67,
+    10.02
+   ],
+   "total_time_loss_veh_h": [
+    164.04,
+    17.14
+   ],
+   "mean_stops": [
+    3.46,
+    0.31
+   ],
+   "throughput_veh_h": [
+    3441.07,
+    20.47
+   ],
+   "through_time_eb": [
+    267.84,
+    23.72
+   ],
+   "through_time_wb": [
+    335.07,
+    38.09
+   ],
+   "through_stops_eb": [
+    3.93,
+    0.43
+   ],
+   "through_stops_wb": [
+    4.8,
+    0.69
+   ],
+   "completed": [
+    3603.33,
+    33.26
+   ],
+   "unfinished": [
+    0.0,
+    0.0
+   ],
+   "demand_vehicles": [
+    3603.33,
+    33.26
+   ],
+   "queue_by_node": {
+    "INT": [
+     8.54,
+     0.38
+    ],
+    "MAN": [
+     44.29,
+     7.07
+    ],
+    "KUL": [
+     52.34,
+     5.25
+    ],
+    "BEI": [
+     29.19,
+     5.53
+    ]
+   },
+   "spill_seconds": {
+    "INT_to_MAN": [
+     0.0,
+     0.0
+    ],
+    "MAN_to_KUL": [
+     0.0,
+     0.0
+    ],
+    "KUL_to_BEI": [
+     0.0,
+     0.0
+    ],
+    "MAN_to_INT": [
+     0.0,
+     0.0
+    ],
+    "KUL_to_MAN": [
+     0.0,
+     0.0
+    ],
+    "BEI_to_KUL": [
+     0.0,
+     0.0
+    ]
+   },
+   "max_fill": {
+    "INT_to_MAN": [
+     0.24,
+     0.02
+    ],
+    "MAN_to_KUL": [
+     0.32,
+     0.05
+    ],
+    "KUL_to_BEI": [
+     0.5,
+     0.15
+    ],
+    "MAN_to_INT": [
+     0.16,
+     0.01
+    ],
+    "KUL_to_MAN": [
+     0.31,
+     0.03
+    ],
+    "BEI_to_KUL": [
+     0.44,
+     0.07
+    ]
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "clearance_hold_s": [
+    0.0,
+    0.0
+   ],
+   "collision_details": [],
+   "fallbacks": 0,
+   "decision_reasons": {
+    "фиксированный план": 2597
+   }
+  },
+  {
+   "load": "high",
+   "controller": "coordinated",
+   "runs": 3,
+   "seeds": [
+    1,
+    2,
+    3
+   ],
+   "mean_wait": [
+    120.66,
+    8.83
+   ],
+   "mean_time_loss": [
+    152.88,
+    10.76
+   ],
+   "p95_travel_time": [
+    437.8,
+    10.24
+   ],
+   "total_time_loss_veh_h": [
+    139.65,
+    9.98
+   ],
+   "mean_stops": [
+    2.72,
+    0.17
+   ],
+   "throughput_veh_h": [
+    3488.0,
+    6.01
+   ],
+   "through_time_eb": [
+    186.23,
+    22.16
+   ],
+   "through_time_wb": [
+    348.59,
+    15.42
+   ],
+   "through_stops_eb": [
+    1.88,
+    0.57
+   ],
+   "through_stops_wb": [
+    4.9,
+    0.21
+   ],
+   "completed": [
+    3603.33,
+    33.26
+   ],
+   "unfinished": [
+    0.0,
+    0.0
+   ],
+   "demand_vehicles": [
+    3603.33,
+    33.26
+   ],
+   "queue_by_node": {
+    "INT": [
+     12.26,
+     0.34
+    ],
+    "MAN": [
+     43.0,
+     6.61
+    ],
+    "KUL": [
+     41.44,
+     4.03
+    ],
+    "BEI": [
+     18.63,
+     3.46
+    ]
+   },
+   "spill_seconds": {
+    "INT_to_MAN": [
+     0.0,
+     0.0
+    ],
+    "MAN_to_KUL": [
+     0.0,
+     0.0
+    ],
+    "KUL_to_BEI": [
+     0.0,
+     0.0
+    ],
+    "MAN_to_INT": [
+     0.0,
+     0.0
+    ],
+    "KUL_to_MAN": [
+     0.0,
+     0.0
+    ],
+    "BEI_to_KUL": [
+     0.0,
+     0.0
+    ]
+   },
+   "max_fill": {
+    "INT_to_MAN": [
+     0.14,
+     0.08
+    ],
+    "MAN_to_KUL": [
+     0.11,
+     0.03
+    ],
+    "KUL_to_BEI": [
+     0.29,
+     0.15
+    ],
+    "MAN_to_INT": [
+     0.17,
+     0.01
+    ],
+    "KUL_to_MAN": [
+     0.38,
+     0.01
+    ],
+    "BEI_to_KUL": [
+     0.45,
+     0.05
+    ]
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "clearance_hold_s": [
+    0.0,
+    0.0
+   ],
+   "collision_details": [],
+   "fallbacks": 0,
+   "decision_reasons": {
+    "фиксированный план": 2130
+   }
+  },
+  {
+   "load": "high",
+   "controller": "adaptive",
+   "runs": 3,
+   "seeds": [
+    1,
+    2,
+    3
+   ],
+   "mean_wait": [
+    65.25,
+    5.12
+   ],
+   "mean_time_loss": [
+    89.94,
+    6.01
+   ],
+   "p95_travel_time": [
+    260.0,
+    7.21
+   ],
+   "total_time_loss_veh_h": [
+    82.77,
+    6.24
+   ],
+   "mean_stops": [
+    2.21,
+    0.06
+   ],
+   "throughput_veh_h": [
+    3577.43,
+    40.56
+   ],
+   "through_time_eb": [
+    219.84,
+    6.15
+   ],
+   "through_time_wb": [
+    224.19,
+    4.43
+   ],
+   "through_stops_eb": [
+    3.38,
+    0.06
+   ],
+   "through_stops_wb": [
+    3.4,
+    0.08
+   ],
+   "completed": [
+    3603.33,
+    33.26
+   ],
+   "unfinished": [
+    0.0,
+    0.0
+   ],
+   "demand_vehicles": [
+    3603.33,
+    33.26
+   ],
+   "queue_by_node": {
+    "INT": [
+     4.36,
+     0.36
+    ],
+    "MAN": [
+     24.97,
+     3.73
+    ],
+    "KUL": [
+     22.69,
+     1.04
+    ],
+    "BEI": [
+     13.14,
+     1.65
+    ]
+   },
+   "spill_seconds": {
+    "INT_to_MAN": [
+     0.0,
+     0.0
+    ],
+    "MAN_to_KUL": [
+     0.0,
+     0.0
+    ],
+    "KUL_to_BEI": [
+     0.0,
+     0.0
+    ],
+    "MAN_to_INT": [
+     0.0,
+     0.0
+    ],
+    "KUL_to_MAN": [
+     0.0,
+     0.0
+    ],
+    "BEI_to_KUL": [
+     0.0,
+     0.0
+    ]
+   },
+   "max_fill": {
+    "INT_to_MAN": [
+     0.22,
+     0.02
+    ],
+    "MAN_to_KUL": [
+     0.24,
+     0.03
+    ],
+    "KUL_to_BEI": [
+     0.43,
+     0.03
+    ],
+    "MAN_to_INT": [
+     0.17,
+     0.02
+    ],
+    "KUL_to_MAN": [
+     0.21,
+     0.02
+    ],
+    "BEI_to_KUL": [
+     0.39,
+     0.02
+    ]
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "clearance_hold_s": [
+    0.0,
+    0.0
+   ],
+   "collision_details": [],
+   "fallbacks": 0,
+   "decision_reasons": {
+    "защита от голодания": 125,
+    "максимум зелёного фазы": 367,
+    "разрыв потока": 1660,
+    "страж": 5
+   }
+  },
+  {
+   "load": "incident",
+   "controller": "fixed",
+   "runs": 3,
+   "seeds": [
+    1,
+    2,
+    3
+   ],
+   "mean_wait": [
+    217.88,
+    14.23
+   ],
+   "mean_time_loss": [
+    311.93,
+    25.83
+   ],
+   "p95_travel_time": [
+    710.3,
+    31.54
+   ],
+   "total_time_loss_veh_h": [
+    27.17,
+    0.67
+   ],
+   "mean_stops": [
+    7.68,
+    0.92
+   ],
+   "throughput_veh_h": [
+    1516.0,
+    84.07
+   ],
+   "through_time_eb": [
+    547.49,
+    46.9
+   ],
+   "through_time_wb": [
+    212.63,
+    34.67
+   ],
+   "through_stops_eb": [
+    11.31,
+    1.62
+   ],
+   "through_stops_wb": [
+    2.76,
+    0.5
+   ],
+   "completed": [
+    500.67,
+    19.86
+   ],
+   "unfinished": [
+    0.0,
+    0.0
+   ],
+   "demand_vehicles": [
+    500.67,
+    19.86
+   ],
+   "queue_by_node": {
+    "INT": [
+     28.25,
+     5.71
+    ],
+    "MAN": [
+     34.67,
+     1.91
+    ],
+    "KUL": [
+     6.52,
+     1.03
+    ],
+    "BEI": [
+     29.95,
+     4.23
+    ]
+   },
+   "spill_seconds": {
+    "INT_to_MAN": [
+     0.0,
+     0.0
+    ],
+    "MAN_to_KUL": [
+     0.0,
+     0.0
+    ],
+    "KUL_to_BEI": [
+     41.33,
+     42.02
+    ],
+    "MAN_to_INT": [
+     0.0,
+     0.0
+    ],
+    "KUL_to_MAN": [
+     0.0,
+     0.0
+    ],
+    "BEI_to_KUL": [
+     0.0,
+     0.0
+    ]
+   },
+   "max_fill": {
+    "INT_to_MAN": [
+     0.46,
+     0.06
+    ],
+    "MAN_to_KUL": [
+     0.17,
+     0.01
+    ],
+    "KUL_to_BEI": [
+     0.9,
+     0.1
+    ],
+    "MAN_to_INT": [
+     0.04,
+     0.02
+    ],
+    "KUL_to_MAN": [
+     0.09,
+     0.04
+    ],
+    "BEI_to_KUL": [
+     0.15,
+     0.12
+    ]
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "clearance_hold_s": [
+    134.67,
+    114.03
+   ],
+   "collision_details": [],
+   "fallbacks": 0,
+   "decision_reasons": {
+    "продление «все красные»": 3,
+    "фиксированный план": 931
+   }
+  },
+  {
+   "load": "incident",
+   "controller": "coordinated",
+   "runs": 3,
+   "seeds": [
+    1,
+    2,
+    3
+   ],
+   "mean_wait": [
+    209.63,
+    23.17
+   ],
+   "mean_time_loss": [
+    284.64,
+    26.79
+   ],
+   "p95_travel_time": [
+    630.78,
+    13.07
+   ],
+   "total_time_loss_veh_h": [
+    25.9,
+    1.72
+   ],
+   "mean_stops": [
+    5.67,
+    0.31
+   ],
+   "throughput_veh_h": [
+    1666.0,
+    19.29
+   ],
+   "through_time_eb": [
+    506.43,
+    39.74
+   ],
+   "through_time_wb": [
+    219.84,
+    16.2
+   ],
+   "through_stops_eb": [
+    7.99,
+    0.48
+   ],
+   "through_stops_wb": [
+    3.49,
+    0.11
+   ],
+   "completed": [
+    500.67,
+    19.86
+   ],
+   "unfinished": [
+    0.0,
+    0.0
+   ],
+   "demand_vehicles": [
+    500.67,
+    19.86
+   ],
+   "queue_by_node": {
+    "INT": [
+     23.11,
+     6.18
+    ],
+    "MAN": [
+     40.01,
+     6.7
+    ],
+    "KUL": [
+     0.43,
+     0.24
+    ],
+    "BEI": [
+     36.6,
+     1.35
+    ]
+   },
+   "spill_seconds": {
+    "INT_to_MAN": [
+     59.0,
+     51.12
+    ],
+    "MAN_to_KUL": [
+     0.0,
+     0.0
+    ],
+    "KUL_to_BEI": [
+     28.33,
+     44.81
+    ],
+    "MAN_to_INT": [
+     0.0,
+     0.0
+    ],
+    "KUL_to_MAN": [
+     0.0,
+     0.0
+    ],
+    "BEI_to_KUL": [
+     0.0,
+     0.0
+    ]
+   },
+   "max_fill": {
+    "INT_to_MAN": [
+     0.57,
+     0.07
+    ],
+    "MAN_to_KUL": [
+     0.02,
+     0.02
+    ],
+    "KUL_to_BEI": [
+     0.91,
+     0.07
+    ],
+    "MAN_to_INT": [
+     0.07,
+     0.03
+    ],
+    "KUL_to_MAN": [
+     0.1,
+     0.03
+    ],
+    "BEI_to_KUL": [
+     0.06,
+     0.01
+    ]
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "clearance_hold_s": [
+    233.67,
+    1.15
+   ],
+   "collision_details": [],
+   "fallbacks": 0,
+   "decision_reasons": {
+    "продление «все красные»": 3,
+    "фиксированный план": 735
+   }
+  },
+  {
+   "load": "incident",
+   "controller": "adaptive",
+   "runs": 3,
+   "seeds": [
+    1,
+    2,
+    3
+   ],
+   "mean_wait": [
+    22.08,
+    4.33
+   ],
+   "mean_time_loss": [
+    46.86,
+    8.14
+   ],
+   "p95_travel_time": [
+    249.83,
+    26.43
+   ],
+   "total_time_loss_veh_h": [
+    4.39,
+    0.93
+   ],
+   "mean_stops": [
+    1.52,
+    0.16
+   ],
+   "throughput_veh_h": [
+    2304.0,
+    114.94
+   ],
+   "through_time_eb": [
+    161.18,
+    12.5
+   ],
+   "through_time_wb": [
+    162.82,
+    22.3
+   ],
+   "through_stops_eb": [
+    2.01,
+    0.25
+   ],
+   "through_stops_wb": [
+    2.15,
+    0.61
+   ],
+   "completed": [
+    500.67,
+    19.86
+   ],
+   "unfinished": [
+    0.0,
+    0.0
+   ],
+   "demand_vehicles": [
+    500.67,
+    19.86
+   ],
+   "queue_by_node": {
+    "INT": [
+     0.86,
+     0.15
+    ],
+    "MAN": [
+     0.61,
+     0.12
+    ],
+    "KUL": [
+     6.72,
+     4.86
+    ],
+    "BEI": [
+     27.51,
+     3.35
+    ]
+   },
+   "spill_seconds": {
+    "INT_to_MAN": [
+     0.0,
+     0.0
+    ],
+    "MAN_to_KUL": [
+     0.0,
+     0.0
+    ],
+    "KUL_to_BEI": [
+     114.67,
+     49.08
+    ],
+    "MAN_to_INT": [
+     0.0,
+     0.0
+    ],
+    "KUL_to_MAN": [
+     0.0,
+     0.0
+    ],
+    "BEI_to_KUL": [
+     0.0,
+     0.0
+    ]
+   },
+   "max_fill": {
+    "INT_to_MAN": [
+     0.07,
+     0.01
+    ],
+    "MAN_to_KUL": [
+     0.26,
+     0.15
+    ],
+    "KUL_to_BEI": [
+     0.98,
+     0.01
+    ],
+    "MAN_to_INT": [
+     0.02,
+     0.0
+    ],
+    "KUL_to_MAN": [
+     0.02,
+     0.01
+    ],
+    "BEI_to_KUL": [
+     0.1,
+     0.06
+    ]
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "clearance_hold_s": [
+    260.0,
+    17.35
+   ],
+   "collision_details": [],
+   "fallbacks": 0,
+   "decision_reasons": {
+    "защита от голодания": 14,
+    "максимум зелёного фазы": 78,
+    "продление «все красные»": 3,
+    "разрыв потока": 229,
+    "страж": 20
+   }
+  }
+ ],
+ "runs": [
+  {
+   "corridor": "chui-corridor",
+   "controller": "fixed",
+   "load": "low",
+   "seed": 1,
+   "demand_vehicles": 1955,
+   "completed": 1955,
+   "unfinished": 0,
+   "mean_wait": 56.22,
+   "mean_time_loss": 75.36,
+   "p95_travel_time": 254.0,
+   "total_time_loss_veh_h": 37.7,
+   "mean_stops": 1.96,
+   "throughput_veh_h": 1975.6,
+   "through_time_eb": 204.15,
+   "through_time_wb": 221.41,
+   "through_stops_eb": 2.92,
+   "through_stops_wb": 3.13,
+   "queue_by_node": {
+    "INT": 4.17,
+    "MAN": 11.28,
+    "KUL": 8.46,
+    "BEI": 6.94
+   },
+   "spill_seconds": {
+    "INT_to_MAN": 0,
+    "MAN_to_KUL": 0,
+    "KUL_to_BEI": 0,
+    "MAN_to_INT": 0,
+    "KUL_to_MAN": 0,
+    "BEI_to_KUL": 0
+   },
+   "max_fill": {
+    "INT_to_MAN": 0.106,
+    "MAN_to_KUL": 0.151,
+    "KUL_to_BEI": 0.228,
+    "MAN_to_INT": 0.106,
+    "KUL_to_MAN": 0.144,
+    "BEI_to_KUL": 0.228
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "switches": 740,
+   "decision_reasons": {
+    "фиксированный план": 740
+   },
+   "plans": null,
+   "sim_end": 3821.0,
+   "clearance_hold_s": 0.0,
+   "collision_details": []
+  },
+  {
+   "corridor": "chui-corridor",
+   "controller": "coordinated",
+   "load": "low",
+   "seed": 1,
+   "demand_vehicles": 1955,
+   "completed": 1955,
+   "unfinished": 0,
+   "mean_wait": 56.45,
+   "mean_time_loss": 74.52,
+   "p95_travel_time": 270.0,
+   "total_time_loss_veh_h": 37.28,
+   "mean_stops": 1.66,
+   "throughput_veh_h": 1977.8,
+   "through_time_eb": 143.57,
+   "through_time_wb": 258.21,
+   "through_stops_eb": 0.97,
+   "through_stops_wb": 3.82,
+   "queue_by_node": {
+    "INT": 6.87,
+    "MAN": 8.28,
+    "KUL": 10.16,
+    "BEI": 5.81
+   },
+   "spill_seconds": {
+    "INT_to_MAN": 0,
+    "MAN_to_KUL": 0,
+    "KUL_to_BEI": 0,
+    "MAN_to_INT": 0,
+    "KUL_to_MAN": 0,
+    "BEI_to_KUL": 0
+   },
+   "max_fill": {
+    "INT_to_MAN": 0.057,
+    "MAN_to_KUL": 0.061,
+    "KUL_to_BEI": 0.071,
+    "MAN_to_INT": 0.156,
+    "KUL_to_MAN": 0.182,
+    "BEI_to_KUL": 0.257
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "switches": 629,
+   "decision_reasons": {
+    "фиксированный план": 629
+   },
+   "plans": null,
+   "sim_end": 3859.0,
+   "clearance_hold_s": 0.0,
+   "collision_details": []
+  },
+  {
+   "corridor": "chui-corridor",
+   "controller": "adaptive",
+   "load": "low",
+   "seed": 1,
+   "demand_vehicles": 1955,
+   "completed": 1955,
+   "unfinished": 0,
+   "mean_wait": 25.5,
+   "mean_time_loss": 42.87,
+   "p95_travel_time": 182.0,
+   "total_time_loss_veh_h": 21.45,
+   "mean_stops": 1.76,
+   "throughput_veh_h": 1985.5,
+   "through_time_eb": 158.34,
+   "through_time_wb": 163.55,
+   "through_stops_eb": 2.53,
+   "through_stops_wb": 2.71,
+   "queue_by_node": {
+    "INT": 1.61,
+    "MAN": 5.65,
+    "KUL": 3.99,
+    "BEI": 2.94
+   },
+   "spill_seconds": {
+    "INT_to_MAN": 0,
+    "MAN_to_KUL": 0,
+    "KUL_to_BEI": 0,
+    "MAN_to_INT": 0,
+    "KUL_to_MAN": 0,
+    "BEI_to_KUL": 0
+   },
+   "max_fill": {
+    "INT_to_MAN": 0.078,
+    "MAN_to_KUL": 0.098,
+    "KUL_to_BEI": 0.185,
+    "MAN_to_INT": 0.071,
+    "KUL_to_MAN": 0.114,
+    "BEI_to_KUL": 0.171
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "switches": 993,
+   "decision_reasons": {
+    "максимум зелёного фазы": 13,
+    "разрыв потока": 952,
+    "защита от голодания": 26,
+    "страж": 2
+   },
+   "plans": null,
+   "sim_end": 3772.0,
+   "clearance_hold_s": 0.0,
+   "collision_details": []
+  },
+  {
+   "corridor": "chui-corridor",
+   "controller": "fixed",
+   "load": "low",
+   "seed": 2,
+   "demand_vehicles": 1978,
+   "completed": 1978,
+   "unfinished": 0,
+   "mean_wait": 55.93,
+   "mean_time_loss": 75.26,
+   "p95_travel_time": 250.95,
+   "total_time_loss_veh_h": 38.09,
+   "mean_stops": 1.95,
+   "throughput_veh_h": 1980.0,
+   "through_time_eb": 204.84,
+   "through_time_wb": 218.27,
+   "through_stops_eb": 2.91,
+   "through_stops_wb": 2.95,
+   "queue_by_node": {
+    "INT": 3.92,
+    "MAN": 10.7,
+    "KUL": 8.95,
+    "BEI": 7.15
+   },
+   "spill_seconds": {
+    "INT_to_MAN": 0,
+    "MAN_to_KUL": 0,
+    "KUL_to_BEI": 0,
+    "MAN_to_INT": 0,
+    "KUL_to_MAN": 0,
+    "BEI_to_KUL": 0
+   },
+   "max_fill": {
+    "INT_to_MAN": 0.113,
+    "MAN_to_KUL": 0.197,
+    "KUL_to_BEI": 0.314,
+    "MAN_to_INT": 0.113,
+    "KUL_to_MAN": 0.129,
+    "BEI_to_KUL": 0.214
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "switches": 734,
+   "decision_reasons": {
+    "фиксированный план": 734
+   },
+   "plans": null,
+   "sim_end": 3793.0,
+   "clearance_hold_s": 0.0,
+   "collision_details": []
+  },
+  {
+   "corridor": "chui-corridor",
+   "controller": "coordinated",
+   "load": "low",
+   "seed": 2,
+   "demand_vehicles": 1978,
+   "completed": 1978,
+   "unfinished": 0,
+   "mean_wait": 56.4,
+   "mean_time_loss": 74.64,
+   "p95_travel_time": 264.0,
+   "total_time_loss_veh_h": 37.78,
+   "mean_stops": 1.67,
+   "throughput_veh_h": 1990.9,
+   "through_time_eb": 142.06,
+   "through_time_wb": 253.17,
+   "through_stops_eb": 0.93,
+   "through_stops_wb": 3.79,
+   "queue_by_node": {
+    "INT": 6.91,
+    "MAN": 7.87,
+    "KUL": 10.74,
+    "BEI": 5.82
+   },
+   "spill_seconds": {
+    "INT_to_MAN": 0,
+    "MAN_to_KUL": 0,
+    "KUL_to_BEI": 0,
+    "MAN_to_INT": 0,
+    "KUL_to_MAN": 0,
+    "BEI_to_KUL": 0
+   },
+   "max_fill": {
+    "INT_to_MAN": 0.035,
+    "MAN_to_KUL": 0.053,
+    "KUL_to_BEI": 0.086,
+    "MAN_to_INT": 0.127,
+    "KUL_to_MAN": 0.129,
+    "BEI_to_KUL": 0.228
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "switches": 617,
+   "decision_reasons": {
+    "фиксированный план": 617
+   },
+   "plans": null,
+   "sim_end": 3789.0,
+   "clearance_hold_s": 0.0,
+   "collision_details": []
+  },
+  {
+   "corridor": "chui-corridor",
+   "controller": "adaptive",
+   "load": "low",
+   "seed": 2,
+   "demand_vehicles": 1978,
+   "completed": 1978,
+   "unfinished": 0,
+   "mean_wait": 28.05,
+   "mean_time_loss": 45.96,
+   "p95_travel_time": 190.95,
+   "total_time_loss_veh_h": 23.26,
+   "mean_stops": 1.87,
+   "throughput_veh_h": 1986.5,
+   "through_time_eb": 164.45,
+   "through_time_wb": 171.48,
+   "through_stops_eb": 2.93,
+   "through_stops_wb": 2.91,
+   "queue_by_node": {
+    "INT": 1.97,
+    "MAN": 5.81,
+    "KUL": 4.75,
+    "BEI": 3.14
+   },
+   "spill_seconds": {
+    "INT_to_MAN": 0,
+    "MAN_to_KUL": 0,
+    "KUL_to_BEI": 0,
+    "MAN_to_INT": 0,
+    "KUL_to_MAN": 0,
+    "BEI_to_KUL": 0
+   },
+   "max_fill": {
+    "INT_to_MAN": 0.085,
+    "MAN_to_KUL": 0.083,
+    "KUL_to_BEI": 0.157,
+    "MAN_to_INT": 0.071,
+    "KUL_to_MAN": 0.091,
+    "BEI_to_KUL": 0.157
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "switches": 991,
+   "decision_reasons": {
+    "максимум зелёного фазы": 15,
+    "разрыв потока": 945,
+    "защита от голодания": 31
+   },
+   "plans": null,
+   "sim_end": 3720.0,
+   "clearance_hold_s": 0.0,
+   "collision_details": []
+  },
+  {
+   "corridor": "chui-corridor",
+   "controller": "fixed",
+   "load": "low",
+   "seed": 3,
+   "demand_vehicles": 1943,
+   "completed": 1943,
+   "unfinished": 0,
+   "mean_wait": 55.75,
+   "mean_time_loss": 74.6,
+   "p95_travel_time": 250.6,
+   "total_time_loss_veh_h": 36.66,
+   "mean_stops": 1.93,
+   "throughput_veh_h": 1951.6,
+   "through_time_eb": 205.64,
+   "through_time_wb": 216.96,
+   "through_stops_eb": 2.96,
+   "through_stops_wb": 3.0,
+   "queue_by_node": {
+    "INT": 3.84,
+    "MAN": 10.98,
+    "KUL": 8.45,
+    "BEI": 7.08
+   },
+   "spill_seconds": {
+    "INT_to_MAN": 0,
+    "MAN_to_KUL": 0,
+    "KUL_to_BEI": 0,
+    "MAN_to_INT": 0,
+    "KUL_to_MAN": 0,
+    "BEI_to_KUL": 0
+   },
+   "max_fill": {
+    "INT_to_MAN": 0.134,
+    "MAN_to_KUL": 0.144,
+    "KUL_to_BEI": 0.271,
+    "MAN_to_INT": 0.113,
+    "KUL_to_MAN": 0.114,
+    "BEI_to_KUL": 0.2
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "switches": 734,
+   "decision_reasons": {
+    "фиксированный план": 734
+   },
+   "plans": null,
+   "sim_end": 3789.0,
+   "clearance_hold_s": 0.0,
+   "collision_details": []
+  },
+  {
+   "corridor": "chui-corridor",
+   "controller": "coordinated",
+   "load": "low",
+   "seed": 3,
+   "demand_vehicles": 1943,
+   "completed": 1943,
+   "unfinished": 0,
+   "mean_wait": 56.92,
+   "mean_time_loss": 74.94,
+   "p95_travel_time": 262.0,
+   "total_time_loss_veh_h": 36.83,
+   "mean_stops": 1.68,
+   "throughput_veh_h": 1962.5,
+   "through_time_eb": 142.32,
+   "through_time_wb": 252.68,
+   "through_stops_eb": 0.95,
+   "through_stops_wb": 3.82,
+   "queue_by_node": {
+    "INT": 6.92,
+    "MAN": 7.73,
+    "KUL": 10.33,
+    "BEI": 5.97
+   },
+   "spill_seconds": {
+    "INT_to_MAN": 0,
+    "MAN_to_KUL": 0,
+    "KUL_to_BEI": 0,
+    "MAN_to_INT": 0,
+    "KUL_to_MAN": 0,
+    "BEI_to_KUL": 0
+   },
+   "max_fill": {
+    "INT_to_MAN": 0.042,
+    "MAN_to_KUL": 0.053,
+    "KUL_to_BEI": 0.071,
+    "MAN_to_INT": 0.141,
+    "KUL_to_MAN": 0.136,
+    "BEI_to_KUL": 0.257
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "switches": 627,
+   "decision_reasons": {
+    "фиксированный план": 627
+   },
+   "plans": null,
+   "sim_end": 3854.0,
+   "clearance_hold_s": 0.0,
+   "collision_details": []
+  },
+  {
+   "corridor": "chui-corridor",
+   "controller": "adaptive",
+   "load": "low",
+   "seed": 3,
+   "demand_vehicles": 1943,
+   "completed": 1943,
+   "unfinished": 0,
+   "mean_wait": 27.85,
+   "mean_time_loss": 45.62,
+   "p95_travel_time": 187.0,
+   "total_time_loss_veh_h": 22.42,
+   "mean_stops": 1.86,
+   "throughput_veh_h": 1956.0,
+   "through_time_eb": 162.15,
+   "through_time_wb": 167.09,
+   "through_stops_eb": 2.8,
+   "through_stops_wb": 2.89,
+   "queue_by_node": {
+    "INT": 1.62,
+    "MAN": 5.4,
+    "KUL": 4.78,
+    "BEI": 3.45
+   },
+   "spill_seconds": {
+    "INT_to_MAN": 0,
+    "MAN_to_KUL": 0,
+    "KUL_to_BEI": 0,
+    "MAN_to_INT": 0,
+    "KUL_to_MAN": 0,
+    "BEI_to_KUL": 0
+   },
+   "max_fill": {
+    "INT_to_MAN": 0.092,
+    "MAN_to_KUL": 0.091,
+    "KUL_to_BEI": 0.171,
+    "MAN_to_INT": 0.085,
+    "KUL_to_MAN": 0.091,
+    "BEI_to_KUL": 0.143
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "switches": 1004,
+   "decision_reasons": {
+    "максимум зелёного фазы": 13,
+    "разрыв потока": 965,
+    "защита от голодания": 26
+   },
+   "plans": null,
+   "sim_end": 3740.0,
+   "clearance_hold_s": 0.0,
+   "collision_details": []
+  },
+  {
+   "corridor": "chui-corridor",
+   "controller": "fixed",
+   "load": "medium",
+   "seed": 1,
+   "demand_vehicles": 2778,
+   "completed": 2778,
+   "unfinished": 0,
+   "mean_wait": 65.08,
+   "mean_time_loss": 87.04,
+   "p95_travel_time": 262.0,
+   "total_time_loss_veh_h": 61.39,
+   "mean_stops": 2.1,
+   "throughput_veh_h": 2756.7,
+   "through_time_eb": 213.18,
+   "through_time_wb": 228.06,
+   "through_stops_eb": 3.0,
+   "through_stops_wb": 3.19,
+   "queue_by_node": {
+    "INT": 5.8,
+    "MAN": 18.36,
+    "KUL": 14.74,
+    "BEI": 11.12
+   },
+   "spill_seconds": {
+    "INT_to_MAN": 0,
+    "MAN_to_KUL": 0,
+    "KUL_to_BEI": 0,
+    "MAN_to_INT": 0,
+    "KUL_to_MAN": 0,
+    "BEI_to_KUL": 0
+   },
+   "max_fill": {
+    "INT_to_MAN": 0.184,
+    "MAN_to_KUL": 0.212,
+    "KUL_to_BEI": 0.314,
+    "MAN_to_INT": 0.141,
+    "KUL_to_MAN": 0.166,
+    "BEI_to_KUL": 0.285
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "switches": 734,
+   "decision_reasons": {
+    "фиксированный план": 734
+   },
+   "plans": null,
+   "sim_end": 3796.0,
+   "clearance_hold_s": 0.0,
+   "collision_details": []
+  },
+  {
+   "corridor": "chui-corridor",
+   "controller": "coordinated",
+   "load": "medium",
+   "seed": 1,
+   "demand_vehicles": 2778,
+   "completed": 2778,
+   "unfinished": 0,
+   "mean_wait": 62.3,
+   "mean_time_loss": 82.92,
+   "p95_travel_time": 278.0,
+   "total_time_loss_veh_h": 58.48,
+   "mean_stops": 1.77,
+   "throughput_veh_h": 2769.8,
+   "through_time_eb": 148.38,
+   "through_time_wb": 261.54,
+   "through_stops_eb": 0.99,
+   "through_stops_wb": 3.85,
+   "queue_by_node": {
+    "INT": 9.66,
+    "MAN": 13.15,
+    "KUL": 15.6,
+    "BEI": 9.4
+   },
+   "spill_seconds": {
+    "INT_to_MAN": 0,
+    "MAN_to_KUL": 0,
+    "KUL_to_BEI": 0,
+    "MAN_to_INT": 0,
+    "KUL_to_MAN": 0,
+    "BEI_to_KUL": 0
+   },
+   "max_fill": {
+    "INT_to_MAN": 0.064,
+    "MAN_to_KUL": 0.083,
+    "KUL_to_BEI": 0.086,
+    "MAN_to_INT": 0.156,
+    "KUL_to_MAN": 0.204,
+    "BEI_to_KUL": 0.314
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "switches": 627,
+   "decision_reasons": {
+    "фиксированный план": 627
+   },
+   "plans": null,
+   "sim_end": 3851.0,
+   "clearance_hold_s": 0.0,
+   "collision_details": []
+  },
+  {
+   "corridor": "chui-corridor",
+   "controller": "adaptive",
+   "load": "medium",
+   "seed": 1,
+   "demand_vehicles": 2778,
+   "completed": 2778,
+   "unfinished": 0,
+   "mean_wait": 34.99,
+   "mean_time_loss": 55.03,
+   "p95_travel_time": 203.1,
+   "total_time_loss_veh_h": 38.81,
+   "mean_stops": 1.93,
+   "throughput_veh_h": 2773.1,
+   "through_time_eb": 175.49,
+   "through_time_wb": 180.77,
+   "through_stops_eb": 2.88,
+   "through_stops_wb": 3.19,
+   "queue_by_node": {
+    "INT": 2.87,
+    "MAN": 10.85,
+    "KUL": 7.32,
+    "BEI": 5.93
+   },
+   "spill_seconds": {
+    "INT_to_MAN": 0,
+    "MAN_to_KUL": 0,
+    "KUL_to_BEI": 0,
+    "MAN_to_INT": 0,
+    "KUL_to_MAN": 0,
+    "BEI_to_KUL": 0
+   },
+   "max_fill": {
+    "INT_to_MAN": 0.12,
+    "MAN_to_KUL": 0.129,
+    "KUL_to_BEI": 0.328,
+    "MAN_to_INT": 0.106,
+    "KUL_to_MAN": 0.159,
+    "BEI_to_KUL": 0.228
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "switches": 905,
+   "decision_reasons": {
+    "разрыв потока": 872,
+    "максимум зелёного фазы": 15,
+    "защита от голодания": 18
+   },
+   "plans": null,
+   "sim_end": 3743.0,
+   "clearance_hold_s": 0.0,
+   "collision_details": []
+  },
+  {
+   "corridor": "chui-corridor",
+   "controller": "fixed",
+   "load": "medium",
+   "seed": 2,
+   "demand_vehicles": 2801,
+   "completed": 2801,
+   "unfinished": 0,
+   "mean_wait": 64.84,
+   "mean_time_loss": 86.61,
+   "p95_travel_time": 262.9,
+   "total_time_loss_veh_h": 61.66,
+   "mean_stops": 2.07,
+   "throughput_veh_h": 2794.9,
+   "through_time_eb": 212.1,
+   "through_time_wb": 229.84,
+   "through_stops_eb": 3.0,
+   "through_stops_wb": 3.23,
+   "queue_by_node": {
+    "INT": 5.8,
+    "MAN": 19.05,
+    "KUL": 13.73,
+    "BEI": 11.86
+   },
+   "spill_seconds": {
+    "INT_to_MAN": 0,
+    "MAN_to_KUL": 0,
+    "KUL_to_BEI": 0,
+    "MAN_to_INT": 0,
+    "KUL_to_MAN": 0,
+    "BEI_to_KUL": 0
+   },
+   "max_fill": {
+    "INT_to_MAN": 0.134,
+    "MAN_to_KUL": 0.212,
+    "KUL_to_BEI": 0.428,
+    "MAN_to_INT": 0.156,
+    "KUL_to_MAN": 0.159,
+    "BEI_to_KUL": 0.257
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "switches": 748,
+   "decision_reasons": {
+    "фиксированный план": 748
+   },
+   "plans": null,
+   "sim_end": 3867.0,
+   "clearance_hold_s": 0.0,
+   "collision_details": []
+  },
+  {
+   "corridor": "chui-corridor",
+   "controller": "coordinated",
+   "load": "medium",
+   "seed": 2,
+   "demand_vehicles": 2801,
+   "completed": 2801,
+   "unfinished": 0,
+   "mean_wait": 62.63,
+   "mean_time_loss": 83.33,
+   "p95_travel_time": 274.0,
+   "total_time_loss_veh_h": 59.32,
+   "mean_stops": 1.79,
+   "throughput_veh_h": 2789.5,
+   "through_time_eb": 148.82,
+   "through_time_wb": 256.6,
+   "through_stops_eb": 1.06,
+   "through_stops_wb": 3.82,
+   "queue_by_node": {
+    "INT": 9.83,
+    "MAN": 13.96,
+    "KUL": 15.81,
+    "BEI": 9.15
+   },
+   "spill_seconds": {
+    "INT_to_MAN": 0,
+    "MAN_to_KUL": 0,
+    "KUL_to_BEI": 0,
+    "MAN_to_INT": 0,
+    "KUL_to_MAN": 0,
+    "BEI_to_KUL": 0
+   },
+   "max_fill": {
+    "INT_to_MAN": 0.042,
+    "MAN_to_KUL": 0.068,
+    "KUL_to_BEI": 0.143,
+    "MAN_to_INT": 0.17,
+    "KUL_to_MAN": 0.182,
+    "BEI_to_KUL": 0.328
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "switches": 627,
+   "decision_reasons": {
+    "фиксированный план": 627
+   },
+   "plans": null,
+   "sim_end": 3852.0,
+   "clearance_hold_s": 0.0,
+   "collision_details": []
+  },
+  {
+   "corridor": "chui-corridor",
+   "controller": "adaptive",
+   "load": "medium",
+   "seed": 2,
+   "demand_vehicles": 2801,
+   "completed": 2801,
+   "unfinished": 0,
+   "mean_wait": 34.11,
+   "mean_time_loss": 53.93,
+   "p95_travel_time": 201.0,
+   "total_time_loss_veh_h": 38.4,
+   "mean_stops": 1.91,
+   "throughput_veh_h": 2796.0,
+   "through_time_eb": 171.43,
+   "through_time_wb": 179.04,
+   "through_stops_eb": 2.81,
+   "through_stops_wb": 3.05,
+   "queue_by_node": {
+    "INT": 2.94,
+    "MAN": 10.24,
+    "KUL": 7.64,
+    "BEI": 5.93
+   },
+   "spill_seconds": {
+    "INT_to_MAN": 0,
+    "MAN_to_KUL": 0,
+    "KUL_to_BEI": 0,
+    "MAN_to_INT": 0,
+    "KUL_to_MAN": 0,
+    "BEI_to_KUL": 0
+   },
+   "max_fill": {
+    "INT_to_MAN": 0.127,
+    "MAN_to_KUL": 0.136,
+    "KUL_to_BEI": 0.242,
+    "MAN_to_INT": 0.113,
+    "KUL_to_MAN": 0.114,
+    "BEI_to_KUL": 0.214
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "switches": 900,
+   "decision_reasons": {
+    "разрыв потока": 873,
+    "максимум зелёного фазы": 12,
+    "защита от голодания": 15
+   },
+   "plans": null,
+   "sim_end": 3747.0,
+   "clearance_hold_s": 0.0,
+   "collision_details": []
+  },
+  {
+   "corridor": "chui-corridor",
+   "controller": "fixed",
+   "load": "medium",
+   "seed": 3,
+   "demand_vehicles": 2832,
+   "completed": 2832,
+   "unfinished": 0,
+   "mean_wait": 67.91,
+   "mean_time_loss": 90.41,
+   "p95_travel_time": 270.0,
+   "total_time_loss_veh_h": 65.75,
+   "mean_stops": 2.16,
+   "throughput_veh_h": 2817.8,
+   "through_time_eb": 215.43,
+   "through_time_wb": 229.7,
+   "through_stops_eb": 3.11,
+   "through_stops_wb": 3.22,
+   "queue_by_node": {
+    "INT": 5.7,
+    "MAN": 20.31,
+    "KUL": 15.25,
+    "BEI": 11.9
+   },
+   "spill_seconds": {
+    "INT_to_MAN": 0,
+    "MAN_to_KUL": 0,
+    "KUL_to_BEI": 0,
+    "MAN_to_INT": 0,
+    "KUL_to_MAN": 0,
+    "BEI_to_KUL": 0
+   },
+   "max_fill": {
+    "INT_to_MAN": 0.17,
+    "MAN_to_KUL": 0.204,
+    "KUL_to_BEI": 0.342,
+    "MAN_to_INT": 0.148,
+    "KUL_to_MAN": 0.151,
+    "BEI_to_KUL": 0.285
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "switches": 740,
+   "decision_reasons": {
+    "фиксированный план": 740
+   },
+   "plans": null,
+   "sim_end": 3818.0,
+   "clearance_hold_s": 0.0,
+   "collision_details": []
+  },
+  {
+   "corridor": "chui-corridor",
+   "controller": "coordinated",
+   "load": "medium",
+   "seed": 3,
+   "demand_vehicles": 2832,
+   "completed": 2832,
+   "unfinished": 0,
+   "mean_wait": 65.28,
+   "mean_time_loss": 86.17,
+   "p95_travel_time": 274.15,
+   "total_time_loss_veh_h": 62.67,
+   "mean_stops": 1.82,
+   "throughput_veh_h": 2821.1,
+   "through_time_eb": 148.01,
+   "through_time_wb": 258.01,
+   "through_stops_eb": 1.09,
+   "through_stops_wb": 3.8,
+   "queue_by_node": {
+    "INT": 9.89,
+    "MAN": 14.61,
+    "KUL": 16.91,
+    "BEI": 9.92
+   },
+   "spill_seconds": {
+    "INT_to_MAN": 0,
+    "MAN_to_KUL": 0,
+    "KUL_to_BEI": 0,
+    "MAN_to_INT": 0,
+    "KUL_to_MAN": 0,
+    "BEI_to_KUL": 0
+   },
+   "max_fill": {
+    "INT_to_MAN": 0.049,
+    "MAN_to_KUL": 0.076,
+    "KUL_to_BEI": 0.086,
+    "MAN_to_INT": 0.163,
+    "KUL_to_MAN": 0.174,
+    "BEI_to_KUL": 0.299
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "switches": 627,
+   "decision_reasons": {
+    "фиксированный план": 627
+   },
+   "plans": null,
+   "sim_end": 3854.0,
+   "clearance_hold_s": 0.0,
+   "collision_details": []
+  },
+  {
+   "corridor": "chui-corridor",
+   "controller": "adaptive",
+   "load": "medium",
+   "seed": 3,
+   "demand_vehicles": 2832,
+   "completed": 2832,
+   "unfinished": 0,
+   "mean_wait": 37.75,
+   "mean_time_loss": 58.05,
+   "p95_travel_time": 212.0,
+   "total_time_loss_veh_h": 42.21,
+   "mean_stops": 1.97,
+   "throughput_veh_h": 2834.2,
+   "through_time_eb": 177.15,
+   "through_time_wb": 188.0,
+   "through_stops_eb": 3.14,
+   "through_stops_wb": 3.23,
+   "queue_by_node": {
+    "INT": 2.98,
+    "MAN": 11.28,
+    "KUL": 9.08,
+    "BEI": 6.73
+   },
+   "spill_seconds": {
+    "INT_to_MAN": 0,
+    "MAN_to_KUL": 0,
+    "KUL_to_BEI": 0,
+    "MAN_to_INT": 0,
+    "KUL_to_MAN": 0,
+    "BEI_to_KUL": 0
+   },
+   "max_fill": {
+    "INT_to_MAN": 0.127,
+    "MAN_to_KUL": 0.151,
+    "KUL_to_BEI": 0.328,
+    "MAN_to_INT": 0.092,
+    "KUL_to_MAN": 0.136,
+    "BEI_to_KUL": 0.328
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "switches": 886,
+   "decision_reasons": {
+    "максимум зелёного фазы": 19,
+    "разрыв потока": 851,
+    "защита от голодания": 16
+   },
+   "plans": null,
+   "sim_end": 3729.0,
+   "clearance_hold_s": 0.0,
+   "collision_details": []
+  },
+  {
+   "corridor": "chui-corridor",
+   "controller": "fixed",
+   "load": "high",
+   "seed": 1,
+   "demand_vehicles": 3591,
+   "completed": 3591,
+   "unfinished": 0,
+   "mean_wait": 129.13,
+   "mean_time_loss": 164.05,
+   "p95_travel_time": 472.0,
+   "total_time_loss_veh_h": 148.55,
+   "mean_stops": 3.18,
+   "throughput_veh_h": 3464.7,
+   "through_time_eb": 240.45,
+   "through_time_wb": 303.47,
+   "through_stops_eb": 3.44,
+   "through_stops_wb": 4.25,
+   "queue_by_node": {
+    "INT": 8.46,
+    "MAN": 44.76,
+    "KUL": 46.63,
+    "BEI": 22.86
+   },
+   "spill_seconds": {
+    "INT_to_MAN": 0,
+    "MAN_to_KUL": 0,
+    "KUL_to_BEI": 0,
+    "MAN_to_INT": 0,
+    "KUL_to_MAN": 0,
+    "BEI_to_KUL": 0
+   },
+   "max_fill": {
+    "INT_to_MAN": 0.24,
+    "MAN_to_KUL": 0.28,
+    "KUL_to_BEI": 0.385,
+    "MAN_to_INT": 0.177,
+    "KUL_to_MAN": 0.318,
+    "BEI_to_KUL": 0.371
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "switches": 887,
+   "decision_reasons": {
+    "фиксированный план": 887
+   },
+   "plans": null,
+   "sim_end": 4588.0,
+   "clearance_hold_s": 0.0,
+   "collision_details": []
+  },
+  {
+   "corridor": "chui-corridor",
+   "controller": "coordinated",
+   "load": "high",
+   "seed": 1,
+   "demand_vehicles": 3591,
+   "completed": 3591,
+   "unfinished": 0,
+   "mean_wait": 116.98,
+   "mean_time_loss": 147.64,
+   "p95_travel_time": 443.0,
+   "total_time_loss_veh_h": 134.15,
+   "mean_stops": 2.59,
+   "throughput_veh_h": 3482.2,
+   "through_time_eb": 160.64,
+   "through_time_wb": 331.08,
+   "through_stops_eb": 1.23,
+   "through_stops_wb": 4.66,
+   "queue_by_node": {
+    "INT": 12.35,
+    "MAN": 41.14,
+    "KUL": 42.8,
+    "BEI": 15.44
+   },
+   "spill_seconds": {
+    "INT_to_MAN": 0,
+    "MAN_to_KUL": 0,
+    "KUL_to_BEI": 0,
+    "MAN_to_INT": 0,
+    "KUL_to_MAN": 0,
+    "BEI_to_KUL": 0
+   },
+   "max_fill": {
+    "INT_to_MAN": 0.092,
+    "MAN_to_KUL": 0.076,
+    "KUL_to_BEI": 0.157,
+    "MAN_to_INT": 0.184,
+    "KUL_to_MAN": 0.378,
+    "BEI_to_KUL": 0.399
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "switches": 720,
+   "decision_reasons": {
+    "фиксированный план": 720
+   },
+   "plans": null,
+   "sim_end": 4425.0,
+   "clearance_hold_s": 0.0,
+   "collision_details": []
+  },
+  {
+   "corridor": "chui-corridor",
+   "controller": "adaptive",
+   "load": "high",
+   "seed": 1,
+   "demand_vehicles": 3591,
+   "completed": 3591,
+   "unfinished": 0,
+   "mean_wait": 60.46,
+   "mean_time_loss": 84.35,
+   "p95_travel_time": 254.0,
+   "total_time_loss_veh_h": 76.99,
+   "mean_stops": 2.15,
+   "throughput_veh_h": 3549.8,
+   "through_time_eb": 213.42,
+   "through_time_wb": 219.11,
+   "through_stops_eb": 3.31,
+   "through_stops_wb": 3.36,
+   "queue_by_node": {
+    "INT": 4.13,
+    "MAN": 22.77,
+    "KUL": 21.63,
+    "BEI": 11.23
+   },
+   "spill_seconds": {
+    "INT_to_MAN": 0,
+    "MAN_to_KUL": 0,
+    "KUL_to_BEI": 0,
+    "MAN_to_INT": 0,
+    "KUL_to_MAN": 0,
+    "BEI_to_KUL": 0
+   },
+   "max_fill": {
+    "INT_to_MAN": 0.191,
+    "MAN_to_KUL": 0.212,
+    "KUL_to_BEI": 0.399,
+    "MAN_to_INT": 0.163,
+    "KUL_to_MAN": 0.204,
+    "BEI_to_KUL": 0.371
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "switches": 730,
+   "decision_reasons": {
+    "максимум зелёного фазы": 104,
+    "разрыв потока": 588,
+    "защита от голодания": 37,
+    "страж": 1
+   },
+   "plans": null,
+   "sim_end": 3781.0,
+   "clearance_hold_s": 0.0,
+   "collision_details": []
+  },
+  {
+   "corridor": "chui-corridor",
+   "controller": "fixed",
+   "load": "high",
+   "seed": 2,
+   "demand_vehicles": 3641,
+   "completed": 3641,
+   "unfinished": 0,
+   "mean_wait": 157.8,
+   "mean_time_loss": 200.25,
+   "p95_travel_time": 491.0,
+   "total_time_loss_veh_h": 182.45,
+   "mean_stops": 3.79,
+   "throughput_veh_h": 3428.7,
+   "through_time_eb": 281.4,
+   "through_time_wb": 377.36,
+   "through_stops_eb": 4.23,
+   "through_stops_wb": 5.57,
+   "queue_by_node": {
+    "INT": 8.21,
+    "MAN": 51.11,
+    "KUL": 56.96,
+    "BEI": 33.09
+   },
+   "spill_seconds": {
+    "INT_to_MAN": 0,
+    "MAN_to_KUL": 0,
+    "KUL_to_BEI": 0,
+    "MAN_to_INT": 0,
+    "KUL_to_MAN": 0,
+    "BEI_to_KUL": 0
+   },
+   "max_fill": {
+    "INT_to_MAN": 0.262,
+    "MAN_to_KUL": 0.378,
+    "KUL_to_BEI": 0.456,
+    "MAN_to_INT": 0.163,
+    "KUL_to_MAN": 0.333,
+    "BEI_to_KUL": 0.428
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "switches": 868,
+   "decision_reasons": {
+    "фиксированный план": 868
+   },
+   "plans": null,
+   "sim_end": 4489.0,
+   "clearance_hold_s": 0.0,
+   "collision_details": []
+  },
+  {
+   "corridor": "chui-corridor",
+   "controller": "coordinated",
+   "load": "high",
+   "seed": 2,
+   "demand_vehicles": 3641,
+   "completed": 3641,
+   "unfinished": 0,
+   "mean_wait": 130.74,
+   "mean_time_loss": 165.26,
+   "p95_travel_time": 444.4,
+   "total_time_loss_veh_h": 151.17,
+   "mean_stops": 2.91,
+   "throughput_veh_h": 3494.2,
+   "through_time_eb": 198.97,
+   "through_time_wb": 354.57,
+   "through_stops_eb": 2.17,
+   "through_stops_wb": 5.01,
+   "queue_by_node": {
+    "INT": 11.89,
+    "MAN": 50.34,
+    "KUL": 44.61,
+    "BEI": 18.14
+   },
+   "spill_seconds": {
+    "INT_to_MAN": 0,
+    "MAN_to_KUL": 0,
+    "KUL_to_BEI": 0,
+    "MAN_to_INT": 0,
+    "KUL_to_MAN": 0,
+    "BEI_to_KUL": 0
+   },
+   "max_fill": {
+    "INT_to_MAN": 0.226,
+    "MAN_to_KUL": 0.114,
+    "KUL_to_BEI": 0.271,
+    "MAN_to_INT": 0.17,
+    "KUL_to_MAN": 0.371,
+    "BEI_to_KUL": 0.47
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "switches": 735,
+   "decision_reasons": {
+    "фиксированный план": 735
+   },
+   "plans": null,
+   "sim_end": 4510.0,
+   "clearance_hold_s": 0.0,
+   "collision_details": []
+  },
+  {
+   "corridor": "chui-corridor",
+   "controller": "adaptive",
+   "load": "high",
+   "seed": 2,
+   "demand_vehicles": 3641,
+   "completed": 3641,
+   "unfinished": 0,
+   "mean_wait": 70.64,
+   "mean_time_loss": 96.3,
+   "p95_travel_time": 268.0,
+   "total_time_loss_veh_h": 89.38,
+   "mean_stops": 2.27,
+   "throughput_veh_h": 3624.0,
+   "through_time_eb": 225.69,
+   "through_time_wb": 227.22,
+   "through_stops_eb": 3.4,
+   "through_stops_wb": 3.49,
+   "queue_by_node": {
+    "INT": 4.18,
+    "MAN": 29.27,
+    "KUL": 23.71,
+    "BEI": 14.11
+   },
+   "spill_seconds": {
+    "INT_to_MAN": 0,
+    "MAN_to_KUL": 0,
+    "KUL_to_BEI": 0,
+    "MAN_to_INT": 0,
+    "KUL_to_MAN": 0,
+    "BEI_to_KUL": 0
+   },
+   "max_fill": {
+    "INT_to_MAN": 0.24,
+    "MAN_to_KUL": 0.25,
+    "KUL_to_BEI": 0.428,
+    "MAN_to_INT": 0.148,
+    "KUL_to_MAN": 0.235,
+    "BEI_to_KUL": 0.413
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "switches": 707,
+   "decision_reasons": {
+    "максимум зелёного фазы": 136,
+    "разрыв потока": 517,
+    "защита от голодания": 52,
+    "страж": 2
+   },
+   "plans": null,
+   "sim_end": 3788.0,
+   "clearance_hold_s": 0.0,
+   "collision_details": []
+  },
+  {
+   "corridor": "chui-corridor",
+   "controller": "fixed",
+   "load": "high",
+   "seed": 3,
+   "demand_vehicles": 3578,
+   "completed": 3578,
+   "unfinished": 0,
+   "mean_wait": 139.16,
+   "mean_time_loss": 176.35,
+   "p95_travel_time": 476.0,
+   "total_time_loss_veh_h": 161.11,
+   "mean_stops": 3.42,
+   "throughput_veh_h": 3429.8,
+   "through_time_eb": 281.67,
+   "through_time_wb": 324.39,
+   "through_stops_eb": 4.12,
+   "through_stops_wb": 4.59,
+   "queue_by_node": {
+    "INT": 8.96,
+    "MAN": 37.0,
+    "KUL": 53.44,
+    "BEI": 31.63
+   },
+   "spill_seconds": {
+    "INT_to_MAN": 0,
+    "MAN_to_KUL": 0,
+    "KUL_to_BEI": 0,
+    "MAN_to_INT": 0,
+    "KUL_to_MAN": 0,
+    "BEI_to_KUL": 0
+   },
+   "max_fill": {
+    "INT_to_MAN": 0.219,
+    "MAN_to_KUL": 0.303,
+    "KUL_to_BEI": 0.67,
+    "MAN_to_INT": 0.148,
+    "KUL_to_MAN": 0.28,
+    "BEI_to_KUL": 0.513
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "switches": 842,
+   "decision_reasons": {
+    "фиксированный план": 842
+   },
+   "plans": null,
+   "sim_end": 4351.0,
+   "clearance_hold_s": 0.0,
+   "collision_details": []
+  },
+  {
+   "corridor": "chui-corridor",
+   "controller": "coordinated",
+   "load": "high",
+   "seed": 3,
+   "demand_vehicles": 3578,
+   "completed": 3578,
+   "unfinished": 0,
+   "mean_wait": 114.26,
+   "mean_time_loss": 145.75,
+   "p95_travel_time": 426.0,
+   "total_time_loss_veh_h": 133.64,
+   "mean_stops": 2.67,
+   "throughput_veh_h": 3487.6,
+   "through_time_eb": 199.09,
+   "through_time_wb": 360.12,
+   "through_stops_eb": 2.25,
+   "through_stops_wb": 5.02,
+   "queue_by_node": {
+    "INT": 12.55,
+    "MAN": 37.51,
+    "KUL": 36.91,
+    "BEI": 22.31
+   },
+   "spill_seconds": {
+    "INT_to_MAN": 0,
+    "MAN_to_KUL": 0,
+    "KUL_to_BEI": 0,
+    "MAN_to_INT": 0,
+    "KUL_to_MAN": 0,
+    "BEI_to_KUL": 0
+   },
+   "max_fill": {
+    "INT_to_MAN": 0.099,
+    "MAN_to_KUL": 0.136,
+    "KUL_to_BEI": 0.456,
+    "MAN_to_INT": 0.17,
+    "KUL_to_MAN": 0.394,
+    "BEI_to_KUL": 0.485
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "switches": 675,
+   "decision_reasons": {
+    "фиксированный план": 675
+   },
+   "plans": null,
+   "sim_end": 4151.0,
+   "clearance_hold_s": 0.0,
+   "collision_details": []
+  },
+  {
+   "corridor": "chui-corridor",
+   "controller": "adaptive",
+   "load": "high",
+   "seed": 3,
+   "demand_vehicles": 3578,
+   "completed": 3578,
+   "unfinished": 0,
+   "mean_wait": 64.66,
+   "mean_time_loss": 89.16,
+   "p95_travel_time": 258.0,
+   "total_time_loss_veh_h": 81.95,
+   "mean_stops": 2.2,
+   "throughput_veh_h": 3558.5,
+   "through_time_eb": 220.4,
+   "through_time_wb": 226.24,
+   "through_stops_eb": 3.42,
+   "through_stops_wb": 3.36,
+   "queue_by_node": {
+    "INT": 4.77,
+    "MAN": 22.86,
+    "KUL": 22.72,
+    "BEI": 14.08
+   },
+   "spill_seconds": {
+    "INT_to_MAN": 0,
+    "MAN_to_KUL": 0,
+    "KUL_to_BEI": 0,
+    "MAN_to_INT": 0,
+    "KUL_to_MAN": 0,
+    "BEI_to_KUL": 0
+   },
+   "max_fill": {
+    "INT_to_MAN": 0.219,
+    "MAN_to_KUL": 0.265,
+    "KUL_to_BEI": 0.456,
+    "MAN_to_INT": 0.184,
+    "KUL_to_MAN": 0.197,
+    "BEI_to_KUL": 0.385
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "switches": 720,
+   "decision_reasons": {
+    "максимум зелёного фазы": 127,
+    "разрыв потока": 555,
+    "защита от голодания": 36,
+    "страж": 2
+   },
+   "plans": null,
+   "sim_end": 3815.0,
+   "clearance_hold_s": 0.0,
+   "collision_details": []
+  },
+  {
+   "corridor": "chui-corridor",
+   "controller": "fixed",
+   "load": "incident",
+   "seed": 1,
+   "demand_vehicles": 485,
+   "completed": 485,
+   "unfinished": 0,
+   "mean_wait": 201.55,
+   "mean_time_loss": 282.21,
+   "p95_travel_time": 677.2,
+   "total_time_loss_veh_h": 26.42,
+   "mean_stops": 6.69,
+   "throughput_veh_h": 1434.0,
+   "through_time_eb": 493.79,
+   "through_time_wb": 243.17,
+   "through_stops_eb": 9.52,
+   "through_stops_wb": 3.04,
+   "queue_by_node": {
+    "INT": 22.78,
+    "MAN": 36.34,
+    "KUL": 7.05,
+    "BEI": 27.3
+   },
+   "spill_seconds": {
+    "INT_to_MAN": 0,
+    "MAN_to_KUL": 0,
+    "KUL_to_BEI": 0,
+    "MAN_to_INT": 0,
+    "KUL_to_MAN": 0,
+    "BEI_to_KUL": 0
+   },
+   "max_fill": {
+    "INT_to_MAN": 0.445,
+    "MAN_to_KUL": 0.182,
+    "KUL_to_BEI": 0.784,
+    "MAN_to_INT": 0.014,
+    "KUL_to_MAN": 0.129,
+    "BEI_to_KUL": 0.242
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "switches": 303,
+   "decision_reasons": {
+    "фиксированный план": 303,
+    "продление «все красные»": 1
+   },
+   "plans": null,
+   "sim_end": 1621.0,
+   "clearance_hold_s": 201.0,
+   "collision_details": []
+  },
+  {
+   "corridor": "chui-corridor",
+   "controller": "coordinated",
+   "load": "incident",
+   "seed": 1,
+   "demand_vehicles": 485,
+   "completed": 485,
+   "unfinished": 0,
+   "mean_wait": 185.08,
+   "mean_time_loss": 255.6,
+   "p95_travel_time": 617.0,
+   "total_time_loss_veh_h": 24.57,
+   "mean_stops": 5.35,
+   "throughput_veh_h": 1674.0,
+   "through_time_eb": 464.11,
+   "through_time_wb": 238.54,
+   "through_stops_eb": 7.51,
+   "through_stops_wb": 3.5,
+   "queue_by_node": {
+    "INT": 19.17,
+    "MAN": 32.37,
+    "KUL": 0.22,
+    "BEI": 35.13
+   },
+   "spill_seconds": {
+    "INT_to_MAN": 0,
+    "MAN_to_KUL": 0,
+    "KUL_to_BEI": 0,
+    "MAN_to_INT": 0,
+    "KUL_to_MAN": 0,
+    "BEI_to_KUL": 0
+   },
+   "max_fill": {
+    "INT_to_MAN": 0.488,
+    "MAN_to_KUL": 0.008,
+    "KUL_to_BEI": 0.855,
+    "MAN_to_INT": 0.106,
+    "KUL_to_MAN": 0.136,
+    "BEI_to_KUL": 0.071
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "switches": 239,
+   "decision_reasons": {
+    "фиксированный план": 239,
+    "продление «все красные»": 1
+   },
+   "plans": null,
+   "sim_end": 1534.0,
+   "clearance_hold_s": 233.0,
+   "collision_details": []
+  },
+  {
+   "corridor": "chui-corridor",
+   "controller": "adaptive",
+   "load": "incident",
+   "seed": 1,
+   "demand_vehicles": 485,
+   "completed": 485,
+   "unfinished": 0,
+   "mean_wait": 19.33,
+   "mean_time_loss": 42.03,
+   "p95_travel_time": 238.75,
+   "total_time_loss_veh_h": 4.04,
+   "mean_stops": 1.42,
+   "throughput_veh_h": 2226.0,
+   "through_time_eb": 153.33,
+   "through_time_wb": 187.92,
+   "through_stops_eb": 1.75,
+   "through_stops_wb": 2.75,
+   "queue_by_node": {
+    "INT": 0.93,
+    "MAN": 0.73,
+    "KUL": 2.17,
+    "BEI": 24.34
+   },
+   "spill_seconds": {
+    "INT_to_MAN": 0,
+    "MAN_to_KUL": 0,
+    "KUL_to_BEI": 58,
+    "MAN_to_INT": 0,
+    "KUL_to_MAN": 0,
+    "BEI_to_KUL": 0
+   },
+   "max_fill": {
+    "INT_to_MAN": 0.085,
+    "MAN_to_KUL": 0.121,
+    "KUL_to_BEI": 0.969,
+    "MAN_to_INT": 0.021,
+    "KUL_to_MAN": 0.03,
+    "BEI_to_KUL": 0.171
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "switches": 119,
+   "decision_reasons": {
+    "максимум зелёного фазы": 26,
+    "разрыв потока": 85,
+    "продление «все красные»": 1,
+    "страж": 4,
+    "защита от голодания": 4
+   },
+   "plans": null,
+   "sim_end": 1012.0,
+   "clearance_hold_s": 241.0,
+   "collision_details": []
+  },
+  {
+   "corridor": "chui-corridor",
+   "controller": "fixed",
+   "load": "incident",
+   "seed": 2,
+   "demand_vehicles": 523,
+   "completed": 523,
+   "unfinished": 0,
+   "mean_wait": 227.63,
+   "mean_time_loss": 328.99,
+   "p95_travel_time": 740.0,
+   "total_time_loss_veh_h": 27.69,
+   "mean_stops": 8.51,
+   "throughput_veh_h": 1512.0,
+   "through_time_eb": 568.3,
+   "through_time_wb": 219.79,
+   "through_stops_eb": 12.67,
+   "through_stops_wb": 3.05,
+   "queue_by_node": {
+    "INT": 34.17,
+    "MAN": 32.58,
+    "KUL": 7.18,
+    "BEI": 34.83
+   },
+   "spill_seconds": {
+    "INT_to_MAN": 0,
+    "MAN_to_KUL": 0,
+    "KUL_to_BEI": 40,
+    "MAN_to_INT": 0,
+    "KUL_to_MAN": 0,
+    "BEI_to_KUL": 0
+   },
+   "max_fill": {
+    "INT_to_MAN": 0.41,
+    "MAN_to_KUL": 0.174,
+    "KUL_to_BEI": 0.955,
+    "MAN_to_INT": 0.035,
+    "KUL_to_MAN": 0.068,
+    "BEI_to_KUL": 0.2
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "switches": 319,
+   "decision_reasons": {
+    "фиксированный план": 319,
+    "продление «все красные»": 1
+   },
+   "plans": null,
+   "sim_end": 1707.0,
+   "clearance_hold_s": 200.0,
+   "collision_details": []
+  },
+  {
+   "corridor": "chui-corridor",
+   "controller": "coordinated",
+   "load": "incident",
+   "seed": 2,
+   "demand_vehicles": 523,
+   "completed": 523,
+   "unfinished": 0,
+   "mean_wait": 231.11,
+   "mean_time_loss": 308.38,
+   "p95_travel_time": 643.0,
+   "total_time_loss_veh_h": 27.84,
+   "mean_stops": 5.97,
+   "throughput_veh_h": 1644.0,
+   "through_time_eb": 542.96,
+   "through_time_wb": 210.26,
+   "through_stops_eb": 8.47,
+   "through_stops_wb": 3.37,
+   "queue_by_node": {
+    "INT": 30.24,
+    "MAN": 44.92,
+    "KUL": 0.38,
+    "BEI": 36.91
+   },
+   "spill_seconds": {
+    "INT_to_MAN": 87,
+    "MAN_to_KUL": 0,
+    "KUL_to_BEI": 5,
+    "MAN_to_INT": 0,
+    "KUL_to_MAN": 0,
+    "BEI_to_KUL": 0
+   },
+   "max_fill": {
+    "INT_to_MAN": 0.608,
+    "MAN_to_KUL": 0.015,
+    "KUL_to_BEI": 0.898,
+    "MAN_to_INT": 0.057,
+    "KUL_to_MAN": 0.076,
+    "BEI_to_KUL": 0.057
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "switches": 255,
+   "decision_reasons": {
+    "фиксированный план": 255,
+    "продление «все красные»": 1
+   },
+   "plans": null,
+   "sim_end": 1632.0,
+   "clearance_hold_s": 235.0,
+   "collision_details": []
+  },
+  {
+   "corridor": "chui-corridor",
+   "controller": "adaptive",
+   "load": "incident",
+   "seed": 2,
+   "demand_vehicles": 523,
+   "completed": 523,
+   "unfinished": 0,
+   "mean_wait": 27.07,
+   "mean_time_loss": 56.25,
+   "p95_travel_time": 280.0,
+   "total_time_loss_veh_h": 5.44,
+   "mean_stops": 1.7,
+   "throughput_veh_h": 2436.0,
+   "through_time_eb": 175.59,
+   "through_time_wb": 155.26,
+   "through_stops_eb": 2.25,
+   "through_stops_wb": 2.16,
+   "queue_by_node": {
+    "INT": 0.96,
+    "MAN": 0.49,
+    "KUL": 11.84,
+    "BEI": 31.02
+   },
+   "spill_seconds": {
+    "INT_to_MAN": 0,
+    "MAN_to_KUL": 0,
+    "KUL_to_BEI": 144,
+    "MAN_to_INT": 0,
+    "KUL_to_MAN": 0,
+    "BEI_to_KUL": 0
+   },
+   "max_fill": {
+    "INT_to_MAN": 0.071,
+    "MAN_to_KUL": 0.424,
+    "KUL_to_BEI": 0.998,
+    "MAN_to_INT": 0.014,
+    "KUL_to_MAN": 0.015,
+    "BEI_to_KUL": 0.1
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "switches": 105,
+   "decision_reasons": {
+    "максимум зелёного фазы": 25,
+    "разрыв потока": 67,
+    "защита от голодания": 6,
+    "страж": 7,
+    "продление «все красные»": 1
+   },
+   "plans": null,
+   "sim_end": 1044.0,
+   "clearance_hold_s": 264.0,
+   "collision_details": []
+  },
+  {
+   "corridor": "chui-corridor",
+   "controller": "fixed",
+   "load": "incident",
+   "seed": 3,
+   "demand_vehicles": 494,
+   "completed": 494,
+   "unfinished": 0,
+   "mean_wait": 224.47,
+   "mean_time_loss": 324.59,
+   "p95_travel_time": 713.7,
+   "total_time_loss_veh_h": 27.41,
+   "mean_stops": 7.85,
+   "throughput_veh_h": 1602.0,
+   "through_time_eb": 580.39,
+   "through_time_wb": 174.94,
+   "through_stops_eb": 11.75,
+   "through_stops_wb": 2.18,
+   "queue_by_node": {
+    "INT": 27.8,
+    "MAN": 35.09,
+    "KUL": 5.34,
+    "BEI": 27.71
+   },
+   "spill_seconds": {
+    "INT_to_MAN": 0,
+    "MAN_to_KUL": 0,
+    "KUL_to_BEI": 84,
+    "MAN_to_INT": 0,
+    "KUL_to_MAN": 0,
+    "BEI_to_KUL": 0
+   },
+   "max_fill": {
+    "INT_to_MAN": 0.523,
+    "MAN_to_KUL": 0.159,
+    "KUL_to_BEI": 0.955,
+    "MAN_to_INT": 0.057,
+    "KUL_to_MAN": 0.061,
+    "BEI_to_KUL": 0.014
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "switches": 309,
+   "decision_reasons": {
+    "фиксированный план": 309,
+    "продление «все красные»": 1
+   },
+   "plans": null,
+   "sim_end": 1595.0,
+   "clearance_hold_s": 3.0,
+   "collision_details": []
+  },
+  {
+   "corridor": "chui-corridor",
+   "controller": "coordinated",
+   "load": "incident",
+   "seed": 3,
+   "demand_vehicles": 494,
+   "completed": 494,
+   "unfinished": 0,
+   "mean_wait": 212.7,
+   "mean_time_loss": 289.95,
+   "p95_travel_time": 632.35,
+   "total_time_loss_veh_h": 25.29,
+   "mean_stops": 5.68,
+   "throughput_veh_h": 1680.0,
+   "through_time_eb": 512.23,
+   "through_time_wb": 210.71,
+   "through_stops_eb": 7.99,
+   "through_stops_wb": 3.59,
+   "queue_by_node": {
+    "INT": 19.93,
+    "MAN": 42.73,
+    "KUL": 0.69,
+    "BEI": 37.77
+   },
+   "spill_seconds": {
+    "INT_to_MAN": 90,
+    "MAN_to_KUL": 0,
+    "KUL_to_BEI": 80,
+    "MAN_to_INT": 0,
+    "KUL_to_MAN": 0,
+    "BEI_to_KUL": 0
+   },
+   "max_fill": {
+    "INT_to_MAN": 0.608,
+    "MAN_to_KUL": 0.038,
+    "KUL_to_BEI": 0.983,
+    "MAN_to_INT": 0.057,
+    "KUL_to_MAN": 0.076,
+    "BEI_to_KUL": 0.057
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "switches": 241,
+   "decision_reasons": {
+    "фиксированный план": 241,
+    "продление «все красные»": 1
+   },
+   "plans": null,
+   "sim_end": 1543.0,
+   "clearance_hold_s": 233.0,
+   "collision_details": []
+  },
+  {
+   "corridor": "chui-corridor",
+   "controller": "adaptive",
+   "load": "incident",
+   "seed": 3,
+   "demand_vehicles": 494,
+   "completed": 494,
+   "unfinished": 0,
+   "mean_wait": 19.83,
+   "mean_time_loss": 42.29,
+   "p95_travel_time": 230.75,
+   "total_time_loss_veh_h": 3.69,
+   "mean_stops": 1.43,
+   "throughput_veh_h": 2250.0,
+   "through_time_eb": 154.61,
+   "through_time_wb": 145.29,
+   "through_stops_eb": 2.02,
+   "through_stops_wb": 1.53,
+   "queue_by_node": {
+    "INT": 0.68,
+    "MAN": 0.61,
+    "KUL": 6.14,
+    "BEI": 27.17
+   },
+   "spill_seconds": {
+    "INT_to_MAN": 0,
+    "MAN_to_KUL": 0,
+    "KUL_to_BEI": 142,
+    "MAN_to_INT": 0,
+    "KUL_to_MAN": 0,
+    "BEI_to_KUL": 0
+   },
+   "max_fill": {
+    "INT_to_MAN": 0.057,
+    "MAN_to_KUL": 0.25,
+    "KUL_to_BEI": 0.983,
+    "MAN_to_INT": 0.014,
+    "KUL_to_MAN": 0.008,
+    "BEI_to_KUL": 0.043
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "switches": 117,
+   "decision_reasons": {
+    "максимум зелёного фазы": 27,
+    "разрыв потока": 77,
+    "продление «все красные»": 1,
+    "страж": 9,
+    "защита от голодания": 4
+   },
+   "plans": null,
+   "sim_end": 1060.0,
+   "clearance_hold_s": 275.0,
+   "collision_details": []
+  }
+ ],
+ "elapsed_s": 963.1
+}

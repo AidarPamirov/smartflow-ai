@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { frameAt, parseResults, parseTrace, vehiclesAt, type ResultRow, type Results, type Trace } from './trace';
+import { CorridorSection } from './CorridorSection';
+import { CompareChart, type Metric } from './CompareChart';
 import './sumo.css';
 
 const BASE = `${import.meta.env.BASE_URL}data/sumo/`;
@@ -47,6 +49,7 @@ export default function SumoApp() {
         <nav className="sumo-nav">
           <a className="top-link" href="#">← Карта Бишкека</a>
           <a className="top-link" href="#lab">Лаборатория перекрёстка</a>
+          <a className="top-link" href="#cv">Компьютерное зрение</a>
           <a className="top-link" href="#signal=tls-244504528">Этот светофор на карте города</a>
         </nav>
       </header>
@@ -123,7 +126,9 @@ function Experiment({ results, traces }: { results: Results; traces: Record<'fix
         </p>
       </section>
 
+      <SingleCompare results={results} />
       <ResultsTable results={results} />
+      <CorridorSection />
       <Params results={results} />
     </main>
   );
@@ -375,6 +380,26 @@ cd sumo
 python -m unittest discover -s tests -t .
 python -m smartflow_sumo.experiment --out ../public/data/sumo`}</pre>
       <p className="hint">Сгенерировано {new Date(results.generated).toLocaleString('ru-RU')}, расчёт занял {nf(results.elapsed_s / 60, 1)} мин. Данные о дорогах © OpenStreetMap contributors, ODbL.</p>
+    </section>
+  );
+}
+
+function SingleCompare({ results }: { results: Results }) {
+  const loads = Object.keys(results.params.loads_veh_h);
+  const row = (l: string, c: string) => results.summary.find((r) => r.load === l && r.controller === c);
+  const metrics: Metric[] = [
+    { id: 'wait', label: 'ожидание', unit: 'с на поездку', digits: 1, lowerBetter: true, get: (l, c) => row(l, c)?.mean_wait },
+    { id: 'p95', label: 'p95 поездки', unit: 'с', digits: 0, lowerBetter: true, get: (l, c) => row(l, c)?.p95_travel_time },
+    { id: 'worst', label: 'худший подход', unit: 'с ожидания', digits: 1, lowerBetter: true, get: (l, c) => row(l, c)?.worst_approach_wait },
+    { id: 'stops', label: 'остановки', unit: 'на поездку', digits: 2, lowerBetter: true, get: (l, c) => row(l, c)?.mean_stops },
+    { id: 'thr', label: 'выехало', unit: 'авт/ч', digits: 0, lowerBetter: false, get: (l, c) => row(l, c)?.throughput_veh_h },
+  ];
+  return (
+    <section className="panel">
+      <h2 className="cmp-h2">Сравнение: один перекрёсток</h2>
+      <CompareChart title="Чуй × Манаса" loads={loads} metrics={metrics}
+        series={[{ key: 'fixed', label: 'фиксированный (Baseline)', color: 'var(--ctl-fixed)' }, { key: 'adaptive', label: 'адаптивный (Adaptive AI)', color: 'var(--ctl-adaptive)' }]} />
+      <p className="hint">Столбец — среднее по {results.params.seeds.length} seed, отрезок — разброс между ними (± ст. отклонение). Точные числа — в таблице ниже. Наведите на столбец, чтобы увидеть значение.</p>
     </section>
   );
 }

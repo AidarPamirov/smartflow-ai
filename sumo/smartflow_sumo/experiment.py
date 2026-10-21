@@ -99,6 +99,7 @@ def summarize(runs: list[RunResult]) -> list[dict]:
                 "max_wait_vehicle": m(lambda r: max(r.max_wait_by_approach.values()) if r.max_wait_by_approach else None),
                 "safety_overrides": sum(r.safety_overrides for r in rs),
                 "fallbacks": sum(1 for r in rs if r.fallback_at is not None),
+                "clearance_hold_s": m(lambda r: r.clearance_hold_s),
                 "decision_reasons": _merge(r.decision_reasons for r in rs),
             })
     return rows

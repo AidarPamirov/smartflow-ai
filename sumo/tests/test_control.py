@@ -83,6 +83,26 @@ class SupervisorTests(unittest.TestCase):
         greens = [n for s, n in self.segments(states) if "G" in s]
         self.assertTrue(all(n <= 60 for n in greens[:-1]))
 
+    def test_allred_held_while_box_blocked(self):
+        """В зоне перекрёстка стоит машина: «все красные» держатся, пока зона не освободится, потом обычный переход."""
+        sup = SignalSupervisor(plan(), Timing(min_green=8, yellow=3, all_red=2))
+        ctrl = FixedTimeController([10, 10])
+        states = []
+        for t in range(1, 60):
+            blocked = 14 <= t < 30  # машина застряла в зоне перекрёстка с 14-й по 29-ю секунду
+            o = Observation(float(t), {}, {}, {}, box_blocked=blocked)
+            states.append(tick(sup, ctrl, o, 1.0))
+        segs = self.segments(states)
+        allred = [n for s, n in segs if set(s) == {"r"}]
+        self.assertEqual(allred[0], 2 + (30 - 15), "«все красные» продлены до освобождения зоны")
+        self.assertEqual(sup.clearance_hold_s, 15)
+        log = []
+        sup2 = SignalSupervisor(plan(), Timing())
+        for t in range(1, 40):
+            tick(sup2, FixedTimeController([10, 10]), Observation(float(t), {}, {}, {}, box_blocked=14 <= t < 30), 1.0, log)
+        self.assertEqual([d.reason for d in log if "зоне перекрёстка" in d.reason], ["продление «все красные»: в зоне перекрёстка стоит машина"])
+        self.assertTrue(all(plan().conflicting_greens(x) == [] for x in states))
+
     def test_unsafe_timing_rejected(self):
         with self.assertRaises(ValueError):
             SignalSupervisor(plan(), Timing(yellow=2))

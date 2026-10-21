@@ -111,6 +111,8 @@ class RunResult:
     fallback_reason: str | None = None
     #: шаги, на которых в SUMO было не то состояние, что задано, и включались «все красные»
     safety_overrides: int = 0
+    #: секунды, на которые продлевались «все красные», потому что в зоне перекрёстка стояла машина
+    clearance_hold_s: float = 0.0
     fixed_cycle: dict | None = None
     states: list = field(default_factory=list, repr=False)
 
@@ -179,6 +181,7 @@ def run(sc: Scenario, controller_kind: str, load: str, demand: Demand, seed: int
     from traci.exceptions import FatalTraCIError, TraCIException  # noqa: PLC0415 — нужен и для libsumo-режима
     lost = (FatalTraCIError, TraCIException, ConnectionError, OSError)
     in_lanes = sorted({l.in_lane for l in plan.links})
+    box = internal_lanes(net, TLS_ID)
     lane_app = {l: l.split("_")[0] for l in in_lanes}
     lane_len = {l: tc.lane.getLength(l) for l in in_lanes}
     if trace:
@@ -253,7 +256,8 @@ def run(sc: Scenario, controller_kind: str, load: str, demand: Demand, seed: int
                 q_samples += 1
             if trace:
                 trace.frame(tc, t, sup)
-            obs = Observation(time=t, queue=queue, wait=wait, approaching=appr)
+            obs = Observation(time=t, queue=queue, wait=wait, approaching=appr,
+                              box_blocked=sup.stage == "allred" and box_blocked(tc, box))
             state = tick(sup, ctrl, obs, step, decisions)
             tc.trafficlight.setRedYellowGreenState(TLS_ID, state)
             if f.foreign_state_at is not None and t >= f.foreign_state_at:
@@ -288,7 +292,7 @@ def run(sc: Scenario, controller_kind: str, load: str, demand: Demand, seed: int
         mean_queue=round(q_total_sum / q_samples, 2) if q_samples else 0.0,
         max_queue_approach=q_max,
         queue_by_approach={a: round(v / q_samples, 2) if q_samples else 0.0 for a, v in q_sum.items()},
-        collisions=collisions, teleports=teleports, conflict_steps=conflict_steps, switches=sup.switches,
+        collisions=collisions, teleports=teleports, conflict_steps=conflict_steps, switches=sup.switches, clearance_hold_s=sup.clearance_hold_s,
         min_green_seen=durations["green"], min_yellow_seen=durations["yellow"], min_allred_seen=durations["allred"],
         sim_end=t, measured_trips=len(measured),
         p95_travel_time=_pct([x["duration"] for x in measured], 0.95),
@@ -307,6 +311,21 @@ def run(sc: Scenario, controller_kind: str, load: str, demand: Demand, seed: int
         trace.end(asdict(res) | {"states": [], "decisions": []})
         trace.data["decisions"] = [d for d in res.decisions if w0 <= d["time"] <= w1]
     return res
+
+
+BOX_SLOW = 1.0  # м/с: машина в зоне перекрёстка медленнее этого — «стоит», зона занята
+
+
+def internal_lanes(net: Path, junction: str) -> list[str]:
+    """Внутренние полосы узла (зона перекрёстка) из файла сети."""
+    import xml.etree.ElementTree as ET
+    j = ET.parse(net).getroot().find(f"junction[@id='{junction}']")
+    return (j.get("intLanes") or "").split() if j is not None else []
+
+
+def box_blocked(tc, lanes: list[str]) -> bool:
+    """В зоне перекрёстка есть стоящая или почти стоящая машина (выехать ей некуда)."""
+    return any(tc.vehicle.getSpeed(v) < BOX_SLOW for l in lanes for v in tc.lane.getLastStepVehicleIDs(l))
 
 
 def _read_tripinfo(path: Path) -> list[dict]:

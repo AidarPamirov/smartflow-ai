@@ -154,15 +154,21 @@ def build_net(sc: Scenario, out: Path | None = None) -> Path:
 
 # ───────────── связи светофора и конфликты из сети SUMO ─────────────
 
-def read_links_and_foes(net_path: Path) -> tuple[list[Link], set[tuple[int, int]]]:
-    """Связи светофора (индекс, входная полоса, манёвр) и пары конфликтующих связей по матрице SUMO."""
+def read_links_and_foes(net_path: Path, tls: str = TLS_ID, in_dir=None, out_dir=None) -> tuple[list[Link], set[tuple[int, int]]]:
+    """Связи светофора (индекс, входная полоса, манёвр) и пары конфликтующих связей по матрице SUMO.
+
+    in_dir / out_dir — сторона света входного и выходного ребра для этого узла; по умолчанию — первая буква id
+    ребра (схема одиночного перекрёстка: N_in, E_out, …). Для коридора их задаёт построитель сети.
+    """
+    in_dir = in_dir or (lambda e: e.split("_")[0])
+    out_dir = out_dir or (lambda e: e.split("_")[0])
     root = ET.parse(net_path).getroot()
     links: dict[int, Link] = {}
     junction_index: dict[int, int] = {}
     # индексы связей узла (request index) идут по порядку соединений с входных полос узла
-    incoming = [l for l in root.find(f"junction[@id='{TLS_ID}']").get("incLanes").split()]
+    incoming = [l for l in root.find(f"junction[@id='{tls}']").get("incLanes").split()]
     jidx = 0
-    conns = [c for c in root.findall("connection") if c.get("tl") == TLS_ID]
+    conns = [c for c in root.findall("connection") if c.get("tl") == tls]
     by_lane: dict[str, list[ET.Element]] = {}
     for c in conns:
         by_lane.setdefault(f"{c.get('from')}_{c.get('fromLane')}", []).append(c)
@@ -170,11 +176,11 @@ def read_links_and_foes(net_path: Path) -> tuple[list[Link], set[tuple[int, int]
         for c in by_lane.get(lane, []):
             tl = int(c.get("linkIndex"))
             fr, to = c.get("from"), c.get("to")
-            app, ex = fr.split("_")[0], to.split("_")[0]
+            app, ex = in_dir(fr), out_dir(to)
             links[tl] = Link(tl, lane, Movement(app, turn_of(app, ex)))
             junction_index[tl] = jidx
             jidx += 1
-    req = {int(r.get("index")): r.get("foes") for r in root.find(f"junction[@id='{TLS_ID}']").findall("request")}
+    req = {int(r.get("index")): r.get("foes") for r in root.find(f"junction[@id='{tls}']").findall("request")}
     inv = {j: t for t, j in junction_index.items()}
     foes = set()
     for i, bits in req.items():
