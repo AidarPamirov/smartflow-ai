@@ -2,7 +2,7 @@ import type { SelectedSignal, TrafficController } from '../traffic/controller';
 import type { ControlMode, Light } from './runtime';
 import { LIGHT_COLOR } from './signalLayer';
 
-export const MODE_LABEL: Record<ControlMode, string> = { fixed: 'Baseline (фикс.)', adaptive: 'Adaptive AI', manual: 'Ручной' };
+export const MODE_LABEL: Record<ControlMode, string> = { fixed: 'Baseline (фикс.)', adaptive: 'Адаптивный', manual: 'Ручной' };
 const STATUS_LABEL = { working: 'работает', inactive: 'выключен', no_data: 'данные недоступны' } as const;
 const STAGE_LABEL = { green: 'зелёный', yellow: 'жёлтый', allred: 'все красные' } as const;
 const LIGHT_LABEL: Record<Light, string> = { G: 'зелёный', Y: 'жёлтый', R: 'красный', off: 'выключен' };
@@ -61,7 +61,7 @@ export function SignalPanel({ ctrl, sel }: { ctrl: TrafficController; sel: Selec
           ))}
         </div>
       )}
-      {sel.mode === 'adaptive' && <p className="sig-hint">Adaptive AI здесь — правила без обучения: продление зелёного, пока подъезжают машины; смена по «давлению» (очередь + ожидание); защита от бесконечного ожидания. Очереди — из синтетического трафика.</p>}
+      {sel.mode === 'adaptive' && <p className="sig-hint">Адаптивный режим — правила без машинного обучения (актуированное управление): продление зелёного, пока подъезжают машины; смена по «давлению» (очередь + ожидание); защита от бесконечного ожидания. Очереди — из синтетического трафика.</p>}
 
       {sel.phases.length > 0 && (
         <table className="sig-table">

@@ -1,12 +1,14 @@
 /**
- * Результаты эксперимента «коридор» (smartflow-sumo-corridor/1), пишет sumo/smartflow_sumo/corridor.py.
+ * Результаты эксперимента «коридор» (smartflow-sumo-corridor/2), пишет sumo/smartflow_sumo/corridor.py.
  * Только типы, проверка и вычисления для отображения — без отрисовки.
  */
-import type { Stat } from './trace';
+import type { Describe, Stat } from './trace';
 import { TraceError } from './trace';
+import { parseComparisons, type Comparison } from './paired';
 
-export const CORRIDOR_FORMAT = 'smartflow-sumo-corridor/1';
-export type CorridorCtrl = 'fixed' | 'coordinated' | 'adaptive';
+export const CORRIDOR_FORMAT = 'smartflow-sumo-corridor/2';
+export const CORRIDOR_CTRLS = ['fixed', 'coordinated', 'adaptive', 'coord_adaptive'] as const;
+export type CorridorCtrl = (typeof CORRIDOR_CTRLS)[number];
 
 export interface CorridorRow {
   load: string;
@@ -24,6 +26,12 @@ export interface CorridorRow {
   clearance_hold_s?: Stat;
   collision_details?: { t: number; type: string; lane: string }[];
   decision_reasons: Record<string, number>;
+  /** Ожидание машин, въехавших с концов проспекта и с поперечных улиц, с. */
+  main_wait: Stat; side_wait: Stat;
+  /** Средняя очередь: узел → сторона (N/E/S/W) → авт. */
+  queue_by_approach: Record<string, Record<string, Stat>>;
+  wait_by_entry: Record<string, Stat>;
+  stats?: Record<string, Describe | null>;
 }
 
 export interface CorridorResults {
@@ -37,8 +45,11 @@ export interface CorridorResults {
     incident: { title: string; flows_veh_h: Record<string, number>; duration_s: number; teleport_s?: number; closures: { edge: string; from_s: number; to_s: number }[] } | null;
     fixed: { node: string; greens: number[]; cycle: number; phases: string[]; offset: number }[];
     coordinated: { node: string; greens: number[]; cycle: number; phases: string[]; offset: number; east_phase: number }[];
+    controllers: CorridorCtrl[];
+    routes_sha256: Record<string, string>;
   };
   summary: CorridorRow[];
+  comparisons: Comparison[];
   elapsed_s: number;
 }
 
@@ -47,7 +58,8 @@ export function parseCorridor(d: unknown): CorridorResults {
   if (!r || r.format !== CORRIDOR_FORMAT) throw new TraceError(`format должен быть ${CORRIDOR_FORMAT}`);
   if (!r.corridor?.nodes?.length || !Array.isArray(r.summary) || !r.summary.length || !r.params) throw new TraceError('в результатах коридора нет данных');
   for (const row of r.summary)
-    if (!['fixed', 'coordinated', 'adaptive'].includes(row.controller)) throw new TraceError(`неизвестный контроллер ${row.controller}`);
+    if (!(CORRIDOR_CTRLS as readonly string[]).includes(row.controller)) throw new TraceError(`неизвестный контроллер ${row.controller}`);
+  try { parseComparisons(r.comparisons); } catch (e) { throw new TraceError((e as Error).message); }
   return r as CorridorResults;
 }
 
@@ -62,3 +74,10 @@ export function best(rows: CorridorRow[], load: string, get: (r: CorridorRow) =>
 /** Наибольшее среднее по seed заполнение участка между перекрёстками (0…1). */
 export const maxFill = (r: CorridorRow) => Math.max(...Object.values(r.max_fill).map((s) => s[0] ?? 0));
 export const spillTotal = (r: CorridorRow) => Object.values(r.spill_seconds).reduce((a, s) => a + (s[0] ?? 0), 0);
+
+/** Средняя очередь узла на подходах магистрали (W, E) или поперечных улиц (N, S), авт. */
+export function nodeQueue(r: CorridorRow, node: string, group: 'main' | 'cross'): number | null {
+  const q = r.queue_by_approach?.[node];
+  if (!q) return null;
+  return Object.entries(q).filter(([d]) => ('WE'.includes(d)) === (group === 'main')).reduce((a, [, s]) => a + (s[0] ?? 0), 0);
+}

@@ -131,7 +131,7 @@ def make_controller(kind: str, plan: SignalPlan, fixed_greens: list[float] | Non
     """Контроллер в безопасной обёртке: резерв — фиксированный план (тот же, что у базового контроллера)."""
     if not fixed_greens:
         raise ValueError("нужны длительности зелёного фиксированного плана (он же — резерв)")
-    if kind == "fixed":
+    if kind in ("fixed", "fixed_tuned"):  # fixed_tuned — тот же фиксированный цикл, пересчитанный под нагрузку
         primary: Controller = FixedTimeController(fixed_greens)
     elif kind == "adaptive":
         primary = AdaptiveController(adaptive_limits(fixed_greens))
@@ -153,14 +153,20 @@ def _traci(libsumo: bool):
 def run(sc: Scenario, controller_kind: str, load: str, demand: Demand, seed: int, *, timing: Timing = Timing(),
         fixed_greens: list[float] | None = None, drain: float = 1800.0, step: float = 1.0, libsumo: bool = False,
         trace: TraceRecorder | None = None, keep_states: bool = False, work_dir: Path | None = None,
-        faults: Faults | None = None) -> RunResult:
+        faults: Faults | None = None, routes_file: Path | None = None) -> RunResult:
+    """Один прогон. routes_file — готовый файл маршрутов (общий для всех контроллеров этого seed); без него файл
+    генерируется здесь из seed."""
     net = BUILD_DIR / sc.id / "net.net.xml"
     if not net.exists():
         build_net(sc)
     plan_name, plan = make_plan(net, sc)
     work = Path(work_dir or tempfile.mkdtemp(prefix="sf-sumo-"))
-    routes = work / f"routes_{load}_{seed}.rou.xml"
-    n_demand = write_routes(sc, demand, seed, routes)
+    if routes_file is not None:
+        routes = Path(routes_file)
+        n_demand = sum(1 for e in ET.parse(routes).getroot() if e.tag in ("vehicle", "trip"))
+    else:
+        routes = work / f"routes_{load}_{seed}.rou.xml"
+        n_demand = write_routes(sc, demand, seed, routes)
     tripinfo = work / f"tripinfo_{controller_kind}_{load}_{seed}.xml"
     ctrl = make_controller(controller_kind, plan, fixed_greens, faults)
     sup = SignalSupervisor(plan, timing)
@@ -303,7 +309,7 @@ def run(sc: Scenario, controller_kind: str, load: str, demand: Demand, seed: int
         max_wait_by_approach={a: round(max(v), 1) for a, v in by_app.items() if v},
         decisions=[asdict(d) for d in decisions], decision_reasons=reasons,
         fallback_at=ctrl.failed_at, fallback_reason=ctrl.failure, safety_overrides=overrides,
-        fixed_cycle={"greens": fixed_greens} if controller_kind == "fixed" else None,
+        fixed_cycle={"greens": fixed_greens} if controller_kind.startswith("fixed") else None,
         states=states if keep_states else [],
     )
     if trace:

@@ -70,3 +70,18 @@
 .cmp-tip { position: absolute; transform: translate(10px, -110%); background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; font-size: 12px; pointer-events: none; white-space: nowrap; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12); z-index: 2; }
 @media (max-width: 860px) { .cmp-grid-2 { grid-template-columns: 1fr; } }
 .cmp-h2 { font-size: 15px; text-transform: none; letter-spacing: 0; color: var(--text-primary); margin: 0 0 8px; }
+
+/* Парные сравнения: цвет вывода всегда вместе с текстом «лучше / хуже / не подтверждена» */
+.sumo { --ctl-tuned: #eda100; --ctl-coord-adaptive: #6250d6; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .sumo { --ctl-tuned: #c98500; --ctl-coord-adaptive: #9085e9; }
+}
+:root[data-theme='dark'] .sumo { --ctl-tuned: #c98500; --ctl-coord-adaptive: #9085e9; }
+.paired { display: grid; gap: 8px; margin-top: 8px; }
+.paired-table td { vertical-align: top; }
+.paired-table td:first-child { min-width: 200px; }
+.paired-table caption { caption-side: bottom; text-align: left; padding-top: 6px; }
+.paired-v { font-size: 12px; font-weight: 600; }
+.paired-v.better { color: var(--good); }
+.paired-v.worse { color: var(--bad); }
+.paired-v.unclear, .paired-v.same { color: var(--text-secondary); font-weight: 400; }

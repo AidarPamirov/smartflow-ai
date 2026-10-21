@@ -2,12 +2,31 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { frameAt, parseResults, parseTrace, vehiclesAt, type ResultRow, type Results, type Trace } from './trace';
 import { CorridorSection } from './CorridorSection';
 import { CompareChart, type Metric } from './CompareChart';
+import { PairedTable, type PairDef, type PairMetric } from './PairedTable';
 import './sumo.css';
 
 const BASE = `${import.meta.env.BASE_URL}data/sumo/`;
 const SPEEDS = [1, 2, 5, 10];
 const LOAD_LABEL: Record<string, string> = { low: 'низкая', medium: 'средняя', high: 'высокая' };
-const CTRL_LABEL = { fixed: 'Фиксированный цикл', adaptive: 'Адаптивный (очереди и ожидание)' } as const;
+const CTRL_LABEL = { fixed: 'Фиксированный цикл', fixed_tuned: 'Фиксированный, настроенный под нагрузку', adaptive: 'Адаптивный (очереди и ожидание)' } as const;
+/** Короткие названия для таблиц и легенд. */
+const CTRL_SHORT: Record<string, string> = { fixed: 'фиксированный', fixed_tuned: 'фикс., под нагрузку', adaptive: 'адаптивный' };
+const CTRL_COLOR: Record<string, string> = { fixed: 'var(--ctl-fixed)', fixed_tuned: 'var(--ctl-tuned)', adaptive: 'var(--ctl-adaptive)' };
+const SINGLE_PAIRS: PairDef[] = [
+  { a: 'adaptive', b: 'fixed', label: 'адаптивный − фиксированный' },
+  { a: 'adaptive', b: 'fixed_tuned', label: 'адаптивный − фикс. под нагрузку' },
+  { a: 'fixed_tuned', b: 'fixed', label: 'фикс. под нагрузку − фиксированный' },
+];
+const SINGLE_PAIR_METRICS: PairMetric[] = [
+  { id: 'mean_wait', label: 'Среднее ожидание на поездку', unit: 'с', digits: 1 },
+  { id: 'mean_time_loss', label: 'Средняя потеря времени', unit: 'с', digits: 1 },
+  { id: 'p95_travel_time', label: '95-й перцентиль времени поездки', unit: 'с', digits: 1 },
+  { id: 'mean_queue', label: 'Средняя очередь (стоящих на подходах)', unit: 'авт', digits: 1 },
+  { id: 'worst_approach_wait', label: 'Худший подход: среднее ожидание', unit: 'с', digits: 1 },
+  { id: 'mean_stops', label: 'Остановок на поездку', unit: '', digits: 2 },
+  { id: 'throughput_veh_h', label: 'Выехало за время спроса', unit: 'авт/ч', digits: 0 },
+  { id: 'completed', label: 'Завершено поездок', unit: '', digits: 0 },
+];
 const STAGE_LABEL = { green: 'зелёный', yellow: 'жёлтый', allred: 'все красные' } as const;
 const CAR_LEN = 4.5, CAR_W = 1.8;
 
@@ -259,60 +278,56 @@ function Decisions({ trace, t }: { trace: Trace; t: number }) {
 
 function ResultsTable({ results }: { results: Results }) {
   const loads = Object.keys(results.params.loads_veh_h);
-  const row = (l: string, c: 'fixed' | 'adaptive') => results.summary.find((r) => r.load === l && r.controller === c);
-  const delta = (a: number | null, b: number | null) => (a == null || b == null || a === 0 ? null : (b - a) / a);
-  const metrics: { label: string; get: (r: ResultRow) => [number | null, number | null]; unit: string; d: number; lower: boolean }[] = [
-    { label: 'Среднее ожидание на поездку', get: (r) => r.mean_wait, unit: 'с', d: 1, lower: true },
-    { label: 'Средняя потеря времени', get: (r) => r.mean_time_loss, unit: 'с', d: 1, lower: true },
-    { label: 'Стоящих машин на подходах, в среднем', get: (r) => r.mean_queue, unit: 'авт', d: 1, lower: true },
-    { label: 'Макс. очередь на подходе', get: (r) => r.max_queue_approach, unit: 'авт', d: 0, lower: true },
-    { label: '95-й перцентиль времени поездки', get: (r) => r.p95_travel_time ?? [null, null], unit: 'с', d: 1, lower: true },
-    { label: 'Суммарное ожидание за час', get: (r) => r.total_wait_veh_h ?? [null, null], unit: 'авт·ч', d: 2, lower: true },
-    { label: 'Остановок на поездку', get: (r) => r.mean_stops ?? [null, null], unit: '', d: 2, lower: true },
-    { label: 'Худший подход: среднее ожидание', get: (r) => r.worst_approach_wait ?? [null, null], unit: 'с', d: 1, lower: true },
-    { label: 'Самое долгое ожидание одной машины', get: (r) => r.max_wait_vehicle ?? [null, null], unit: 'с', d: 0, lower: true },
-    { label: 'Пропускная способность (выехало)', get: (r) => r.throughput_veh_h ?? [null, null], unit: 'авт/ч', d: 0, lower: false },
-    { label: 'Завершено поездок', get: (r) => r.completed, unit: '', d: 0, lower: false },
-    { label: 'Не доехали к концу', get: (r) => r.unfinished, unit: '', d: 0, lower: true },
+  const ctrls = results.params.controllers;
+  const row = (l: string, c: string) => results.summary.find((r) => r.load === l && r.controller === c);
+  const metrics: { label: string; get: (r: ResultRow) => [number | null, number | null]; unit: string; d: number }[] = [
+    { label: 'Среднее ожидание на поездку', get: (r) => r.mean_wait, unit: 'с', d: 1 },
+    { label: 'Средняя потеря времени', get: (r) => r.mean_time_loss, unit: 'с', d: 1 },
+    { label: 'Стоящих машин на подходах, в среднем', get: (r) => r.mean_queue, unit: 'авт', d: 1 },
+    { label: 'Макс. очередь на подходе', get: (r) => r.max_queue_approach, unit: 'авт', d: 0 },
+    { label: '95-й перцентиль времени поездки', get: (r) => r.p95_travel_time ?? [null, null], unit: 'с', d: 1 },
+    { label: 'Суммарное ожидание за час', get: (r) => r.total_wait_veh_h ?? [null, null], unit: 'авт·ч', d: 2 },
+    { label: 'Остановок на поездку', get: (r) => r.mean_stops ?? [null, null], unit: '', d: 2 },
+    { label: 'Худший подход: среднее ожидание', get: (r) => r.worst_approach_wait ?? [null, null], unit: 'с', d: 1 },
+    { label: 'Самое долгое ожидание одной машины', get: (r) => r.max_wait_vehicle ?? [null, null], unit: 'с', d: 0 },
+    { label: 'Пропускная способность (выехало)', get: (r) => r.throughput_veh_h ?? [null, null], unit: 'авт/ч', d: 0 },
+    { label: 'Завершено поездок', get: (r) => r.completed, unit: '', d: 0 },
+    { label: 'Не доехали к концу', get: (r) => r.unfinished, unit: '', d: 0 },
   ];
   return (
     <section className="panel sumo-results">
-      <h2>Результаты: {results.params.seeds.length} seed × {results.params.duration_s / 60} мин на каждую нагрузку</h2>
+      <h2>Все метрики: {results.params.seeds.length} seed × {results.params.duration_s / 60} мин на каждую нагрузку и контроллер</h2>
       <p className="hint">
-        Среднее по seed {results.params.seeds.join(', ')} (± стандартное отклонение). Ожидание и потеря времени — по поездкам,
-        начавшимся после {results.params.warmup_s / 60} мин разогрева (ожидание — время со скоростью ≤ 0,1 м/с).
+        Среднее по seed {results.params.seeds[0]}–{results.params.seeds[results.params.seeds.length - 1]} ± стандартное отклонение между прогонами (разброс).
+        Ожидание и потеря времени — по поездкам, начавшимся после {results.params.warmup_s / 60} мин разогрева (ожидание — время со скоростью ≤ 0,1 м/с).
         Очередь — число стоящих машин на всех подходах, замер каждую секунду с {results.params.warmup_s / 60}-й минуты до конца спроса.
-        Разница = (адаптивный − фиксированный) / фиксированный.
+        Разности с доверительными интервалами — в парном сравнении выше.
       </p>
       <div className="table-wrap">
         <table>
           <thead>
-            <tr><th>Нагрузка</th><th>Метрика</th><th>{CTRL_LABEL.fixed}</th><th>{CTRL_LABEL.adaptive}</th><th>Разница</th></tr>
+            <tr><th>Нагрузка</th><th>Метрика</th>{ctrls.map((c) => <th key={c}>{CTRL_SHORT[c] ?? c}</th>)}</tr>
           </thead>
           <tbody>
             {loads.map((l) => {
-              const f = row(l, 'fixed'), a = row(l, 'adaptive');
-              if (!f || !a) return null;
+              const rows = ctrls.map((c) => row(l, c));
+              if (rows.some((r) => !r)) return null;
               const q = results.params.loads_veh_h[l];
-              return metrics.map((m, i) => {
-                const [fv, fs] = m.get(f), [av, as] = m.get(a);
-                const dl = delta(fv, av);
-                const good = dl == null || Math.abs(dl) < 0.01 ? 'neutral' : (dl < 0) === m.lower ? 'good' : 'bad';
-                return (
-                  <tr key={l + m.label} className={i === 0 ? 'grp' : ''}>
-                    {i === 0 && (
-                      <td rowSpan={metrics.length} className="sumo-load">
-                        <b>{LOAD_LABEL[l] ?? l}</b>
-                        <div className="muted small mono">В/З {q.E}/{q.W}<br />С/Ю {q.N}/{q.S} авт/ч</div>
-                      </td>
-                    )}
-                    <td>{m.label}</td>
-                    <td className="mono">{nf(fv, m.d)}{fs ? ` ± ${nf(fs, m.d)}` : ''} {m.unit}</td>
-                    <td className="mono">{nf(av, m.d)}{as ? ` ± ${nf(as, m.d)}` : ''} {m.unit}</td>
-                    <td className={`mono delta ${good}`}>{dl == null ? '—' : `${dl > 0 ? '+' : ''}${nf(dl * 100, 1)}%`}</td>
-                  </tr>
-                );
-              });
+              return metrics.map((m, i) => (
+                <tr key={l + m.label} className={i === 0 ? 'grp' : ''}>
+                  {i === 0 && (
+                    <td rowSpan={metrics.length} className="sumo-load">
+                      <b>{LOAD_LABEL[l] ?? l}</b>
+                      <div className="muted small mono">В/З {q.E}/{q.W}<br />С/Ю {q.N}/{q.S} авт/ч</div>
+                    </td>
+                  )}
+                  <td>{m.label}</td>
+                  {rows.map((r, k) => {
+                    const [v, sd] = m.get(r!);
+                    return <td key={ctrls[k]} className="mono">{nf(v, m.d)}{sd ? ` ± ${nf(sd, m.d)}` : ''} {m.unit}</td>;
+                  })}
+                </tr>
+              ));
             })}
           </tbody>
         </table>
@@ -324,7 +339,7 @@ function ResultsTable({ results }: { results: Results }) {
           <tbody>
             {results.summary.map((r) => (
               <tr key={r.load + r.controller}>
-                <td>{LOAD_LABEL[r.load] ?? r.load}</td><td>{r.controller === 'fixed' ? 'фиксированный' : 'адаптивный'}</td>
+                <td>{LOAD_LABEL[r.load] ?? r.load}</td><td>{CTRL_SHORT[r.controller] ?? r.controller}</td>
                 <td className="mono">{r.collisions}</td><td className="mono">{r.conflict_steps}</td><td className="mono">{r.teleports}</td>
                 <td className="mono">{r.safety_overrides ?? '—'}</td><td className="mono">{r.fallbacks ?? '—'}</td>
                 <td className="mono">{nf(r.min_green_seen, 0)} / {nf(r.min_yellow_seen, 0)} / {nf(r.min_allred_seen, 0)}</td>
@@ -342,7 +357,7 @@ function ResultsTable({ results }: { results: Results }) {
               <tbody>
                 {results.summary.map((r) => (
                   <tr key={r.load + r.controller + 'why'}>
-                    <td>{LOAD_LABEL[r.load] ?? r.load}</td><td>{r.controller === 'fixed' ? 'фиксированный' : 'адаптивный'}</td>
+                    <td>{LOAD_LABEL[r.load] ?? r.load}</td><td>{CTRL_SHORT[r.controller] ?? r.controller}</td>
                     <td className="small">{Object.entries(r.decision_reasons ?? {}).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} — ${v}`).join('; ')}</td>
                   </tr>
                 ))}
@@ -363,8 +378,9 @@ function Params({ results }: { results: Results }) {
       <div className="sumo-cols">
         <div>
           <h3>Контроллеры</h3>
-          <p><b>Фиксированный цикл</b> рассчитан по Уэбстеру на нагрузку «{LOAD_LABEL[p.fixed.design_load]}» и одинаков для всех нагрузок, как у обычного светофора: цикл {nf(p.fixed.cycle_s, 0)} с, зелёный {p.fixed.phases.map((n, i) => `${n} — ${p.fixed.greens_s[i]} с`).join('; ')}.</p>
-          <p><b>Адаптивный</b> (правила, не машинное обучение): зелёный продлевается, пока на полосах фазы есть очередь или машины в 30 м перед стоп-линией; завершается при разрыве потока, по максимуму (1,5 × зелёного расчётного плана) или если другая фаза ждёт дольше 120 с. Следующая фаза — с наибольшим давлением: стоящие машины + ожидание / 20 с.</p>
+          <p><b>Фиксированный цикл</b> рассчитан по Уэбстеру на нагрузку «{LOAD_LABEL[p.fixed.design_load]}» и одинаков для всех нагрузок, как у обычного светофора с одной программой: цикл {nf(p.fixed.cycle_s, 0)} с, зелёный {p.fixed.phases.map((n, i) => `${n} — ${p.fixed.greens_s[i]} с`).join('; ')}.</p>
+          <p><b>Фиксированный, настроенный под нагрузку</b> — тот же расчёт по Уэбстеру, но отдельно для каждой нагрузки (цикл от 60 до 120 с): {Object.entries(p.fixed_tuned).map(([l, f]) => `${LOAD_LABEL[l] ?? l} — цикл ${nf(f.cycle_s, 0)} с (${f.greens_s.join(' / ')})`).join('; ')}. Это самый сильный фиксированный соперник: он заранее «знает» спрос, чего у реального светофора нет. На средней нагрузке он совпадает с обычным фиксированным.</p>
+          <p><b>Адаптивный</b> (правила, не машинное обучение — актуированное управление): зелёный продлевается, пока на полосах фазы есть очередь или машины в 30 м перед стоп-линией; завершается при разрыве потока, по максимуму или если другая фаза ждёт дольше {p.adaptive.starvation} с. Максимум зелёного — 1,5 × зелёного расчётного плана: {p.adaptive.max_green_by_phase?.join(' / ') ?? p.adaptive.max_green} с. Следующая фаза — с наибольшим давлением: стоящие машины + ожидание / {p.adaptive.wait_weight} с. Датчики в модели идеальные: очередь на всей длине подхода и точное время ожидания.</p>
           <p><b>Страж безопасности</b> общий для обоих: минимальный зелёный {p.timing.min_green} с, жёлтый {p.timing.yellow} с, «все красные» {p.timing.all_red} с, переход только через них. План фаз проверяется по матрице конфликтов сети SUMO; в каждом шаге прогона фактический сигнал в SUMO проверяется ещё раз.</p>
         </div>
         <div>
@@ -378,7 +394,8 @@ function Params({ results }: { results: Results }) {
       <pre className="sumo-code">{`pip install eclipse-sumo==1.28.0 traci==1.28.0 sumolib==1.28.0
 cd sumo
 python -m unittest discover -s tests -t .
-python -m smartflow_sumo.experiment --out ../public/data/sumo`}</pre>
+python -m smartflow_sumo.experiment --out ../public/data/sumo   # --jobs N — параллельных прогонов`}</pre>
+      <p className="hint">Маршруты каждого seed генерируются один раз и используются всеми контроллерами (SHA-256 файлов записан в results.json); сырые данные по каждому прогону — <a href={`${BASE}results-runs.csv`}>results-runs.csv</a>.</p>
       <p className="hint">Сгенерировано {new Date(results.generated).toLocaleString('ru-RU')}, расчёт занял {nf(results.elapsed_s / 60, 1)} мин. Данные о дорогах © OpenStreetMap contributors, ODbL.</p>
     </section>
   );
@@ -390,16 +407,24 @@ function SingleCompare({ results }: { results: Results }) {
   const metrics: Metric[] = [
     { id: 'wait', label: 'ожидание', unit: 'с на поездку', digits: 1, lowerBetter: true, get: (l, c) => row(l, c)?.mean_wait },
     { id: 'p95', label: 'p95 поездки', unit: 'с', digits: 0, lowerBetter: true, get: (l, c) => row(l, c)?.p95_travel_time },
+    { id: 'queue', label: 'очередь', unit: 'стоящих машин', digits: 1, lowerBetter: true, get: (l, c) => row(l, c)?.mean_queue },
     { id: 'worst', label: 'худший подход', unit: 'с ожидания', digits: 1, lowerBetter: true, get: (l, c) => row(l, c)?.worst_approach_wait },
-    { id: 'stops', label: 'остановки', unit: 'на поездку', digits: 2, lowerBetter: true, get: (l, c) => row(l, c)?.mean_stops },
     { id: 'thr', label: 'выехало', unit: 'авт/ч', digits: 0, lowerBetter: false, get: (l, c) => row(l, c)?.throughput_veh_h },
   ];
+  const n = results.params.seeds.length;
   return (
     <section className="panel">
-      <h2 className="cmp-h2">Сравнение: один перекрёсток</h2>
+      <h2 className="cmp-h2">Сравнение: один перекрёсток, {n} повторов на каждую нагрузку</h2>
       <CompareChart title="Чуй × Манаса" loads={loads} metrics={metrics}
-        series={[{ key: 'fixed', label: 'фиксированный (Baseline)', color: 'var(--ctl-fixed)' }, { key: 'adaptive', label: 'адаптивный (Adaptive AI)', color: 'var(--ctl-adaptive)' }]} />
-      <p className="hint">Столбец — среднее по {results.params.seeds.length} seed, отрезок — разброс между ними (± ст. отклонение). Точные числа — в таблице ниже. Наведите на столбец, чтобы увидеть значение.</p>
+        series={results.params.controllers.map((c) => ({ key: c, label: CTRL_SHORT[c] ?? c, color: CTRL_COLOR[c] ?? 'var(--text-muted)' }))} />
+      <p className="hint">Столбец — среднее по {n} seed, отрезок — разброс между прогонами (± ст. отклонение). Наведите на столбец, чтобы увидеть значение.</p>
+      <h3>Парное сравнение по seed</h3>
+      <p className="hint">
+        Все контроллеры проходят одни и те же {n} наборов машин (одинаковые маршруты и seed), поэтому сравнивается разность в каждом seed.
+        В ячейке — средняя разность A − B, её 95 % доверительный интервал (распределение Стьюдента) и в скольких seed A лучше.
+        «Лучше» или «хуже» пишется, только если весь интервал по одну сторону от нуля.
+      </p>
+      <PairedTable comparisons={results.comparisons} pairs={SINGLE_PAIRS} metrics={SINGLE_PAIR_METRICS} loads={loads} />
     </section>
   );
 }

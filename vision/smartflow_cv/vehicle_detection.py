@@ -90,6 +90,61 @@ class BackgroundDetector:
         return out
 
 
+class YoloxOnnxDetector:
+    """Нейросетевой детектор YOLOX (Megvii, Apache-2.0), предобученный на COCO, через OpenCV DNN — без PyTorch и GPU.
+
+    Веса (файл .onnx) в проект не входят: их скачивает detrac_eval.py из копии на Hugging Face (hr16/yolox-onnx).
+    Дообучения на дорогах Бишкека нет. Машинами считаются классы COCO car, bus, truck.
+    """
+
+    name = "YOLOX (COCO, OpenCV DNN)"
+    verified = "UA-DETRAC: реальное размеченное видео, см. detrac_eval.py"
+    VEHICLE_CLASSES = (2, 5, 7)  # car, bus, truck в нумерации COCO
+
+    def __init__(self, weights: str, input_size: int = 416, conf: float = 0.3, nms: float = 0.45):
+        import os
+        if not os.path.exists(weights):
+            raise ModuleUnavailable(f"нет файла весов {weights}: детектор YOLOX недоступен")
+        self.net = cv2.dnn.readNetFromONNX(weights)
+        self.size, self.conf, self.nms = input_size, conf, nms
+        grids, strides = [], []
+        for s in (8, 16, 32):
+            n = input_size // s
+            xv, yv = np.meshgrid(np.arange(n), np.arange(n))
+            grids.append(np.stack((xv, yv), 2).reshape(-1, 2))
+            strides.append(np.full((n * n, 1), s))
+        self._grid, self._stride = np.concatenate(grids).astype(np.float32), np.concatenate(strides).astype(np.float32)
+
+    def reset(self) -> None:
+        pass
+
+    def detect(self, frame: np.ndarray) -> list[Detection]:
+        h, w = frame.shape[:2]
+        r = min(self.size / h, self.size / w)
+        pad = np.full((self.size, self.size, 3), 114, np.uint8)
+        rs = cv2.resize(frame, (int(w * r), int(h * r)), interpolation=cv2.INTER_LINEAR)
+        pad[:rs.shape[0], :rs.shape[1]] = rs
+        self.net.setInput(pad.transpose(2, 0, 1)[None].astype(np.float32))
+        out = self.net.forward()[0]
+        xy = (out[:, :2] + self._grid) * self._stride
+        wh = np.exp(out[:, 2:4]) * self._stride
+        scores = out[:, 4:5] * out[:, 5:]
+        cls = scores.argmax(1)
+        conf = scores[np.arange(len(cls)), cls]
+        keep = (conf >= self.conf) & np.isin(cls, self.VEHICLE_CLASSES)
+        if not keep.any():
+            return []
+        xy, wh, conf, cls = xy[keep] / r, wh[keep] / r, conf[keep], cls[keep]
+        boxes = [[float(x - bw / 2), float(y - bh / 2), float(bw), float(bh)] for (x, y), (bw, bh) in zip(xy, wh)]
+        idx = cv2.dnn.NMSBoxes(boxes, conf.tolist(), self.conf, self.nms)
+        names = {2: "car", 5: "bus", 7: "truck"}
+        out_d = []
+        for i in np.array(idx).reshape(-1):
+            x, y, bw, bh = boxes[i]
+            out_d.append(Detection((max(0.0, x), max(0.0, y), min(float(w), x + bw), min(float(h), y + bh)), round(float(conf[i]), 3), names[int(cls[i])]))
+        return out_d
+
+
 class YoloDetector:
     """Адаптер к YOLO (ultralytics). Не входит в зависимости проекта и не проверялся на данных проекта."""
 

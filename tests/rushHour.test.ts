@@ -43,7 +43,7 @@ describe('час пик (синтетический сценарий спрос�
     }
   });
 
-  it('в час пик модель медленнее, никто не едет на красный, Adaptive AI не хуже Baseline', () => {
+  it('в час пик модель медленнее, никто не едет на красный, адаптивный не хуже Baseline', () => {
     function run(demand: DemandMode, count: number, mode: 'fixed' | 'adaptive') {
       const gen = new RouteGenerator(net, 2026, demand);
       const pool = Array.from({ length: 160 }, () => gen.next()!);

@@ -3,9 +3,11 @@
 Зачем: на одном перекрёстке адаптивный контроллер уменьшает задержку, но в сети очередь одного светофора может
 дойти до соседнего (spillback), а «улучшение» одного узла — ухудшить другой. Здесь сравниваются три способа
 управления на одних и тех же маршрутах:
-  fixed        — фиксированный план по Уэбстеру на каждом перекрёстке, независимо, без сдвигов;
-  coordinated  — фиксированные планы с общим циклом и сдвигами «зелёной волны» для движения на восток;
-  adaptive     — независимый адаптивный контроллер (тот же, что на одиночном перекрёстке) на каждом узле.
+  fixed           — фиксированный план по Уэбстеру на каждом перекрёстке, независимо, без сдвигов;
+  coordinated     — фиксированные планы с общим циклом и сдвигами «зелёной волны» для движения на восток;
+  adaptive        — независимый адаптивный контроллер (тот же, что на одиночном перекрёстке) на каждом узле;
+  coord_adaptive  — адаптивный с координацией: цикл и сдвиги «волны», но пустые фазы пропускаются, а поперечные
+                    фазы заканчиваются при разрыве потока (control.CoordinatedActuatedController).
 Измеряется общая задержка сети, время проезда коридора, очереди у каждого узла, наибольшее заполнение участков
 между перекрёстками и время, когда очередь на участке дотягивается до предыдущего перекрёстка (распространение очередей).
 
@@ -15,7 +17,9 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import datetime as _dt
+import hashlib
 import json
 import math
 import os
@@ -26,14 +30,16 @@ import subprocess
 import tempfile
 import time
 import xml.etree.ElementTree as ET
+from concurrent.futures import ProcessPoolExecutor
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from types import SimpleNamespace
 
 from .build import BUILD_DIR, SCENARIO_DIR, candidate_plans, movements_of, read_links_and_foes, sumo_bin, target, webster_greens
-from .control import (AdaptiveController, Decision, FixedTimeController, Observation, SafeController, SignalPlan, SignalSupervisor,
-                      Timing, UnsafePlanError, tick)
+from .control import (AdaptiveController, CoordinatedActuatedController, Decision, FixedTimeController, Observation, SafeController,
+                      SignalPlan, SignalSupervisor, Timing, UnsafePlanError, tick)
 from .run import DETECTOR_M, WARMUP, SimulatorConnectionError, _pct, adaptive_limits, box_blocked, internal_lanes
+from .stats import describe, paired
 
 DIRS = "NESW"
 V_FREE = 50 / 3.6  # скорость «зелёной волны», м/с
@@ -417,11 +423,18 @@ class CorridorResult:
     clearance_hold_s: float = 0.0
     #: подробности столкновений (если были): время, тип, полоса, скорости — для разбора
     collision_details: list = field(default_factory=list)
+    #: средняя очередь (стоящих машин) по узлам и подходам: узел → сторона → авт
+    queue_by_approach: dict = field(default_factory=dict)
+    #: среднее ожидание поездок по въезду (W_END, E_END, MAN_N, …), с
+    wait_by_entry: dict = field(default_factory=dict)
+    #: среднее ожидание поездок с концов проспекта и с поперечных улиц, с
+    main_wait: float | None = None
+    side_wait: float | None = None
 
 
 def run_corridor(c: Corridor, controller: str, load: str, seed: int, *, duration: float = 3600.0, drain: float = 1800.0,
                  timing: Timing = Timing(), flows: dict[str, float] | None = None, work_dir: Path | None = None,
-                 closures: list[tuple[str, float, float]] = (), teleport_s: float = 300.0) -> CorridorResult:
+                 closures: list[tuple[str, float, float]] = (), teleport_s: float = 300.0, routes_file: Path | None = None) -> CorridorResult:
     """Один прогон коридора. closures — перекрытия рёбер (id ребра, начало, конец, с): движение по всем полосам
     ребра почти останавливается, как при ДТП; нужно для проверки распространения очереди на соседний перекрёсток."""
     net = BUILD_DIR / c.id / "net.net.xml"
@@ -431,18 +444,28 @@ def run_corridor(c: Corridor, controller: str, load: str, seed: int, *, duration
     fixed = fixed_plans(c, plans, timing)
     work = Path(work_dir or tempfile.mkdtemp(prefix="sf-corr-"))
     flows = flows if flows is not None else LOADS[load]
-    routes = work / f"corr_routes_{load}_{seed}.rou.xml"
-    od = write_routes(c, flows, duration, seed, routes)
+    if routes_file is not None:  # общий файл маршрутов для всех способов управления
+        routes = Path(routes_file)
+        od = {v.get("id"): (v.get("id").rsplit(".", 1)[0], v.find("route").get("edges").split()[-1])
+              for v in ET.parse(routes).getroot().findall("vehicle")}
+    else:
+        routes = work / f"corr_routes_{load}_{seed}.rou.xml"
+        od = write_routes(c, flows, duration, seed, routes)
     tripinfo = work / f"corr_trip_{controller}_{load}_{seed}.xml"
 
-    if controller == "coordinated":
-        used = coordinated_plans(c, plans, fixed, timing)
-    else:
-        used = fixed
+    if controller not in CONTROLLERS:
+        raise ValueError(f"неизвестный способ управления {controller}")
+    used = coordinated_plans(c, plans, fixed, timing) if controller in ("coordinated", "coord_adaptive") else fixed
+    lost = timing.yellow + timing.all_red
     ctrls, sups = [], []
     for k, (_, plan) in enumerate(plans):
         greens = used[k]["greens"]
-        primary = AdaptiveController(adaptive_limits(fixed[k]["greens"])) if controller == "adaptive" else FixedTimeController(greens)
+        if controller == "adaptive":
+            primary = AdaptiveController(adaptive_limits(fixed[k]["greens"]))
+        elif controller == "coord_adaptive":
+            primary = CoordinatedActuatedController(greens, used[k]["cycle"], used[k]["offset"], used[k]["east_phase"], lost, timing.min_green)
+        else:
+            primary = FixedTimeController(greens)
         ctrls.append(SafeController(primary, FixedTimeController(greens)))
         sup = SignalSupervisor(plan, timing)
         if used[k]["offset"]:
@@ -468,6 +491,8 @@ def run_corridor(c: Corridor, controller: str, load: str, seed: int, *, duration
     spill = {e: 0 for e in internal}
     fill = {e: 0.0 for e in internal}
     q_sum = [0.0] * len(plans)
+    q_app = [{d: 0.0 for d in c.nodes[k].lanes_in} for k in range(len(plans))]
+    lane_dir = [{l: dir_maps(c, k)[0][l.rsplit("_", 1)[0]] for l in lanes} for k, lanes in enumerate([sorted({l.in_lane for l in plan.links}) for _, plan in plans])]
     q_n = 0
     collisions = teleports = conflicts = overrides = 0
     collision_log: list[dict] = []
@@ -512,6 +537,8 @@ def run_corridor(c: Corridor, controller: str, load: str, seed: int, *, duration
                                   if tc.vehicle.getSpeed(v) > 0.1 and lane_len[l] - tc.vehicle.getLanePosition(v) <= DETECTOR_M)
                 if measuring:
                     q_sum[k] += sum(queue.values())
+                    for l, qv in queue.items():
+                        q_app[k][lane_dir[k][l]] += qv
                 node_log: list[Decision] = []
                 states[k] = tick(sups[k], ctrls[k], Observation(t, queue, wait, appr, box_blocked=sups[k].stage == "allred" and box_blocked(tc, boxes[k])),
                                  1.0, node_log)
@@ -547,6 +574,11 @@ def run_corridor(c: Corridor, controller: str, load: str, seed: int, *, duration
     for d in decisions:
         key = re.sub(r"\s+\d+(?:[.,]\d+)?\s*с$", "", d.reason.split(":")[0].split(";")[0].strip())
         reasons[key] = reasons.get(key, 0) + 1
+    by_entry: dict[str, list[float]] = {}
+    for x in measured:
+        by_entry.setdefault(od[x["id"]][0], []).append(x["wait"])
+    main = [w for e, ws in by_entry.items() if e.endswith("_END") for w in ws]
+    side = [w for e, ws in by_entry.items() if not e.endswith("_END") for w in ws]
     mean = lambda xs: round(statistics.fmean(xs), 2) if xs else None  # noqa: E731
     return CorridorResult(
         corridor=c.id, controller=controller, load=load, seed=seed, demand_vehicles=len(od), completed=len(trips),
@@ -563,13 +595,45 @@ def run_corridor(c: Corridor, controller: str, load: str, seed: int, *, duration
         fallbacks=sum(1 for x in ctrls if x.failed_at is not None), switches=sum(s.switches for s in sups),
         clearance_hold_s=round(sum(s.clearance_hold_s for s in sups), 1),
         decision_reasons=reasons, plans=used, sim_end=t, collision_details=collision_log,
+        queue_by_approach={n.id: {d: round(v / q_n, 2) if q_n else 0.0 for d, v in q_app[k].items()} for k, n in enumerate(c.nodes)},
+        wait_by_entry={e: round(statistics.fmean(ws), 2) for e, ws in sorted(by_entry.items())},
+        main_wait=mean(main), side_wait=mean(side),
     )
 
 
 # ───────────── эксперимент ─────────────
 
-CONTROLLERS = ("fixed", "coordinated", "adaptive")
-SEEDS = (1, 2, 3)
+CONTROLLERS = ("fixed", "coordinated", "adaptive", "coord_adaptive")
+SEEDS = tuple(range(1, 11))  # 10 повторов: прогон коридора в 4–6 раз дольше одиночного
+
+
+def _node_queue(r: CorridorResult, node: str, group: str) -> float | None:
+    """Средняя очередь узла на подходах магистрали (main: W, E) или поперечных улиц (cross: N, S)."""
+    q = r.queue_by_approach.get(node)
+    if not q:
+        return None
+    return round(sum(v for d, v in q.items() if (d in "WE") == (group == "main")), 3)
+
+
+#: метрики парного сравнения: ключ → (как получить, меньше — лучше)
+def compare_metrics(nodes: list[str]) -> dict[str, tuple]:
+    m = {
+        "mean_wait": (lambda r: r.mean_wait, True), "mean_time_loss": (lambda r: r.mean_time_loss, True),
+        "p95_travel_time": (lambda r: r.p95_travel_time, True), "through_time_eb": (lambda r: r.through_time_eb, True),
+        "through_time_wb": (lambda r: r.through_time_wb, True), "main_wait": (lambda r: r.main_wait, True),
+        "side_wait": (lambda r: r.side_wait, True), "mean_stops": (lambda r: r.mean_stops, True),
+        "completed": (lambda r: r.completed, False), "unfinished": (lambda r: r.unfinished, True),
+        "throughput_veh_h": (lambda r: r.throughput_veh_h, False),
+        "spill_total_s": (lambda r: sum(r.spill_seconds.values()), True),
+    }
+    for n in nodes:
+        m[f"queue_main_{n}"] = (lambda r, n=n: _node_queue(r, n, "main"), True)
+        m[f"queue_cross_{n}"] = (lambda r, n=n: _node_queue(r, n, "cross"), True)
+    return m
+
+
+PAIRS = (("adaptive", "fixed"), ("coordinated", "fixed"), ("coord_adaptive", "fixed"), ("adaptive", "coordinated"),
+         ("coord_adaptive", "coordinated"), ("coord_adaptive", "adaptive"))
 
 
 def summarize(runs: list[CorridorResult]) -> list[dict]:
@@ -587,8 +651,12 @@ def summarize(runs: list[CorridorResult]) -> list[dict]:
                 "load": load, "controller": ctrl, "runs": len(rs), "seeds": [r.seed for r in rs],
                 **{k: m(lambda r, k=k: getattr(r, k)) for k in (
                     "mean_wait", "mean_time_loss", "p95_travel_time", "total_time_loss_veh_h", "mean_stops", "throughput_veh_h",
-                    "through_time_eb", "through_time_wb", "through_stops_eb", "through_stops_wb", "completed", "unfinished", "demand_vehicles")},
+                    "through_time_eb", "through_time_wb", "through_stops_eb", "through_stops_wb", "completed", "unfinished", "demand_vehicles",
+                    "main_wait", "side_wait")},
                 "queue_by_node": {n: m(lambda r, n=n: r.queue_by_node[n]) for n in rs[0].queue_by_node},
+                "queue_by_approach": {n: {d: m(lambda r, n=n, d=d: r.queue_by_approach[n][d]) for d in rs[0].queue_by_approach[n]}
+                                      for n in rs[0].queue_by_approach},
+                "wait_by_entry": {e: m(lambda r, e=e: r.wait_by_entry.get(e)) for e in sorted({e for r in rs for e in r.wait_by_entry})},
                 "spill_seconds": {e: m(lambda r, e=e: r.spill_seconds[e]) for e in rs[0].spill_seconds},
                 "max_fill": {e: m(lambda r, e=e: r.max_fill[e]) for e in rs[0].max_fill},
                 "collisions": sum(r.collisions for r in rs), "teleports": sum(r.teleports for r in rs),
@@ -596,16 +664,49 @@ def summarize(runs: list[CorridorResult]) -> list[dict]:
                 "clearance_hold_s": m(lambda r: r.clearance_hold_s), "collision_details": [d for r in rs for d in r.collision_details],
                 "fallbacks": sum(r.fallbacks for r in rs),
                 "decision_reasons": {k: sum(r.decision_reasons.get(k, 0) for r in rs) for k in sorted({k for r in rs for k in r.decision_reasons})},
+                "stats": {k: describe(get(r) for r in rs) for k, (get, _) in compare_metrics(list(rs[0].queue_by_node)).items()},
             })
     return rows
 
 
+def compare(runs: list[CorridorResult]) -> list[dict]:
+    """Парные сравнения способов управления по seed (одни и те же маршруты)."""
+    out = []
+    for load in dict.fromkeys(r.load for r in runs):
+        for a, b in PAIRS:
+            ra = {r.seed: r for r in runs if r.load == load and r.controller == a}
+            rb = {r.seed: r for r in runs if r.load == load and r.controller == b}
+            if not ra or not rb:
+                continue
+            nodes = list(next(iter(ra.values())).queue_by_node)
+            for key, (get, lower) in compare_metrics(nodes).items():
+                res = paired({s: get(r) for s, r in ra.items()}, {s: get(r) for s, r in rb.items()}, lower_is_better=lower)
+                if res:
+                    out.append({"load": load, "a": a, "b": b, "metric": key, "lower_is_better": lower, **res})
+    return out
+
+
+def _job(args: tuple) -> CorridorResult:
+    """Один прогон коридора в отдельном процессе."""
+    ctrl, load, seed, duration, flows, closures, teleport_s, routes, work = args
+    c = load_corridor()
+    return run_corridor(c, ctrl, load, seed, duration=duration, timing=Timing(), work_dir=Path(work), flows=flows,
+                        closures=closures, teleport_s=teleport_s, routes_file=Path(routes))
+
+
+CSV_FIELDS = ("load", "controller", "seed", "demand_vehicles", "completed", "unfinished", "mean_wait", "mean_time_loss", "p95_travel_time",
+              "through_time_eb", "through_time_wb", "main_wait", "side_wait", "mean_stops", "throughput_veh_h", "collisions", "teleports",
+              "conflict_steps", "safety_overrides", "fallbacks", "clearance_hold_s", "sim_end")
+
+
 def main(argv: list[str] | None = None) -> None:
-    ap = argparse.ArgumentParser(description="Коридор проспекта Чуй в SUMO: три способа управления")
+    ap = argparse.ArgumentParser(description="Коридор проспекта Чуй в SUMO: четыре способа управления")
     ap.add_argument("--out", type=Path, default=Path("results"))
     ap.add_argument("--seeds", type=int, nargs="*", default=list(SEEDS))
     ap.add_argument("--loads", nargs="*", default=list(LOADS))
+    ap.add_argument("--controllers", nargs="*", default=list(CONTROLLERS))
     ap.add_argument("--duration", type=float, default=3600.0)
+    ap.add_argument("--jobs", type=int, default=os.cpu_count() or 1, help="параллельных прогонов SUMO")
     ap.add_argument("--no-incident", action="store_true", help="без стресс-сценария с перекрытием выезда")
     a = ap.parse_args(argv)
     c = load_corridor()
@@ -614,45 +715,57 @@ def main(argv: list[str] | None = None) -> None:
     plans = corridor_plans(c, net)
     fixed = fixed_plans(c, plans, timing)
     coord = coordinated_plans(c, plans, fixed, timing)
+    work = (a.out / "_work").resolve()
+    work.mkdir(parents=True, exist_ok=True)
+    scen = [(load, LOADS[load], a.duration, (), 300.0) for load in a.loads]
+    if not a.no_incident:
+        scen.append(("incident", INCIDENT["flows"], INCIDENT["duration"], tuple(INCIDENT["closures"]), INCIDENT["teleport_s"]))
+    jobs, hashes = [], {}
+    for load, flows, duration, closures, tp in scen:
+        for seed in a.seeds:
+            routes = work / f"corr_routes_{load}_{seed}.rou.xml"
+            write_routes(c, flows, duration, seed, routes)
+            hashes[f"{load}/{seed}"] = hashlib.sha256(routes.read_bytes()).hexdigest()
+            for ctrl in a.controllers:
+                jobs.append((ctrl, load, seed, duration, flows, closures, tp, str(routes), str(work)))
     t0 = time.time()
     runs: list[CorridorResult] = []
-    work = a.out / "_work"
-    for load in a.loads:
-        for seed in a.seeds:
-            for ctrl in CONTROLLERS:
-                r = run_corridor(c, ctrl, load, seed, duration=a.duration, timing=timing, work_dir=work)
-                runs.append(r)
-                print(f"{load:6} seed {seed} {ctrl:11} wait {r.mean_wait} s  EB {r.through_time_eb} s  WB {r.through_time_wb} s  "
-                      f"done {r.completed}/{r.demand_vehicles}  spill {sum(r.spill_seconds.values())}  "
-                      f"collisions {r.collisions} conflicts {r.conflict_steps}", flush=True)
-    if not a.no_incident:
-        for seed in a.seeds:
-            for ctrl in CONTROLLERS:
-                r = run_corridor(c, ctrl, "incident", seed, duration=INCIDENT["duration"], timing=timing, work_dir=work,
-                                 flows=INCIDENT["flows"], closures=INCIDENT["closures"], teleport_s=INCIDENT["teleport_s"])
-                runs.append(r)
-                print(f"incident seed {seed} {ctrl:11} wait {r.mean_wait} s  spill {r.spill_seconds}  fill {max(r.max_fill.values())}  "
-                      f"collisions {r.collisions} teleports {r.teleports}", flush=True)
+    with ProcessPoolExecutor(max_workers=max(1, a.jobs)) as ex:
+        for r in ex.map(_job, jobs):
+            runs.append(r)
+            print(f"{r.load:8} seed {r.seed:2} {r.controller:14} wait {r.mean_wait} s  EB {r.through_time_eb} s  WB {r.through_time_wb} s  "
+                  f"side {r.side_wait} s  done {r.completed}/{r.demand_vehicles}  spill {sum(r.spill_seconds.values())}  "
+                  f"collisions {r.collisions} conflicts {r.conflict_steps} teleports {r.teleports}", flush=True)
     out = subprocess.run([sumo_bin("sumo"), "--version"], capture_output=True, text=True).stdout
     result = {
-        "format": "smartflow-sumo-corridor/1",
+        "format": "smartflow-sumo-corridor/2",
         "corridor": {"id": c.id, "title": c.title, "nodes": [{"id": n.id, "title": n.title, "x": n.x, "osm_site": n.osm_site} for n in c.nodes],
                      "spacing_m": [round(b.x - a_.x) for a_, b in zip(c.nodes, c.nodes[1:])], "assumptions": c.raw["assumptions"],
                      "source": c.raw["source"]},
         "sumo_version": out.splitlines()[0].replace("Eclipse SUMO sumo", "SUMO").strip() if out else "SUMO ?",
         "generated": _dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds"),
-        "params": {"loads_veh_h": {k: LOADS[k] for k in a.loads}, "seeds": a.seeds, "duration_s": a.duration, "warmup_s": WARMUP,
-                   "turns_main": TURNS_MAIN, "turns_cross": TURNS_CROSS, "timing": asdict(timing), "wave_speed_kmh": round(V_FREE * 3.6),
-                   "spill_zone_m": SPILL_ZONE_M,
+        "params": {"loads_veh_h": {k: LOADS[k] for k in a.loads}, "seeds": a.seeds, "controllers": a.controllers, "duration_s": a.duration,
+                   "warmup_s": WARMUP, "turns_main": TURNS_MAIN, "turns_cross": TURNS_CROSS, "timing": asdict(timing),
+                   "wave_speed_kmh": round(V_FREE * 3.6), "spill_zone_m": SPILL_ZONE_M,
                    "incident": None if a.no_incident else {"title": INCIDENT["title"], "flows_veh_h": INCIDENT["flows"], "duration_s": INCIDENT["duration"], "teleport_s": INCIDENT["teleport_s"],
-                                                            "closures": [{"edge": e, "from_s": t0, "to_s": t1} for e, t0, t1 in INCIDENT["closures"]]}, "fixed": fixed, "coordinated": coord,
-                   "plans": [{"node": c.nodes[k].id, "name": name, "phases": [p.name for p in plan.phases]} for k, (name, plan) in enumerate(plans)]},
+                                                            "closures": [{"edge": e, "from_s": t0_, "to_s": t1_} for e, t0_, t1_ in INCIDENT["closures"]]},
+                   "fixed": fixed, "coordinated": coord,
+                   "adaptive": [{"node": c.nodes[k].id, **asdict(adaptive_limits(f["greens"]))} for k, f in enumerate(fixed)],
+                   "plans": [{"node": c.nodes[k].id, "name": name, "phases": [p.name for p in plan.phases]} for k, (name, plan) in enumerate(plans)],
+                   "routes_sha256": hashes},
         "summary": summarize(runs),
+        "comparisons": compare(runs),
         "runs": [asdict(r) | {"plans": None} for r in runs],
         "elapsed_s": round(time.time() - t0, 1),
     }
     a.out.mkdir(parents=True, exist_ok=True)
     (a.out / "corridor-results.json").write_text(json.dumps(result, ensure_ascii=False, indent=1), encoding="utf-8")
+    with (a.out / "corridor-runs.csv").open("w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        w.writerow(CSV_FIELDS)
+        for r in runs:
+            d = asdict(r)
+            w.writerow([d[k] for k in CSV_FIELDS])
     print(f"готово за {result['elapsed_s']} с → {a.out / 'corridor-results.json'}")
 
 

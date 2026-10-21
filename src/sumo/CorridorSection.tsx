@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { maxFill, parseCorridor, spillTotal, type CorridorCtrl, type CorridorResults, type CorridorRow } from './corridor';
+import { maxFill, nodeQueue, parseCorridor, spillTotal, type CorridorCtrl, type CorridorResults, type CorridorRow } from './corridor';
 import type { Stat } from './trace';
 import { CompareChart, type Metric } from './CompareChart';
+import { PairedTable, type PairDef, type PairMetric } from './PairedTable';
 
 const URL_ = `${import.meta.env.BASE_URL}data/sumo/corridor-results.json`;
 const LOAD_LABEL: Record<string, string> = { low: 'низкая', medium: 'средняя', high: 'высокая' };
@@ -9,7 +10,17 @@ export const CORR_LABEL: Record<CorridorCtrl, string> = {
   fixed: 'Фиксированные, независимо',
   coordinated: 'Фиксированные, «зелёная волна»',
   adaptive: 'Адаптивные, независимо',
+  coord_adaptive: 'Адаптивные с координацией',
 };
+const CORR_SHORT: Record<CorridorCtrl, string> = { fixed: 'фиксированные', coordinated: '«зелёная волна»', adaptive: 'адаптивные', coord_adaptive: 'адаптивные + волна' };
+const CORR_COLOR: Record<CorridorCtrl, string> = { fixed: 'var(--ctl-fixed)', coordinated: 'var(--ctl-coord)', adaptive: 'var(--ctl-adaptive)', coord_adaptive: 'var(--ctl-coord-adaptive)' };
+const CORR_PAIRS: PairDef[] = [
+  { a: 'adaptive', b: 'fixed', label: 'адаптивные − фиксированные' },
+  { a: 'coordinated', b: 'fixed', label: 'волна − фиксированные' },
+  { a: 'adaptive', b: 'coordinated', label: 'адаптивные − волна' },
+  { a: 'coord_adaptive', b: 'coordinated', label: 'адаптивные + волна − волна' },
+  { a: 'coord_adaptive', b: 'adaptive', label: 'адаптивные + волна − адаптивные' },
+];
 const nf = (x: number | null | undefined, d = 1) => (x == null ? '—' : x.toLocaleString('ru-RU', { minimumFractionDigits: d, maximumFractionDigits: d }));
 const st = (s: Stat | undefined, d = 1) => (!s || s[0] == null ? '—' : `${nf(s[0], d)}${s[1] ? ` ± ${nf(s[1], d)}` : ''}`);
 
@@ -59,7 +70,7 @@ function Scheme({ data }: { data: CorridorResults }) {
 
 function Corridor({ data }: { data: CorridorResults }) {
   const loads = [...Object.keys(data.params.loads_veh_h), ...(data.params.incident && data.summary.some((r) => r.load === 'incident') ? ['incident'] : [])];
-  const ctrls: CorridorCtrl[] = ['fixed', 'coordinated', 'adaptive'];
+  const ctrls: CorridorCtrl[] = data.params.controllers;
   const row = (l: string, c: CorridorCtrl) => data.summary.find((r) => r.load === l && r.controller === c);
   const nodes = data.corridor.nodes;
   const metrics: { label: string; get: (r: CorridorRow) => Stat; d: number; unit: string; better?: 'lower' | 'higher' }[] = [
@@ -71,6 +82,8 @@ function Corridor({ data }: { data: CorridorResults }) {
     { label: '…остановок по пути', get: (r) => r.through_stops_eb, d: 2, unit: '', better: 'lower' },
     { label: 'Проезд всего коридора на запад', get: (r) => r.through_time_wb, d: 0, unit: 'с', better: 'lower' },
     { label: '…остановок по пути', get: (r) => r.through_stops_wb, d: 2, unit: '', better: 'lower' },
+    { label: 'Ожидание: въехавшие с концов проспекта', get: (r) => r.main_wait, d: 1, unit: 'с', better: 'lower' },
+    { label: 'Ожидание: въехавшие с поперечных улиц', get: (r) => r.side_wait, d: 1, unit: 'с', better: 'lower' },
     { label: 'Остановок на поездку', get: (r) => r.mean_stops, d: 2, unit: '', better: 'lower' },
     { label: 'Выехало из сети', get: (r) => r.throughput_veh_h, d: 0, unit: 'авт/ч', better: 'higher' },
   ];
@@ -79,31 +92,51 @@ function Corridor({ data }: { data: CorridorResults }) {
     { id: 'p95', label: 'p95 поездки', unit: 'с', digits: 0, lowerBetter: true, get: (l, c) => row(l, c as CorridorCtrl)?.p95_travel_time },
     { id: 'eb', label: 'весь коридор на восток', unit: 'с', digits: 0, lowerBetter: true, get: (l, c) => row(l, c as CorridorCtrl)?.through_time_eb },
     { id: 'wb', label: 'на запад', unit: 'с', digits: 0, lowerBetter: true, get: (l, c) => row(l, c as CorridorCtrl)?.through_time_wb },
+    { id: 'side', label: 'поперечные улицы', unit: 'с ожидания', digits: 1, lowerBetter: true, get: (l, c) => row(l, c as CorridorCtrl)?.side_wait },
     { id: 'stops', label: 'остановки', unit: 'на поездку', digits: 2, lowerBetter: true, get: (l, c) => row(l, c as CorridorCtrl)?.mean_stops },
     { id: 'spill', label: 'очередь до соседа', unit: 'с за прогон', digits: 0, lowerBetter: true, loads,
       get: (l, c) => { const r = row(l, c as CorridorCtrl); return r ? [spillTotal(r), null] : undefined; } },
   ];
+  const pairMetrics: PairMetric[] = [
+    { id: 'mean_wait', label: 'Среднее ожидание на поездку', unit: 'с', digits: 1 },
+    { id: 'p95_travel_time', label: '95-й перцентиль времени поездки', unit: 'с', digits: 0 },
+    { id: 'through_time_eb', label: 'Проезд коридора на восток', unit: 'с', digits: 0 },
+    { id: 'through_time_wb', label: 'Проезд коридора на запад', unit: 'с', digits: 0 },
+    { id: 'main_wait', label: 'Ожидание: с концов проспекта', unit: 'с', digits: 1 },
+    { id: 'side_wait', label: 'Ожидание: с поперечных улиц', unit: 'с', digits: 1 },
+    ...nodes.map((n) => ({ id: `queue_cross_${n.id}`, label: `Очередь поперечной улицы: ${n.title.replace('Чуй × ', '')}`, unit: 'авт', digits: 2 })),
+    ...nodes.map((n) => ({ id: `queue_main_${n.id}`, label: `Очередь на проспекте: ${n.title.replace('Чуй × ', '')}`, unit: 'авт', digits: 2 })),
+    { id: 'spill_total_s', label: 'Очередь дошла до соседнего перекрёстка', unit: 'с', digits: 0 },
+  ];
   const safety = data.summary.reduce((a, r) => ({ c: a.c + r.collisions, k: a.k + r.conflict_steps, t: a.t + r.teleports, o: a.o + r.safety_overrides, f: a.f + r.fallbacks }), { c: 0, k: 0, t: 0, o: 0, f: 0 });
   const runs = data.summary.reduce((a, r) => a + r.runs, 0);
   const holds = data.summary.filter((r) => (r.clearance_hold_s?.[0] ?? 0) > 0)
-    .map((r) => `${r.load === 'incident' ? 'ДТП' : LOAD_LABEL[r.load] ?? r.load}, ${CORR_LABEL[r.controller].toLowerCase()} — в среднем ${nf(r.clearance_hold_s![0], 0)} с за прогон`);
+    .map((r) => `${r.load === 'incident' ? 'ДТП' : LOAD_LABEL[r.load] ?? r.load}, ${CORR_SHORT[r.controller]} — в среднем ${nf(r.clearance_hold_s![0], 0)} с за прогон`);
   return (
     <section className="panel corr">
       <h2>{data.corridor.title}</h2>
       <p className="hint">
         Четыре связанных перекрёстка в одной сети SUMO {data.sumo_version.replace('SUMO ', '')}: очередь одного светофора может дойти до соседнего,
-        а выигрыш одного узла — обернуться проигрышем другого. Три способа управления на одних и тех же маршрутах, {data.params.seeds.length} seed ×
+        а выигрыш одного узла — обернуться проигрышем другого. {ctrls.length} способа управления на одних и тех же маршрутах, {data.params.seeds.length} seed ×
         {' '}{data.params.duration_s / 60} мин на каждую нагрузку, всего {runs} прогонов. Цель — лучший вариант среди проверенных, а не оптимум для города.
       </p>
       <Scheme data={data} />
-      <CompareChart title="Коридор: три способа управления" loads={Object.keys(data.params.loads_veh_h)} metrics={cmpMetrics}
-        series={[{ key: 'fixed', label: 'фиксированные', color: 'var(--ctl-fixed)' }, { key: 'coordinated', label: '«зелёная волна»', color: 'var(--ctl-coord)' },
-          { key: 'adaptive', label: 'адаптивные', color: 'var(--ctl-adaptive)' }]} />
+      <CompareChart title="Коридор: способы управления" loads={Object.keys(data.params.loads_veh_h)} metrics={cmpMetrics}
+        series={ctrls.map((c) => ({ key: c, label: CORR_SHORT[c], color: CORR_COLOR[c] }))} />
+      <p className="hint">Столбец — среднее по {data.params.seeds.length} seed, отрезок — ± ст. отклонение между прогонами.</p>
       <ul className="sumo-list">
         <li><b>{CORR_LABEL.fixed}</b>: план Уэбстера на каждом перекрёстке, циклы {data.params.fixed.map((f) => `${f.node} ${f.cycle} с`).join(', ')}, без сдвигов.</li>
         <li><b>{CORR_LABEL.coordinated}</b>: общий цикл {data.params.coordinated[0]?.cycle} с, сдвиги {data.params.coordinated.map((f) => `${f.node} ${f.offset} с`).join(', ')} — зелёный для прямого на восток начинается по мере подхода машин со скоростью {data.params.wave_speed_kmh} км/ч.</li>
         <li><b>{CORR_LABEL.adaptive}</b>: тот же адаптивный контроллер, что на одиночном перекрёстке, на каждом узле свой; друг о друге они не знают.</li>
+        {ctrls.includes('coord_adaptive') && <li><b>{CORR_LABEL.coord_adaptive}</b> (минимальный эксперимент): цикл и сдвиги «зелёной волны» сохраняются, но фаза без машин пропускается, а фазы поперечных улиц заканчиваются при разрыве потока; сэкономленное время получает фаза прямого движения на восток, которая начинается не позже своего места в цикле.</li>}
       </ul>
+      <h3>Парное сравнение по seed</h3>
+      <p className="hint">
+        Разность A − B по одним и тем же маршрутам, 95 % доверительный интервал и в скольких seed A лучше. Строки про очереди поперечных улиц
+        отвечают на вопрос, не платят ли соседние улицы за выигрыш магистрали.
+      </p>
+      <PairedTable comparisons={data.comparisons} pairs={CORR_PAIRS.filter((p) => ctrls.includes(p.a as CorridorCtrl) && ctrls.includes(p.b as CorridorCtrl))}
+        metrics={pairMetrics} loads={loads} />
       {loads.map((l) => (
         <div key={l} className="corr-load">
           <h3>{l === 'incident' ? `Стресс-сценарий: ${data.params.incident?.title}` : `Нагрузка: ${LOAD_LABEL[l] ?? l}`}</h3>
@@ -126,12 +159,14 @@ function Corridor({ data }: { data: CorridorResults }) {
                   return (
                     <tr key={i}>
                       <td>{m.label}{m.unit ? `, ${m.unit}` : ''}</td>
-                      {ctrls.map((c) => { const r = row(l, c); return <td key={c} className={`mono${win.includes(c) && win.length < 3 ? ' corr-best' : ''}`}>{r ? st(m.get(r), m.d) : '—'}</td>; })}
+                      {ctrls.map((c) => { const r = row(l, c); return <td key={c} className={`mono${win.includes(c) && win.length < ctrls.length ? ' corr-best' : ''}`}>{r ? st(m.get(r), m.d) : '—'}</td>; })}
                     </tr>
                   );
                 })}
                 <tr><td>Средняя очередь у узлов ({nodes.map((n) => n.id).join(' / ')}), авт</td>
                   {ctrls.map((c) => { const r = row(l, c); return <td key={c} className="mono small">{r ? nodes.map((n) => nf(r.queue_by_node[n.id]?.[0], 1)).join(' / ') : '—'}</td>; })}</tr>
+                <tr><td>…из них на поперечных улицах (север + юг), авт</td>
+                  {ctrls.map((c) => { const r = row(l, c); return <td key={c} className="mono small">{r ? nodes.map((n) => nf(nodeQueue(r, n.id, 'cross'), 1)).join(' / ') : '—'}</td>; })}</tr>
                 <tr><td>Наибольшее заполнение участка между узлами</td>
                   {ctrls.map((c) => { const r = row(l, c); return <td key={c} className="mono">{r ? `${Math.round(maxFill(r) * 100)} %` : '—'}</td>; })}</tr>
                 <tr><td>Очередь дошла до предыдущего перекрёстка (стоит в первых {data.params.spill_zone_m} м участка), с</td>

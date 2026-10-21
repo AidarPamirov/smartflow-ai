@@ -297,6 +297,116 @@ class AdaptiveController:
         return None
 
 
+class CoordinatedActuatedController:
+    """Адаптивное управление с координацией (актуированно-координированное, как в контроллерах NEMA).
+
+    Общий цикл и сдвиг берутся из плана «зелёной волны»: фаза прямого движения по магистрали (coord_phase)
+    начинается не позже своего места в цикле, поэтому «волна» сохраняется. Остальные фазы работают адаптивно:
+    фаза без спроса пропускается, фаза заканчивается раньше своего зелёного по плану, если поток прервался
+    (нет очереди и в зоне детектора пусто), но не длиннее своего зелёного по плану (плавающее окончание).
+    Сэкономленное время достаётся координируемой фазе — она начинается раньше. Координируемая фаза держится до
+    своей точки окончания в цикле; если других заявок нет, она продолжает гореть.
+
+    Положение в цикле: u(t) = (t − offset) mod cycle — так страж и выставляется в момент 0 (corridor.place_in_cycle).
+    Минимальный зелёный, жёлтый и «все красные» обеспечивает страж.
+    """
+
+    name = "coord_adaptive"
+
+    def __init__(self, greens: Sequence[float], cycle: float, offset: float, coord_phase: int, lost_per_phase: float,
+                 min_green: float = 8.0):
+        if not 0 <= coord_phase < len(greens):
+            raise ValueError("нет такой координируемой фазы")
+        if cycle <= 0 or any(g <= 0 for g in greens):
+            raise ValueError("цикл и зелёные должны быть > 0")
+        self.greens = list(greens)
+        self.cycle = float(cycle)
+        self.offset = float(offset)
+        self.coord = coord_phase
+        self.lost = float(lost_per_phase)
+        self.min_green = float(min_green)
+        # начало зелёного каждой фазы по плану (положение в цикле)
+        self.start: list[float] = []
+        u = 0.0
+        for g in self.greens:
+            self.start.append(u)
+            u += g + self.lost
+        self.end = [s + g for s, g in zip(self.start, self.greens)]
+        self._phase: int | None = None
+        self._forceoff = 0.0
+        self.last_reason = ""
+        self._demand = AdaptiveController()
+
+    def u(self, t: float) -> float:
+        return (t - self.offset) % self.cycle
+
+    def _side_order(self) -> list[int]:
+        """Некоординируемые фазы в порядке цикла после координируемой."""
+        n = len(self.greens)
+        return [(self.coord + i) % n for i in range(1, n)]
+
+    def _enter(self, phase: int, t: float) -> None:
+        """Начало зелёного фазы: момент принудительного окончания."""
+        self._phase = phase
+        u = self.u(t)
+        if phase == self.coord:
+            tau = (u - self.end[phase]) % self.cycle  # сколько прошло после точки окончания по плану
+            side = self.cycle - self.greens[phase]
+            # началась в «стороннем» отрезке цикла: в его первой половине — опоздание (ждём минимальный зелёный
+            # и отдаём время остальным), во второй — раннее начало (держим до точки окончания)
+            self._forceoff = t if (0 < tau < side / 2) else t + (self.end[phase] - u) % self.cycle
+        else:
+            # плавающее окончание: не длиннее своего зелёного по плану и не позже начала координируемой фазы
+            to_coord = (self.start[self.coord] - self.lost - u) % self.cycle
+            self._forceoff = t + min(self.greens[phase], to_coord)
+
+    def room(self, u: float) -> float:
+        """Сколько зелёного достанется некоординируемой фазе, если переключиться в положении u: до начала
+        координируемой фазы минус два перехода (жёлтый + «все красные»). 0 — сейчас окно координируемой фазы."""
+        since_end = (u - self.end[self.coord]) % self.cycle
+        side_len = self.cycle - self.greens[self.coord]
+        if since_end >= side_len:
+            return 0.0
+        return max(0.0, side_len - since_end - 2 * self.lost)
+
+    def _next_side(self, after: int, obs: Observation, plan: SignalPlan) -> int | None:
+        """Следующая по циклу некоординируемая фаза со спросом (после фазы after, до координируемой), если ей
+        хватит хотя бы минимального зелёного до начала координируемой фазы."""
+        if self.room(self.u(obs.time)) < self.min_green:
+            return None
+        order = self._side_order()
+        start = order.index(after) + 1 if after in order else 0
+        for k in order[start:]:
+            if self._demand.demand(k, obs, plan):
+                return k
+        return None
+
+    def request(self, phase: int, green_elapsed: float, obs: Observation, plan: SignalPlan) -> int | None:
+        check_observation(obs, set().union(*plan.phase_lanes))
+        if len(self.greens) != plan.n:
+            raise ValueError("число зелёных не совпадает с числом фаз")
+        t = obs.time
+        if self._phase != phase or green_elapsed <= 1.0 + 1e-9:
+            self._enter(phase, t)
+        if phase == self.coord:
+            if t < self._forceoff - 1e-9:
+                return None
+            k = self._next_side(self.coord, obs, plan)
+            if k is None:
+                return None  # заявок нет — координируемая фаза продолжает гореть
+            self.last_reason = f"точка окончания координируемой фазы: цикл {self.cycle:g} с; следующая — фаза {k + 1} (есть спрос)"
+            return k
+        gap = not self._demand.demand(phase, obs, plan)
+        if gap or t >= self._forceoff - 1e-9:
+            k = self._next_side(phase, obs, plan)
+            nxt = self.coord if k is None else k
+            why = (f"разрыв потока: на фазе {phase + 1} нет очереди и никто не подъезжает" if gap
+                   else f"зелёный по плану исчерпан: фаза {phase + 1}, {self._forceoff - t + green_elapsed:.0f} с")
+            self.last_reason = f"{why}; следующая — фаза {nxt + 1}" + (" (координируемая)" if nxt == self.coord else "")
+            return nxt
+        return None
+
+
 class SafeController:
     """Основной контроллер с безопасным резервом.
 

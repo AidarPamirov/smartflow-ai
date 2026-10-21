@@ -66,7 +66,7 @@ export function TrafficPanel({ ctrl: c, st, mapReady }: { ctrl: TrafficControlle
             <p className="traffic-rush">
               {st.demand === 'morning' ? 'Утро: ' : 'Вечер: '}
               {st.demand === 'morning' ? '¾ поездок едут с окраин и въездов в город в центр' : '¾ поездок едут из центра на окраины и к выездам'}.
-              Сравните Baseline и Adaptive AI в панели слоёв. Это синтетический сценарий, а не данные о реальных пробках.
+              Сравните Baseline и адаптивный режим в панели слоёв. Это синтетический сценарий, а не данные о реальных пробках.
             </p>
           )}
           <div className="traffic-row">

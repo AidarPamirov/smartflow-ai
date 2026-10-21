@@ -166,6 +166,30 @@ class CorridorRunTests(unittest.TestCase):
         self.assertGreater(r.clearance_hold_s, 0, "страж держал «все красные», пока в зоне перекрёстка стояла машина")
         self.assertEqual(sum(self.res["adaptive"].spill_seconds.values()), 0, "при обычной нагрузке очередь соседа не достаёт")
 
+    def test_side_street_metrics(self):
+        """Очереди по подходам каждого узла и ожидание по въездам: видно, не платят ли поперечные улицы за магистраль."""
+        for ctrl, r in self.res.items():
+            with self.subTest(ctrl):
+                self.assertEqual(set(r.queue_by_approach), {n.id for n in C.nodes})
+                self.assertEqual(set(r.queue_by_approach["MAN"]), set("NESW"))
+                self.assertIn("MAN_N", r.wait_by_entry)
+                self.assertIsNotNone(r.side_wait)
+                self.assertIsNotNone(r.main_wait)
+
+    def test_coord_adaptive_keeps_green_wave(self):
+        """Адаптивный с координацией сохраняет «волну» на восток лучше независимых адаптивных и работает по своей логике."""
+        ca, a = self.res["coord_adaptive"], self.res["adaptive"]
+        self.assertLess(ca.through_time_eb, a.through_time_eb)
+        self.assertIn("точка окончания координируемой фазы", ca.decision_reasons)
+        self.assertIn("разрыв потока", ca.decision_reasons)
+
+    def test_shared_routes_file_gives_same_result(self):
+        p = self.work / "shared.rou.xml"
+        write_routes(C, LOADS["medium"], 600, 5, p)
+        again = run_corridor(C, "fixed", "medium", 5, duration=600, drain=900, work_dir=self.work, routes_file=p)
+        r = self.res["fixed"]
+        self.assertEqual((again.mean_wait, again.completed, again.demand_vehicles), (r.mean_wait, r.completed, r.demand_vehicles))
+
     def test_reproducible(self):
         again = run_corridor(C, "adaptive", "medium", 5, duration=600, drain=900, work_dir=Path(tempfile.mkdtemp()))
         r = self.res["adaptive"]

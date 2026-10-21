@@ -1,11 +1,13 @@
 /**
- * Формат данных SUMO → веб (smartflow-sumo-trace/1 и smartflow-sumo-results/1).
+ * Формат данных SUMO → веб (smartflow-sumo-trace/1 и smartflow-sumo-results/2).
  * Пишет Python (sumo/smartflow_sumo/trace.py, experiment.py), читает эта страница.
  * Проверка повторяет validate_trace из Python, чтобы обе стороны понимали формат одинаково.
  */
 
+import { parseComparisons, type Comparison } from './paired';
+
 export const TRACE_FORMAT = 'smartflow-sumo-trace/1';
-export const RESULTS_FORMAT = 'smartflow-sumo-results/1';
+export const RESULTS_FORMAT = 'smartflow-sumo-results/2';
 
 export interface TraceLane { id: string; shape: number[]; width: number }
 export interface TraceLink { index: number; movement: string; in_lane: string; x: number; y: number }
@@ -76,9 +78,12 @@ export function parseTrace(d: unknown): Trace {
 
 /** [среднее, ст. отклонение] по повторам; null — нет данных. */
 export type Stat = [number | null, number | null];
+/** Описание метрики по seed: среднее, ст. отклонение, 95 % ДИ среднего, минимум, медиана, максимум. */
+export interface Describe { n: number; mean: number; sd: number; ci95: [number, number]; min: number; median: number; max: number }
+export type SingleCtrl = 'fixed' | 'fixed_tuned' | 'adaptive';
 
 export interface ResultRow {
-  load: string; controller: 'fixed' | 'adaptive'; runs: number; seeds: number[];
+  load: string; controller: SingleCtrl; runs: number; seeds: number[];
   mean_wait: Stat; mean_time_loss: Stat; mean_queue: Stat; max_queue_approach: Stat;
   completed: Stat; unfinished: Stat; demand_vehicles: Stat;
   collisions: number; teleports: number; conflict_steps: number;
@@ -87,7 +92,10 @@ export interface ResultRow {
   p95_travel_time?: Stat; total_wait_veh_h?: Stat; mean_stops?: Stat; throughput_veh_h?: Stat;
   worst_approach_wait?: Stat; max_wait_vehicle?: Stat; wait_by_approach?: Record<string, Stat>;
   safety_overrides?: number; fallbacks?: number; decision_reasons?: Record<string, number>;
+  stats?: Record<string, Describe | null>;
 }
+
+export interface FixedPlanInfo { design_load: string; cycle_s: number; webster_cycle_s?: number; greens_s: number[]; phases: string[] }
 
 export interface Results {
   format: string;
@@ -98,10 +106,16 @@ export interface Results {
     loads_veh_h: Record<string, Record<string, number>>; turn_shares: Record<string, number>; seeds: number[];
     duration_s: number; warmup_s: number; step_s: number;
     timing: { min_green: number; yellow: number; all_red: number; hard_max_green: number };
-    fixed: { design_load: string; cycle_s: number; greens_s: number[]; phases: string[] };
-    adaptive: Record<string, unknown>;
+    fixed: FixedPlanInfo;
+    /** Фиксированный план, пересчитанный под каждую нагрузку. */
+    fixed_tuned: Record<string, FixedPlanInfo>;
+    controllers: SingleCtrl[];
+    adaptive: { max_green: number; max_green_by_phase: number[] | null; wait_weight: number; starvation: number };
+    /** SHA-256 файла маршрутов «нагрузка/seed»: один файл на все контроллеры. */
+    routes_sha256: Record<string, string>;
   };
   summary: ResultRow[];
+  comparisons: Comparison[];
   elapsed_s: number;
 }
 
@@ -110,6 +124,7 @@ export function parseResults(d: unknown): Results {
   if (!r || r.format !== RESULTS_FORMAT) throw new TraceError(`format должен быть ${RESULTS_FORMAT}`);
   if (!Array.isArray(r.summary) || !r.summary.length) throw new TraceError('в результатах нет сводки');
   if (!r.params || !r.scenario) throw new TraceError('в результатах нет параметров эксперимента');
+  try { parseComparisons(r.comparisons); } catch (e) { throw new TraceError((e as Error).message); }
   return r as Results;
 }
 

@@ -11,7 +11,7 @@ import type { ItemStatus } from '../signals/system';
 const STATUS_NAME: Record<ItemStatus, string> = { working: 'работает', inactive: 'выключен', no_data: 'нет данных' };
 const nf = (n: number) => n.toLocaleString('ru-RU');
 
-/** Слои карты, фильтры светофоров, общий режим Baseline / Adaptive AI и легенда. */
+/** Слои карты, фильтры светофоров, общий режим Baseline / адаптивный и легенда. */
 export function LayersPanel({ ctrl, st }: { ctrl: TrafficController | null; st: TrafficState | null }) {
   const sg = st?.signals;
   const cams = st?.cameras;
@@ -50,7 +50,7 @@ export function LayersPanel({ ctrl, st }: { ctrl: TrafficController | null; st: 
                 <button key={m} className={allMode === m ? 'on' : ''} aria-pressed={allMode === m} onClick={() => ctrl.setAllSignalModes(m)}>{MODE_LABEL[m]}</button>
               ))}
             </div>
-            <p className="lay-muted">Adaptive AI — правила по очередям и ожиданию, без машинного обучения. В городском слое очереди синтетические; доказательное сравнение — в <a href="#sumo">эксперименте SUMO</a>.</p>
+            <p className="lay-muted">Адаптивный режим — правила по очередям и ожиданию (актуированное управление), без машинного обучения. В городском слое очереди синтетические; доказательное сравнение — в <a href="#sumo">эксперименте SUMO</a>.</p>
           </div>
           <div className="lay-block">
             <div className="lay-title">Фильтр</div>
@@ -83,7 +83,7 @@ export function LayersPanel({ ctrl, st }: { ctrl: TrafficController | null; st: 
           <div className="lay-block lay-legend">
             <div className="lay-title">Легенда</div>
             <span><i style={{ background: MODE_COLOR.fixed }} />Baseline</span>
-            <span><i style={{ background: MODE_COLOR.adaptive }} />Adaptive AI</span>
+            <span><i style={{ background: MODE_COLOR.adaptive }} />Адаптивный</span>
             <span><i style={{ background: MODE_COLOR.manual }} />ручной</span>
             <span><i style={{ background: STATUS_COLOR.inactive }} />выключен</span>
             <span><i className="ring" />нет данных</span>
