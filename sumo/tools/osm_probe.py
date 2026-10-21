@@ -22,7 +22,7 @@ ENDPOINTS = [
 ]
 BBOX = "42.83,74.54,42.90,74.68"
 UA = "SmartFlowAI-osm-probe/1.0 (https://github.com/AidarPamirov/smartflow-ai)"
-TAGS = ("highway", "name", "oneway", "lanes", "lanes:forward", "lanes:backward", "turn:lanes",
+TAGS = ("highway", "name", "name:ru", "oneway", "lanes", "lanes:forward", "lanes:backward", "turn:lanes",
         "turn:lanes:forward", "turn:lanes:backward", "maxspeed", "junction", "dual_carriageway")
 
 
@@ -55,9 +55,10 @@ def dist(a, b) -> float:
 
 
 def probe(street_a: str, street_b: str) -> dict:
+    # имя ищется и в name, и в name:ru (в Бишкеке name часто на кыргызском)
     q = f"""[out:json][timeout:90];
-way[highway][name="{street_a}"]({BBOX})->.a;
-way[highway][name="{street_b}"]({BBOX})->.b;
+way[highway][~"^name(:ru)?$"~"^{street_a}$"]({BBOX})->.a;
+way[highway][~"^name(:ru)?$"~"^{street_b}$"]({BBOX})->.b;
 node(w.a)->.na; node(w.b)->.nb;
 node.na.nb->.x;
 (.x; way(bn.x)[highway]; node(around.x:60)[highway=traffic_signals]; way(around.x:80)[highway~"^(primary|secondary|tertiary|trunk)(_link)?$"];);
@@ -103,10 +104,9 @@ out body geom;"""
 
 if __name__ == "__main__":
     pairs = [sys.argv[1:3]] if len(sys.argv) >= 3 else [
-        ["Чуй проспект", "проспект Манаса"],
-        ["Чуй проспект", "улица Юсупа Абдрахманова"],
-        ["проспект Манаса", "Киевская улица"],
-        ["проспект Манаса", "улица Токтогула"],
-        ["Киевская улица", "улица Юсупа Абдрахманова"],
+        ["Чуй проспект", "улица Жусупа Абдрахманова"],
+        ["Чуй проспект", "проспект Чынгыза Айтматова"],
+        ["Чуй проспект", "улица Раззакова"],
+        ["Чуй проспект", "улица Манаса"],
     ]
     json.dump([probe(a, b) for a, b in pairs], sys.stdout, ensure_ascii=False, indent=1)
