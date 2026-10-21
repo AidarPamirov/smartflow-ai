@@ -200,7 +200,7 @@ export function App() {
           <h1>SmartFlow AI <span className="ver">v0.2</span></h1>
           <p className="sub">Лаборатория управления светофорным перекрёстком · повороты, развороты, конфликтные зоны · модель IDM, шаг {DT} с</p>
         </div>
-        <a className="top-link" href="#">← Карта Бишкека</a>
+        <nav className="sumo-nav"><a className="top-link" href="#">← Карта Бишкека</a><a className="top-link" href="#sumo">Эксперимент SUMO</a></nav>
       </header>
 
       {error && <div className="banner error" role="alert">{error} <button className="btn small" onClick={() => setError(null)}>Закрыть</button></div>}

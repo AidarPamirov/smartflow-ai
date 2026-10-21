@@ -1,0 +1,31 @@
+/* Страница эксперимента SUMO. Цвета берутся из токенов лаборатории (styles.css), светлая и тёмная темы. */
+.sumo {
+  --veh-move: #2a78d6;
+  --veh-stop: #eb6834;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .sumo { --veh-move: #6fb6ff; --veh-stop: #ff9b62; }
+}
+:root[data-theme='dark'] .sumo { --veh-move: #6fb6ff; --veh-stop: #ff9b62; }
+
+.sumo-grid { display: grid; gap: 16px; }
+.sumo-note h2, .sumo-results h2, .sumo-params h2 { font-size: 15px; text-transform: none; letter-spacing: 0; color: var(--text-primary); margin: 0 0 8px; }
+.sumo h3 { font-size: 13px; margin: 18px 0 8px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
+.sumo-note p { margin: 0 0 8px; max-width: 72ch; }
+.sumo-player { display: grid; gap: 10px; }
+.sumo-scrub { display: inline-flex; align-items: center; gap: 8px; flex: 1 1 240px; min-width: 0; }
+.sumo-scrub input { flex: 1; min-width: 0; accent-color: var(--accent); }
+.sumo-views { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.sumo-view { margin: 0; min-width: 0; }
+.sumo-view figcaption { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 10px; margin-bottom: 6px; }
+.sumo-view canvas { width: 100%; height: auto; aspect-ratio: 1 / 1; display: block; border-radius: 8px; border: 1px solid var(--border); }
+.sumo-results tr.grp td { border-top: 2px solid var(--border); }
+.sumo-load { vertical-align: top; }
+.sumo-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.sumo-cols p { margin: 0 0 10px; max-width: 70ch; }
+.sumo-list { margin: 0 0 10px; padding-left: 18px; font-size: 13px; }
+.sumo-list li { margin: 3px 0; }
+.sumo-code { background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; overflow-x: auto; font-family: var(--mono); font-size: 12.5px; margin: 0; }
+@media (max-width: 860px) {
+  .sumo-views, .sumo-cols { grid-template-columns: 1fr; }
+}

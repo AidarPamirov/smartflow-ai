@@ -29,8 +29,22 @@ jobs:
         with:
           path: dist
 
+  sumo:
+    # Транспортная модель: геометрия, фазы, безопасность и воспроизводимость прогонов в настоящем SUMO
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install eclipse-sumo==1.28.0 traci==1.28.0 sumolib==1.28.0
+      - run: python -m unittest discover -s tests -t . -v
+        working-directory: sumo
+        env:
+          SMARTFLOW_REQUIRE_SUMO: '1'
+
   deploy:
-    needs: build
+    needs: [build, sumo]
     runs-on: ubuntu-latest
     environment:
       name: github-pages

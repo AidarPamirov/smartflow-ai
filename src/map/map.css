@@ -106,6 +106,7 @@
 .map-hint { color: var(--map-muted); font-size: 12px; }
 .map-link { display: inline-block; margin: 2px 0 6px; color: var(--map-accent); text-decoration: none; font-weight: 600; }
 .map-link:hover { text-decoration: underline; }
+.map-link + .map-link { display: block; }
 
 .map-overlay {
   position: absolute;

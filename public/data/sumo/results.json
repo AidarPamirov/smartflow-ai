@@ -1,0 +1,979 @@
+{
+ "format": "smartflow-sumo-results/1",
+ "scenario": {
+  "id": "chui-manas",
+  "title": "Чуй проспект × улица Манаса, Бишкек (схематизированная модель)",
+  "assumptions": [
+   "Перекрёсток схематизирован одним узлом: подходы прямые, длиной 220 м, по реальным азимутам (улица Манаса пересекает проспект под углом ≈ 65°). Разделительная полоса, островки, съезды, соседние примыкания и точная геометрия бордюров не воспроизводятся.",
+   "Зона перекрёстка в модели ≈ 25 × 25 м против ≈ 55 × 60 м в реальности: в реальности проезд через перекрёсток дольше, и межфазный интервал должен быть больше 3 + 2 с.",
+   "Распределение полос по манёврам — допущение: Чуй с запада «налево / прямо / прямо + направо», с востока «налево + прямо / прямо + направо»; Манаса с севера «налево / прямо», с юга одна полоса «налево + прямо».",
+   "Правые повороты с улицы Манаса идут по съездам в обход светофора и в модели не участвуют; на Чуй правые повороты есть. Левые повороты разрешены со всех подходов, только защищённые (без «уступки встречным»). Развороты запрещены.",
+   "Пешеходов, общественного транспорта и парковки нет.",
+   "План фаз — инженерный, а не программа реального светофора: её в открытых данных нет.",
+   "Спрос синтетический: интенсивности и доли поворотов — допущения для трёх уровней нагрузки, не измерения."
+  ],
+  "osm_facts": [
+   "В радиусе 35 м от центра в OSM отмечены 4 светофора (узлы 244504528, 815739971, 13390199065, 13390199067): перекрёсток регулируемый. Они стоят в 25–35 м от центра, то есть зона перекрёстка ≈ 55 × 60 м.",
+   "Проспект Чуй к западу — две односторонние проезжие части по 3 полосы; к востоку — одна двусторонняя дорога на 4 полосы, которая делится на проезжие части у самого перекрёстка.",
+   "Улица Манаса к северу — двусторонняя, 4 полосы (primary); к югу — двусторонняя, 2 полосы (secondary).",
+   "Запрет правого поворота с юга на восток (отношение 2700742); для этого манёвра есть съезд в обход светофора. С севера на запад тоже есть съезд (primary_link), он начинается в 90 м от центра.",
+   "turn:lanes (назначение полос по манёврам) в OSM у этого перекрёстка не указано."
+  ]
+ },
+ "sumo_version": "SUMO 1.28.0",
+ "generated": "2026-10-21T09:59:50+00:00",
+ "params": {
+  "loads_veh_h": {
+   "low": {
+    "E": 450,
+    "W": 450,
+    "N": 300,
+    "S": 150
+   },
+   "medium": {
+    "E": 600,
+    "W": 600,
+    "N": 400,
+    "S": 220
+   },
+   "high": {
+    "E": 750,
+    "W": 750,
+    "N": 500,
+    "S": 270
+   }
+  },
+  "turn_shares": {
+   "L": 0.15,
+   "T": 0.7,
+   "R": 0.15
+  },
+  "seeds": [
+   1,
+   2,
+   3
+  ],
+  "duration_s": 3600.0,
+  "warmup_s": 300,
+  "step_s": 1.0,
+  "timing": {
+   "min_green": 8.0,
+   "yellow": 3.0,
+   "all_red": 2.0,
+   "hard_max_green": 120.0
+  },
+  "fixed": {
+   "design_load": "medium",
+   "cycle_s": 97.0,
+   "webster_cycle_s": 96.8,
+   "greens_s": [
+    22.0,
+    15.0,
+    20.0,
+    20.0
+   ],
+   "phases": [
+    "подход с севера",
+    "подход с юга",
+    "подход с востока",
+    "подход с запада"
+   ]
+  },
+  "adaptive": {
+   "max_green": 45.0,
+   "max_green_by_phase": null,
+   "wait_weight": 20.0,
+   "starvation": 120.0
+  }
+ },
+ "summary": [
+  {
+   "load": "low",
+   "controller": "fixed",
+   "runs": 3,
+   "seeds": [
+    1,
+    2,
+    3
+   ],
+   "mean_wait": [
+    30.4,
+    0.42
+   ],
+   "mean_time_loss": [
+    38.28,
+    0.52
+   ],
+   "mean_queue": [
+    11.41,
+    0.38
+   ],
+   "max_queue_approach": [
+    17.0,
+    1.0
+   ],
+   "completed": [
+    1347.67,
+    32.59
+   ],
+   "unfinished": [
+    0.0,
+    0.0
+   ],
+   "demand_vehicles": [
+    1347.67,
+    32.59
+   ],
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "min_green_seen": 15.0,
+   "min_yellow_seen": 3.0,
+   "min_allred_seen": 2.0
+  },
+  {
+   "load": "low",
+   "controller": "adaptive",
+   "runs": 3,
+   "seeds": [
+    1,
+    2,
+    3
+   ],
+   "mean_wait": [
+    15.39,
+    0.44
+   ],
+   "mean_time_loss": [
+    22.81,
+    0.46
+   ],
+   "mean_queue": [
+    5.76,
+    0.29
+   ],
+   "max_queue_approach": [
+    10.67,
+    1.15
+   ],
+   "completed": [
+    1347.67,
+    32.59
+   ],
+   "unfinished": [
+    0.0,
+    0.0
+   ],
+   "demand_vehicles": [
+    1347.67,
+    32.59
+   ],
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "min_green_seen": 8.0,
+   "min_yellow_seen": 3.0,
+   "min_allred_seen": 2.0
+  },
+  {
+   "load": "medium",
+   "controller": "fixed",
+   "runs": 3,
+   "seeds": [
+    1,
+    2,
+    3
+   ],
+   "mean_wait": [
+    34.22,
+    1.46
+   ],
+   "mean_time_loss": [
+    43.22,
+    1.56
+   ],
+   "mean_queue": [
+    17.42,
+    0.77
+   ],
+   "max_queue_approach": [
+    22.67,
+    0.58
+   ],
+   "completed": [
+    1827.0,
+    9.64
+   ],
+   "unfinished": [
+    0.0,
+    0.0
+   ],
+   "demand_vehicles": [
+    1827.0,
+    9.64
+   ],
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "min_green_seen": 15.0,
+   "min_yellow_seen": 3.0,
+   "min_allred_seen": 2.0
+  },
+  {
+   "load": "medium",
+   "controller": "adaptive",
+   "runs": 3,
+   "seeds": [
+    1,
+    2,
+    3
+   ],
+   "mean_wait": [
+    20.63,
+    1.07
+   ],
+   "mean_time_loss": [
+    28.75,
+    1.13
+   ],
+   "mean_queue": [
+    10.53,
+    0.59
+   ],
+   "max_queue_approach": [
+    18.0,
+    1.73
+   ],
+   "completed": [
+    1827.0,
+    9.64
+   ],
+   "unfinished": [
+    0.0,
+    0.0
+   ],
+   "demand_vehicles": [
+    1827.0,
+    9.64
+   ],
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "min_green_seen": 8.0,
+   "min_yellow_seen": 3.0,
+   "min_allred_seen": 2.0
+  },
+  {
+   "load": "high",
+   "controller": "fixed",
+   "runs": 3,
+   "seeds": [
+    1,
+    2,
+    3
+   ],
+   "mean_wait": [
+    76.13,
+    21.02
+   ],
+   "mean_time_loss": [
+    93.25,
+    25.4
+   ],
+   "mean_queue": [
+    46.53,
+    13.63
+   ],
+   "max_queue_approach": [
+    55.33,
+    5.51
+   ],
+   "completed": [
+    2259.0,
+    50.24
+   ],
+   "unfinished": [
+    0.0,
+    0.0
+   ],
+   "demand_vehicles": [
+    2259.0,
+    50.24
+   ],
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "min_green_seen": 15.0,
+   "min_yellow_seen": 3.0,
+   "min_allred_seen": 2.0
+  },
+  {
+   "load": "high",
+   "controller": "adaptive",
+   "runs": 3,
+   "seeds": [
+    1,
+    2,
+    3
+   ],
+   "mean_wait": [
+    32.47,
+    2.04
+   ],
+   "mean_time_loss": [
+    41.76,
+    2.11
+   ],
+   "mean_queue": [
+    20.45,
+    1.69
+   ],
+   "max_queue_approach": [
+    29.33,
+    3.06
+   ],
+   "completed": [
+    2259.0,
+    50.24
+   ],
+   "unfinished": [
+    0.0,
+    0.0
+   ],
+   "demand_vehicles": [
+    2259.0,
+    50.24
+   ],
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "min_green_seen": 8.0,
+   "min_yellow_seen": 3.0,
+   "min_allred_seen": 2.0
+  }
+ ],
+ "runs": [
+  {
+   "scenario": "chui-manas",
+   "controller": "fixed",
+   "load": "low",
+   "seed": 1,
+   "plan": "С–Ю по подходам, В–З по подходам",
+   "demand_vehicles": 1338,
+   "completed": 1338,
+   "unfinished": 0,
+   "mean_wait": 30.43,
+   "mean_time_loss": 38.34,
+   "mean_queue": 11.35,
+   "max_queue_approach": 18,
+   "queue_by_approach": {
+    "N": 2.26,
+    "E": 3.52,
+    "S": 1.71,
+    "W": 3.85
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "switches": 152,
+   "min_green_seen": 15.0,
+   "min_yellow_seen": 3.0,
+   "min_allred_seen": 2.0,
+   "sim_end": 3707.0,
+   "measured_trips": 1234,
+   "fixed_cycle": {
+    "greens": [
+     22.0,
+     15.0,
+     20.0,
+     20.0
+    ]
+   },
+   "states": null
+  },
+  {
+   "scenario": "chui-manas",
+   "controller": "adaptive",
+   "load": "low",
+   "seed": 1,
+   "plan": "С–Ю по подходам, В–З по подходам",
+   "demand_vehicles": 1338,
+   "completed": 1338,
+   "unfinished": 0,
+   "mean_wait": 15.33,
+   "mean_time_loss": 22.73,
+   "mean_queue": 5.75,
+   "max_queue_approach": 10,
+   "queue_by_approach": {
+    "N": 1.35,
+    "E": 1.59,
+    "S": 1.07,
+    "W": 1.74
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "switches": 254,
+   "min_green_seen": 8.0,
+   "min_yellow_seen": 3.0,
+   "min_allred_seen": 2.0,
+   "sim_end": 3654.0,
+   "measured_trips": 1234,
+   "fixed_cycle": null,
+   "states": null
+  },
+  {
+   "scenario": "chui-manas",
+   "controller": "fixed",
+   "load": "low",
+   "seed": 2,
+   "plan": "С–Ю по подходам, В–З по подходам",
+   "demand_vehicles": 1384,
+   "completed": 1384,
+   "unfinished": 0,
+   "mean_wait": 30.8,
+   "mean_time_loss": 38.77,
+   "mean_queue": 11.81,
+   "max_queue_approach": 17,
+   "queue_by_approach": {
+    "N": 2.5,
+    "E": 4.25,
+    "S": 1.89,
+    "W": 3.17
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "switches": 152,
+   "min_green_seen": 15.0,
+   "min_yellow_seen": 3.0,
+   "min_allred_seen": 2.0,
+   "sim_end": 3684.0,
+   "measured_trips": 1263,
+   "fixed_cycle": {
+    "greens": [
+     22.0,
+     15.0,
+     20.0,
+     20.0
+    ]
+   },
+   "states": null
+  },
+  {
+   "scenario": "chui-manas",
+   "controller": "adaptive",
+   "load": "low",
+   "seed": 2,
+   "plan": "С–Ю по подходам, В–З по подходам",
+   "demand_vehicles": 1384,
+   "completed": 1384,
+   "unfinished": 0,
+   "mean_wait": 15.86,
+   "mean_time_loss": 23.3,
+   "mean_queue": 6.05,
+   "max_queue_approach": 10,
+   "queue_by_approach": {
+    "N": 1.43,
+    "E": 1.82,
+    "S": 1.08,
+    "W": 1.72
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "switches": 251,
+   "min_green_seen": 8.0,
+   "min_yellow_seen": 3.0,
+   "min_allred_seen": 2.0,
+   "sim_end": 3668.0,
+   "measured_trips": 1263,
+   "fixed_cycle": null,
+   "states": null
+  },
+  {
+   "scenario": "chui-manas",
+   "controller": "fixed",
+   "load": "low",
+   "seed": 3,
+   "plan": "С–Ю по подходам, В–З по подходам",
+   "demand_vehicles": 1321,
+   "completed": 1321,
+   "unfinished": 0,
+   "mean_wait": 29.97,
+   "mean_time_loss": 37.74,
+   "mean_queue": 11.06,
+   "max_queue_approach": 16,
+   "queue_by_approach": {
+    "N": 2.46,
+    "E": 3.65,
+    "S": 1.31,
+    "W": 3.64
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "switches": 152,
+   "min_green_seen": 15.0,
+   "min_yellow_seen": 3.0,
+   "min_allred_seen": 2.0,
+   "sim_end": 3684.0,
+   "measured_trips": 1210,
+   "fixed_cycle": {
+    "greens": [
+     22.0,
+     15.0,
+     20.0,
+     20.0
+    ]
+   },
+   "states": null
+  },
+  {
+   "scenario": "chui-manas",
+   "controller": "adaptive",
+   "load": "low",
+   "seed": 3,
+   "plan": "С–Ю по подходам, В–З по подходам",
+   "demand_vehicles": 1321,
+   "completed": 1321,
+   "unfinished": 0,
+   "mean_wait": 14.99,
+   "mean_time_loss": 22.4,
+   "mean_queue": 5.48,
+   "max_queue_approach": 12,
+   "queue_by_approach": {
+    "N": 1.35,
+    "E": 1.59,
+    "S": 0.85,
+    "W": 1.68
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "switches": 256,
+   "min_green_seen": 8.0,
+   "min_yellow_seen": 3.0,
+   "min_allred_seen": 2.0,
+   "sim_end": 3668.0,
+   "measured_trips": 1210,
+   "fixed_cycle": null,
+   "states": null
+  },
+  {
+   "scenario": "chui-manas",
+   "controller": "fixed",
+   "load": "medium",
+   "seed": 1,
+   "plan": "С–Ю по подходам, В–З по подходам",
+   "demand_vehicles": 1831,
+   "completed": 1831,
+   "unfinished": 0,
+   "mean_wait": 35.74,
+   "mean_time_loss": 44.86,
+   "mean_queue": 18.16,
+   "max_queue_approach": 23,
+   "queue_by_approach": {
+    "N": 3.81,
+    "E": 5.74,
+    "S": 2.85,
+    "W": 5.77
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "switches": 153,
+   "min_green_seen": 15.0,
+   "min_yellow_seen": 3.0,
+   "min_allred_seen": 2.0,
+   "sim_end": 3709.0,
+   "measured_trips": 1687,
+   "fixed_cycle": {
+    "greens": [
+     22.0,
+     15.0,
+     20.0,
+     20.0
+    ]
+   },
+   "states": null
+  },
+  {
+   "scenario": "chui-manas",
+   "controller": "adaptive",
+   "load": "medium",
+   "seed": 1,
+   "plan": "С–Ю по подходам, В–З по подходам",
+   "demand_vehicles": 1831,
+   "completed": 1831,
+   "unfinished": 0,
+   "mean_wait": 20.98,
+   "mean_time_loss": 29.07,
+   "mean_queue": 10.68,
+   "max_queue_approach": 17,
+   "queue_by_approach": {
+    "N": 2.43,
+    "E": 3.12,
+    "S": 1.84,
+    "W": 3.29
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "switches": 212,
+   "min_green_seen": 8.0,
+   "min_yellow_seen": 3.0,
+   "min_allred_seen": 2.0,
+   "sim_end": 3678.0,
+   "measured_trips": 1687,
+   "fixed_cycle": null,
+   "states": null
+  },
+  {
+   "scenario": "chui-manas",
+   "controller": "fixed",
+   "load": "medium",
+   "seed": 2,
+   "plan": "С–Ю по подходам, В–З по подходам",
+   "demand_vehicles": 1816,
+   "completed": 1816,
+   "unfinished": 0,
+   "mean_wait": 32.82,
+   "mean_time_loss": 41.75,
+   "mean_queue": 16.62,
+   "max_queue_approach": 22,
+   "queue_by_approach": {
+    "N": 3.49,
+    "E": 6.59,
+    "S": 2.08,
+    "W": 4.46
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "switches": 152,
+   "min_green_seen": 15.0,
+   "min_yellow_seen": 3.0,
+   "min_allred_seen": 2.0,
+   "sim_end": 3705.0,
+   "measured_trips": 1674,
+   "fixed_cycle": {
+    "greens": [
+     22.0,
+     15.0,
+     20.0,
+     20.0
+    ]
+   },
+   "states": null
+  },
+  {
+   "scenario": "chui-manas",
+   "controller": "adaptive",
+   "load": "medium",
+   "seed": 2,
+   "plan": "С–Ю по подходам, В–З по подходам",
+   "demand_vehicles": 1816,
+   "completed": 1816,
+   "unfinished": 0,
+   "mean_wait": 19.43,
+   "mean_time_loss": 27.49,
+   "mean_queue": 9.88,
+   "max_queue_approach": 17,
+   "queue_by_approach": {
+    "N": 2.21,
+    "E": 3.02,
+    "S": 1.76,
+    "W": 2.9
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "switches": 215,
+   "min_green_seen": 8.0,
+   "min_yellow_seen": 3.0,
+   "min_allred_seen": 2.0,
+   "sim_end": 3675.0,
+   "measured_trips": 1674,
+   "fixed_cycle": null,
+   "states": null
+  },
+  {
+   "scenario": "chui-manas",
+   "controller": "fixed",
+   "load": "medium",
+   "seed": 3,
+   "plan": "С–Ю по подходам, В–З по подходам",
+   "demand_vehicles": 1834,
+   "completed": 1834,
+   "unfinished": 0,
+   "mean_wait": 34.1,
+   "mean_time_loss": 43.05,
+   "mean_queue": 17.48,
+   "max_queue_approach": 23,
+   "queue_by_approach": {
+    "N": 3.64,
+    "E": 5.6,
+    "S": 3.2,
+    "W": 5.04
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "switches": 153,
+   "min_green_seen": 15.0,
+   "min_yellow_seen": 3.0,
+   "min_allred_seen": 2.0,
+   "sim_end": 3708.0,
+   "measured_trips": 1688,
+   "fixed_cycle": {
+    "greens": [
+     22.0,
+     15.0,
+     20.0,
+     20.0
+    ]
+   },
+   "states": null
+  },
+  {
+   "scenario": "chui-manas",
+   "controller": "adaptive",
+   "load": "medium",
+   "seed": 3,
+   "plan": "С–Ю по подходам, В–З по подходам",
+   "demand_vehicles": 1834,
+   "completed": 1834,
+   "unfinished": 0,
+   "mean_wait": 21.48,
+   "mean_time_loss": 29.69,
+   "mean_queue": 11.04,
+   "max_queue_approach": 20,
+   "queue_by_approach": {
+    "N": 2.6,
+    "E": 3.19,
+    "S": 1.89,
+    "W": 3.36
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "switches": 212,
+   "min_green_seen": 8.0,
+   "min_yellow_seen": 3.0,
+   "min_allred_seen": 2.0,
+   "sim_end": 3660.0,
+   "measured_trips": 1688,
+   "fixed_cycle": null,
+   "states": null
+  },
+  {
+   "scenario": "chui-manas",
+   "controller": "fixed",
+   "load": "high",
+   "seed": 1,
+   "plan": "С–Ю по подходам, В–З по подходам",
+   "demand_vehicles": 2229,
+   "completed": 2229,
+   "unfinished": 0,
+   "mean_wait": 67.38,
+   "mean_time_loss": 82.9,
+   "mean_queue": 40.43,
+   "max_queue_approach": 58,
+   "queue_by_approach": {
+    "N": 6.56,
+    "E": 22.31,
+    "S": 3.59,
+    "W": 7.96
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "switches": 159,
+   "min_green_seen": 15.0,
+   "min_yellow_seen": 3.0,
+   "min_allred_seen": 2.0,
+   "sim_end": 3860.0,
+   "measured_trips": 2049,
+   "fixed_cycle": {
+    "greens": [
+     22.0,
+     15.0,
+     20.0,
+     20.0
+    ]
+   },
+   "states": null
+  },
+  {
+   "scenario": "chui-manas",
+   "controller": "adaptive",
+   "load": "high",
+   "seed": 1,
+   "plan": "С–Ю по подходам, В–З по подходам",
+   "demand_vehicles": 2229,
+   "completed": 2229,
+   "unfinished": 0,
+   "mean_wait": 31.08,
+   "mean_time_loss": 40.37,
+   "mean_queue": 19.31,
+   "max_queue_approach": 30,
+   "queue_by_approach": {
+    "N": 4.43,
+    "E": 6.02,
+    "S": 2.82,
+    "W": 6.05
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "switches": 162,
+   "min_green_seen": 8.0,
+   "min_yellow_seen": 3.0,
+   "min_allred_seen": 2.0,
+   "sim_end": 3676.0,
+   "measured_trips": 2049,
+   "fixed_cycle": null,
+   "states": null
+  },
+  {
+   "scenario": "chui-manas",
+   "controller": "fixed",
+   "load": "high",
+   "seed": 2,
+   "plan": "С–Ю по подходам, В–З по подходам",
+   "demand_vehicles": 2317,
+   "completed": 2317,
+   "unfinished": 0,
+   "mean_wait": 100.11,
+   "mean_time_loss": 122.19,
+   "mean_queue": 62.15,
+   "max_queue_approach": 59,
+   "queue_by_approach": {
+    "N": 7.51,
+    "E": 35.29,
+    "S": 11.29,
+    "W": 8.07
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "switches": 162,
+   "min_green_seen": 15.0,
+   "min_yellow_seen": 3.0,
+   "min_allred_seen": 2.0,
+   "sim_end": 3928.0,
+   "measured_trips": 2119,
+   "fixed_cycle": {
+    "greens": [
+     22.0,
+     15.0,
+     20.0,
+     20.0
+    ]
+   },
+   "states": null
+  },
+  {
+   "scenario": "chui-manas",
+   "controller": "adaptive",
+   "load": "high",
+   "seed": 2,
+   "plan": "С–Ю по подходам, В–З по подходам",
+   "demand_vehicles": 2317,
+   "completed": 2317,
+   "unfinished": 0,
+   "mean_wait": 34.81,
+   "mean_time_loss": 44.18,
+   "mean_queue": 22.39,
+   "max_queue_approach": 26,
+   "queue_by_approach": {
+    "N": 4.61,
+    "E": 6.94,
+    "S": 3.92,
+    "W": 6.91
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "switches": 145,
+   "min_green_seen": 8.0,
+   "min_yellow_seen": 3.0,
+   "min_allred_seen": 2.0,
+   "sim_end": 3696.0,
+   "measured_trips": 2119,
+   "fixed_cycle": null,
+   "states": null
+  },
+  {
+   "scenario": "chui-manas",
+   "controller": "fixed",
+   "load": "high",
+   "seed": 3,
+   "plan": "С–Ю по подходам, В–З по подходам",
+   "demand_vehicles": 2231,
+   "completed": 2231,
+   "unfinished": 0,
+   "mean_wait": 60.9,
+   "mean_time_loss": 74.65,
+   "mean_queue": 37.02,
+   "max_queue_approach": 49,
+   "queue_by_approach": {
+    "N": 6.68,
+    "E": 18.07,
+    "S": 5.76,
+    "W": 6.5
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "switches": 158,
+   "min_green_seen": 15.0,
+   "min_yellow_seen": 3.0,
+   "min_allred_seen": 2.0,
+   "sim_end": 3835.0,
+   "measured_trips": 2052,
+   "fixed_cycle": {
+    "greens": [
+     22.0,
+     15.0,
+     20.0,
+     20.0
+    ]
+   },
+   "states": null
+  },
+  {
+   "scenario": "chui-manas",
+   "controller": "adaptive",
+   "load": "high",
+   "seed": 3,
+   "plan": "С–Ю по подходам, В–З по подходам",
+   "demand_vehicles": 2231,
+   "completed": 2231,
+   "unfinished": 0,
+   "mean_wait": 31.52,
+   "mean_time_loss": 40.72,
+   "mean_queue": 19.65,
+   "max_queue_approach": 32,
+   "queue_by_approach": {
+    "N": 4.83,
+    "E": 6.03,
+    "S": 3.04,
+    "W": 5.75
+   },
+   "collisions": 0,
+   "teleports": 0,
+   "conflict_steps": 0,
+   "switches": 164,
+   "min_green_seen": 8.0,
+   "min_yellow_seen": 3.0,
+   "min_allred_seen": 2.0,
+   "sim_end": 3685.0,
+   "measured_trips": 2052,
+   "fixed_cycle": null,
+   "states": null
+  }
+ ],
+ "elapsed_s": 416.9
+}

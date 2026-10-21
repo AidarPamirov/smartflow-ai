@@ -1,0 +1,251 @@
+{
+ "query": [
+  "Чуй проспект",
+  "улица Манаса"
+ ],
+ "osm_base": "2026-10-21T09:26:19Z",
+ "shared_nodes": [
+  {
+   "id": 244504527,
+   "lat": 42.8777959,
+   "lon": 74.5623232,
+   "tags": {}
+  },
+  {
+   "id": 12855226491,
+   "lat": 42.8779169,
+   "lon": 74.5622595,
+   "tags": {}
+  }
+ ],
+ "center": {
+  "lat": 42.8778564,
+  "lon": 74.56229135
+ },
+ "traffic_signals_within_60m": [
+  {
+   "id": 244504528,
+   "lat": 42.878127,
+   "lon": 74.5621647,
+   "dist_m": 31.8
+  },
+  {
+   "id": 815739971,
+   "lat": 42.8775727,
+   "lon": 74.5624626,
+   "dist_m": 34.5
+  },
+  {
+   "id": 13390199065,
+   "lat": 42.8778178,
+   "lon": 74.5619844,
+   "dist_m": 25.4
+  },
+  {
+   "id": 13390199067,
+   "lat": 42.8778271,
+   "lon": 74.5626651,
+   "dist_m": 30.6
+  }
+ ],
+ "ways": [
+  {
+   "id": 63944307,
+   "tags": {
+    "highway": "secondary",
+    "lanes": "2",
+    "maxspeed": "60",
+    "name": "Манас көчөсү",
+    "name:ru": "улица Манаса",
+    "oneway": "no"
+   },
+   "nearest_point_to_center_m": 7.2,
+   "arms": [
+    {
+     "toward_index": 1,
+     "bearing_from_center": 156.5,
+     "length_m": 51.7
+    }
+   ]
+  },
+  {
+   "id": 620315676,
+   "tags": {
+    "highway": "primary",
+    "lanes": "4",
+    "maxspeed": "60",
+    "name": "Манас көчөсү",
+    "name:ru": "улица Манаса"
+   },
+   "nearest_point_to_center_m": 7.2,
+   "arms": [
+    {
+     "toward_index": 1,
+     "bearing_from_center": 158.9,
+     "length_m": 14.4
+    },
+    {
+     "toward_index": -1,
+     "bearing_from_center": 339.7,
+     "length_m": 83.0
+    }
+   ]
+  },
+  {
+   "id": 1219917426,
+   "tags": {
+    "highway": "primary",
+    "lanes": "3",
+    "maxspeed": "60",
+    "name": "Чүй проспекти",
+    "name:ru": "проспект Чуй",
+    "oneway": "yes"
+   },
+   "nearest_point_to_center_m": 7.2,
+   "arms": [
+    {
+     "toward_index": -1,
+     "bearing_from_center": 276.1,
+     "length_m": 96.7
+    }
+   ]
+  },
+  {
+   "id": 1388749844,
+   "tags": {
+    "highway": "primary",
+    "lanes": "3",
+    "maxspeed": "60",
+    "name": "Чүй проспекти",
+    "name:ru": "проспект Чуй",
+    "oneway": "yes"
+   },
+   "nearest_point_to_center_m": 7.2,
+   "arms": [
+    {
+     "toward_index": 1,
+     "bearing_from_center": 275.3,
+     "length_m": 63.5
+    }
+   ]
+  },
+  {
+   "id": 1418073171,
+   "tags": {
+    "highway": "primary",
+    "lanes": "3",
+    "maxspeed": "60",
+    "name": "Чуй проспект",
+    "name:ru": "Чуй проспект",
+    "oneway": "yes"
+   },
+   "nearest_point_to_center_m": 7.2,
+   "arms": [
+    {
+     "toward_index": -1,
+     "bearing_from_center": 108.6,
+     "length_m": 30.9
+    }
+   ]
+  },
+  {
+   "id": 1418073172,
+   "tags": {
+    "highway": "primary",
+    "lanes": "3",
+    "maxspeed": "60",
+    "name": "Чүй проспекти",
+    "name:ru": "Чуй проспект",
+    "oneway": "yes"
+   },
+   "nearest_point_to_center_m": 7.2,
+   "arms": [
+    {
+     "toward_index": 1,
+     "bearing_from_center": 81.5,
+     "length_m": 24.4
+    }
+   ]
+  },
+  {
+   "id": 33069664,
+   "tags": {
+    "highway": "primary",
+    "lanes": "4",
+    "maxspeed": "60",
+    "name": "Чүй проспекти",
+    "name:ru": "Чуй проспект"
+   },
+   "nearest_point_to_center_m": 26.9,
+   "arms": [
+    {
+     "toward_index": -1,
+     "bearing_from_center": 94.4,
+     "length_m": 108.3
+    }
+   ]
+  },
+  {
+   "id": 200985131,
+   "tags": {
+    "highway": "secondary_link",
+    "maxspeed": "40",
+    "oneway": "yes"
+   },
+   "nearest_point_to_center_m": 39.5,
+   "arms": [
+    {
+     "toward_index": 1,
+     "bearing_from_center": 62.7,
+     "length_m": 33.3
+    },
+    {
+     "toward_index": -1,
+     "bearing_from_center": 184.7,
+     "length_m": 50.0
+    }
+   ]
+  },
+  {
+   "id": 1312551817,
+   "tags": {
+    "highway": "secondary",
+    "lanes": "2",
+    "maxspeed": "60",
+    "name": "Манас көчөсү",
+    "name:ru": "улица Манаса",
+    "oneway": "no"
+   },
+   "nearest_point_to_center_m": 58.8,
+   "arms": [
+    {
+     "toward_index": 1,
+     "bearing_from_center": 166.2,
+     "length_m": 76.6
+    }
+   ]
+  },
+  {
+   "id": 22775514,
+   "tags": {
+    "highway": "primary_link",
+    "maxspeed": "60",
+    "oneway": "yes"
+   },
+   "nearest_point_to_center_m": 76.6,
+   "arms": [
+    {
+     "toward_index": 1,
+     "bearing_from_center": 241.3,
+     "length_m": 60.9
+    },
+    {
+     "toward_index": -1,
+     "bearing_from_center": 37.4,
+     "length_m": 41.2
+    }
+   ]
+  }
+ ],
+ "attribution": "© OpenStreetMap contributors, ODbL"
+}

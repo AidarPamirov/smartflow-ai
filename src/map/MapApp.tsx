@@ -209,6 +209,7 @@ export default function MapApp() {
         <p><b>Трафик:</b> синтетический демонстрационный слой — случайные поездки по реальной сети дорог OSM. Это не данные о реальном движении.</p>
         <p className="map-hint">Вращение и наклон: правая кнопка мыши или Ctrl + перетаскивание; на телефоне — двумя пальцами.</p>
         <a className="map-link" href="#lab">Лаборатория перекрёстка →</a>
+        <a className="map-link" href="#sumo">Эксперимент SUMO: перекрёсток Чуй × Манаса →</a>
       </details>
 
       <TrafficPanel map={mapObj} mapReady={status === 'ready'} />
