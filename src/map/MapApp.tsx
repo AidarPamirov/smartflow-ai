@@ -72,10 +72,13 @@ export default function MapApp() {
       setView({ zoom: map.getZoom(), pitch: map.getPitch(), bearing: map.getBearing(), lng: c.lng, lat: c.lat });
     };
     map.on('move', () => { if (!raf) raf = requestAnimationFrame(sync); });
-    map.on('load', () => setStatus((s) => (s === 'error' ? s : 'ready')));
+    // Флаг первой загрузки: map.loaded() позже бывает false из-за обновляемого слоя трафика — это не ошибка.
+    let loadedOnce = false;
+    map.on('load', () => { loadedOnce = true; setStatus((s) => (s === 'error' ? s : 'ready')); });
     const slow = window.setTimeout(() => {
-      if (!map.loaded()) setFailed(true);
-      if (!map.loaded()) setError((prev) => prev ?? 'Карта загружается дольше обычного. Проверьте подключение к интернету или обновите страницу.');
+      if (loadedOnce) return;
+      setFailed(true);
+      setError((prev) => prev ?? 'Карта загружается дольше обычного. Проверьте подключение к интернету или обновите страницу.');
     }, 20000);
     map.on('error', (ev) => {
       setFailed(true);

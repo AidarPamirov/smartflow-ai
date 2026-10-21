@@ -30,9 +30,11 @@ export const SPEEDS = [1, 2, 5, 10] as const;
 export const COUNTS = [100, 250, 500, 1000] as const;
 export const SEED = 2026;
 const POOL_SIZE = 240;
+/** Интервал обновления слоя: 33 мс (≈30 Гц), на медленных устройствах реже — см. tick. */
 const RENDER_EVERY_MS = 33;
 const STATE_EVERY_MS = 250;
-const MAX_FRAME_DT = 0.1;
+/** Предел шага за кадр, с: после сворачивания вкладки машины не «прыгают». */
+const MAX_FRAME_DT = 0.25;
 
 export class TrafficController {
   private state: TrafficState = {
@@ -49,6 +51,8 @@ export class TrafficController {
   private lastRender = 0;
   private lastState = 0;
   private dirty = true;
+  /** Скользящее среднее длительности кадра, мс: если устройство не успевает, слой обновляется реже. */
+  private frameMs = 16;
   private cancel = { cancelled: false };
   private abort = new AbortController();
   private onMove = () => { this.dirty = true; };
@@ -103,12 +107,14 @@ export class TrafficController {
 
   private tick = (now: number) => {
     const dtReal = Math.min(MAX_FRAME_DT, (now - this.last) / 1000);
+    this.frameMs = this.frameMs * 0.9 + Math.min(500, now - this.last) * 0.1;
     this.last = now;
+    const renderEvery = this.frameMs > 45 ? 100 : this.frameMs > 25 ? 50 : RENDER_EVERY_MS;
     if (this.fleet && this.state.running) {
       this.fleet.step(dtReal * this.state.speed);
       this.dirty = true;
     }
-    if (this.dirty && now - this.lastRender >= RENDER_EVERY_MS && this.layer) {
+    if (this.dirty && now - this.lastRender >= renderEvery && this.layer) {
       const r = this.layer.update(this.poses());
       this.state.rendered = r.rendered;
       this.state.inView = r.inView;
