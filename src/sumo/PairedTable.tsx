@@ -7,7 +7,10 @@ export interface PairMetric { id: string; label: string; unit: string; digits: n
 const LOAD_LABEL: Record<string, string> = { low: 'низкая', medium: 'средняя', high: 'высокая', incident: 'ДТП на выезде' };
 const VERDICT_TEXT = { better: 'лучше', worse: 'хуже', same: 'одинаково', unclear: 'разница не подтверждена' } as const;
 const nf = (x: number | null, d: number) => (x == null ? '—' : x.toLocaleString('ru-RU', { minimumFractionDigits: d, maximumFractionDigits: d }));
-const sgn = (x: number, d: number) => `${x > 0 ? '+' : x < 0 ? '−' : ''}${nf(Math.abs(x), d)}`;
+const sgn = (x: number, d: number) => {
+  const r = Number(Math.abs(x).toFixed(d));
+  return r === 0 ? nf(0, d) : `${x > 0 ? '+' : '−'}${nf(r, d)}`;
+};
 
 /**
  * Таблица парных сравнений: выбранная пара «A против B», строки — метрики, столбцы — нагрузки.

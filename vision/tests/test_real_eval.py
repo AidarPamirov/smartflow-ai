@@ -67,5 +67,22 @@ class YoloxTests(unittest.TestCase):
             YoloxOnnxDetector("/нет/такого/файла.onnx")
 
 
+
+class PrimeTests(unittest.TestCase):
+    def test_primed_background_detects_from_first_frame(self):
+        import numpy as np
+        from smartflow_cv.vehicle_detection import BackgroundDetector
+        bg = np.full((120, 160, 3), 90, np.uint8)
+        d = BackgroundDetector()
+        d.prime([bg] * 5)
+        f = bg.copy()
+        f[40:80, 50:100] = (20, 200, 30)
+        dets = d.detect(f)
+        self.assertEqual(len(dets), 1)
+        x0, _, _, y1 = dets[0].box
+        self.assertLessEqual(abs(x0 - 50), 3)
+        self.assertLessEqual(abs(y1 - 80), 3)
+
+
 if __name__ == "__main__":
     unittest.main()

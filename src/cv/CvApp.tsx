@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { parseCv, STATUS_LABEL, type CvResults, type CvRow, type Stat } from './cvResults';
+import { parseCv, parseCvReal, realConfigLabel, STATUS_LABEL, type CvReal, type CvResults, type CvRow, type Stat } from './cvResults';
 import '../sumo/sumo.css';
 import './cv.css';
 
@@ -31,7 +31,7 @@ export default function CvApp() {
       <header className="top">
         <div>
           <h1>SmartFlow AI <span className="ver">компьютерное зрение</span></h1>
-          <p className="sub">Модули анализа видео: проверка на синтетической сцене с известной «правдой»</p>
+          <p className="sub">Модули анализа видео: проверка на реальном размеченном видео UA-DETRAC и на синтетической сцене с известной «правдой»</p>
         </div>
         <nav className="sumo-nav">
           <a className="top-link" href="#">← Карта Бишкека</a>
@@ -61,8 +61,9 @@ function Report({ data }: { data: CvResults }) {
           Реальных камер Бишкека проект не подключает и записей с улиц не использует.
         </p>
         <p>
-          Проверка — на <b>синтетической сцене</b>, где для каждого кадра известны точные рамки машин, их скорость и все перестроения.
-          Так можно честно измерить ошибки. Цифры ниже относятся только к этой сцене и не переносятся на реальные камеры автоматически.
+          Проверка двух видов. <b>Реальное видео</b> UA-DETRAC (публичный научный набор с разметкой каждой машины в каждом кадре) — на нём
+          измерены детекция и счёт машин. <b>Синтетическая сцена</b>, где известны точные скорости и перестроения, — на ней измерены
+          скорость и пересечение сплошной: у реального набора нет калибровки камеры и разметки скорости.
         </p>
         <p className="hint">{data.scene.note}</p>
       </section>
@@ -86,8 +87,10 @@ function Report({ data }: { data: CvResults }) {
         <p className="hint">Каждый модуль включается и выключается отдельно. Без калибровки камеры скорость и пересечение линии не считаются — модуль сообщает «нет калибровки», а не число.</p>
       </section>
 
+      <RealVideo />
+
       <section className="panel">
-        <h2>Точность по условиям съёмки</h2>
+        <h2>Синтетическая сцена: точность по условиям съёмки</h2>
         <p className="hint">
           {Object.keys(data.conditions).length} условий × {rows[0]?.seeds.length} seed по {data.scene.duration_s} с, {data.scene.fps} кадров/с, всего {runs} прогонов.
           Машина должна быть найдена, если она в {data.scene.eval_zone_x_m[0]}–{data.scene.eval_zone_x_m[1]} м от камеры и видна хотя бы на 60 %.
@@ -146,14 +149,15 @@ function Report({ data }: { data: CvResults }) {
         <h2>Ограничения и как запустить</h2>
         <ul className="sumo-list">
           <li>Детектор классический (вычитание фона): машины, видимые отдельно, находятся надёжно; в плотном потоке и очереди перекрывающиеся машины сливаются в одно пятно. Из-за этого теряются треки и часть перестроений.</li>
-          <li>Адаптер нейросетевого детектора YOLO есть, но пакет и веса не установлены и на этой сцене он не проверялся.</li>
+          <li>Нейросетевой детектор YOLOX-tiny (предобучен на COCO, без дообучения) проверен только на реальном видео UA-DETRAC, на синтетической сцене — нет. Видео Бишкека в проверке нет: камеры другие, ракурс и погода другие.</li>
           <li>Модели ремня безопасности нет: модуль всегда отвечает «невозможно определить». Интерфейс для специализированной модели и проверка качества кадра (разрешение, резкость, блики) готовы и покрыты тестами.</li>
-          <li>Синтетика проще реальности: нет теней, дождя, ночи, бликов, грузовиков и дрожания камеры. Перед использованием на реальном видео модули нужно проверить на размеченных реальных записях.</li>
+          <li>Синтетика проще реальности: нет теней, дождя, ночи, бликов, грузовиков и дрожания камеры. На реальном видео классический детектор почти не работает (см. выше) — для реальных камер нужен нейросетевой детектор.</li>
           <li>Все события — предварительные, анонимные (номер трека), без кадров, лиц и номеров.</li>
         </ul>
         <pre className="sumo-code">{`cd vision
 python -m unittest discover -s tests -t .
 python -m smartflow_cv.evaluate --out ../public/data/cv
+python -m smartflow_cv.detrac_eval --out ../public/data/cv/cv-real-results.json   # скачивает кадры UA-DETRAC в кэш
 python -m smartflow_cv.run --video clip.mp4 --calibration calib.json --config camera.json`}</pre>
         <p className="hint">Сгенерировано {new Date(data.generated).toLocaleString('ru-RU')}, расчёт занял {nf(data.elapsed_s / 60, 1)} мин.</p>
       </section>
@@ -171,5 +175,78 @@ function Row({ rows, label, f }: { rows: CvRow[]; label: string; f: (r: CvRow) =
       <td>{label}</td>
       {rows.map((r) => <td key={r.condition} className="mono">{f(r)}</td>)}
     </tr>
+  );
+}
+
+type RealStatus = { kind: 'loading' } | { kind: 'missing' } | { kind: 'error'; msg: string } | { kind: 'ready'; data: CvReal };
+const pct = (x: number | null | undefined) => (x == null ? '—' : `${nf(x * 100, 0)} %`);
+
+/** Проверка на реальном размеченном видео: точность и полнота детекции, «слипание», счёт машин на линии. */
+function RealVideo() {
+  const [s, setS] = useState<RealStatus>({ kind: 'loading' });
+  useEffect(() => {
+    let alive = true;
+    fetch(BASE + 'cv-real-results.json')
+      .then(async (r) => (r.status === 404 ? ({ kind: 'missing' } as RealStatus) : { kind: 'ready', data: parseCvReal(await r.json()) } as RealStatus))
+      .then((x) => { if (alive) setS(x); })
+      .catch((e: Error) => { if (alive) setS({ kind: 'error', msg: e.message }); });
+    return () => { alive = false; };
+  }, []);
+  if (s.kind === 'loading') return null;
+  if (s.kind !== 'ready')
+    return <section className="panel"><h2>Реальное видео</h2><p className="hint">{s.kind === 'missing' ? 'Проверка на реальном видео ещё не выполнена.' : `Результаты не загрузились: ${s.msg}.`}</p></section>;
+  const d = s.data;
+  const keys = Object.keys(d.total);
+  const frames = d.sequences.reduce((a, q) => a + q.frames, 0);
+  return (
+    <section className="panel">
+      <h2>Реальное видео: {d.dataset.name}</h2>
+      <p className="hint">
+        {d.sequences.length} видео с неподвижных камер над дорогами (Пекин, Тяньцзинь), по {d.dataset.frames_per_sequence} кадров ({d.dataset.frames_per_sequence / d.dataset.fps} с) с начала каждого,
+        всего {frames} кадров; в среднем {nf(d.sequences.reduce((a, q) => a + q.gt_vehicles_per_frame, 0) / d.sequences.length, 1)} размеченных машин в кадре.
+        Рамка засчитывается при IoU ≥ 0,5; детекции в «игнорируемых» областях разметки не оцениваются. Счёт — машины, пересёкшие горизонтальную линию, против размеченных треков.
+        {' '}{d.dataset.note}
+      </p>
+      <div className="table-wrap">
+        <table className="cv-table">
+          <thead><tr><th>Детектор</th><th>Точность</th><th>Полнота</th><th>F1</th><th>F1 при IoU ≥ 0,3</th><th>Слипшихся рамок</th><th>Счёт: модуль / правда</th><th>Время на кадр</th></tr></thead>
+          <tbody>
+            {keys.map((k) => {
+              const t = d.total[k];
+              return (
+                <tr key={k}>
+                  <td>{realConfigLabel(k)}</td>
+                  <td className="mono">{pct(t.iou05.precision)}</td><td className="mono">{pct(t.iou05.recall)}</td><td className="mono"><b>{pct(t.iou05.f1)}</b></td>
+                  <td className="mono">{pct(t.iou03.f1)}</td><td className="mono">{t.merged_fp}</td>
+                  <td className="mono">{t.count_ours} / {t.count_gt}{t.count_error_pct != null ? ` (${t.count_error_pct > 0 ? '+' : ''}${nf(t.count_error_pct, 0)} %)` : ''}</td>
+                  <td className="mono">{nf(t.ms_per_frame, 0)} мс</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <details className="corr-assume">
+        <summary>По каждому видео (F1 при IoU ≥ 0,5 и счёт)</summary>
+        <div className="table-wrap">
+          <table className="cv-table">
+            <thead><tr><th>Видео</th><th>Машин в кадре</th><th>Яркость</th>{keys.map((k) => <th key={k}>{realConfigLabel(k)}</th>)}</tr></thead>
+            <tbody>
+              {d.sequences.map((q) => (
+                <tr key={q.sequence}>
+                  <td className="mono">{q.sequence}</td><td className="mono">{nf(q.gt_vehicles_per_frame, 1)}</td><td className="mono">{nf(q.mean_luminance, 0)}</td>
+                  {keys.map((k) => <td key={k} className="mono">{pct(q.results[k].iou05.f1)} · {q.results[k].count_ours}/{q.results[k].count_gt}</td>)}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </details>
+      <p className="hint">
+        Маска дороги — область кадра, где по разметке ездят машины; она заменяет многоугольник дороги, который для реальной камеры рисуют один раз.
+        Время на кадр измерено на облачном сервере с 2 ядрами под нагрузкой — это ориентир, а не замер для ноутбука.
+        Данные: <a href={d.dataset.paper}>Wen et al., UA-DETRAC</a>, копия на <a href={d.dataset.copy}>Hugging Face</a>.
+      </p>
+    </section>
   );
 }

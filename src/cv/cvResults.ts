@@ -65,3 +65,45 @@ export const STATUS_LABEL: Record<string, string> = {
   ok: 'работает', off: 'выключен', no_calibration: 'нет калибровки', no_frame: 'нет кадра', unavailable: 'модель не подключена',
   insufficient_data: 'недостаточно данных',
 };
+
+// ───────── проверка на реальном размеченном видео (UA-DETRAC), пишет vision/smartflow_cv/detrac_eval.py ─────────
+
+export const CV_REAL_FORMAT = 'smartflow-cv-real/1';
+
+export interface Prf { tp: number; fp: number; fn: number; precision: number | null; recall: number | null; f1: number | null }
+export interface RealScore {
+  iou05: Prf; iou03: Prf; merged_fp: number; count_gt: number; count_ours: number; count_error_pct: number | null; ms_per_frame: number | null;
+  count_abs_error_pct_mean?: number | null;
+}
+export interface RealSequence {
+  sequence: string; frames: number; size: [number, number]; gt_vehicles_per_frame: number; road_mask_share: number; mean_luminance: number;
+  results: Record<string, RealScore>;
+}
+export interface CvReal {
+  format: string;
+  generated: string;
+  dataset: { name: string; paper: string; copy: string; sequences: string[]; frames_per_sequence: number; fps: number; note: string };
+  detectors: Record<string, string>;
+  protocol: Record<string, unknown>;
+  total: Record<string, RealScore>;
+  sequences: RealSequence[];
+}
+
+export function parseCvReal(d: unknown): CvReal {
+  const r = d as Partial<CvReal>;
+  if (!r || r.format !== CV_REAL_FORMAT) throw new Error(`format должен быть ${CV_REAL_FORMAT}`);
+  if (!r.total || !Array.isArray(r.sequences) || !r.sequences.length) throw new Error('в результатах нет данных');
+  for (const [k, t] of Object.entries(r.total)) {
+    const p = t.iou05;
+    if (p.tp + p.fn !== r.sequences.reduce((a, s) => a + s.results[k].iou05.tp + s.results[k].iou05.fn, 0))
+      throw new Error(`${k}: итог не сходится с последовательностями`);
+  }
+  return r as CvReal;
+}
+
+/** Подпись конфигурации: детектор и маска дороги. */
+export function realConfigLabel(key: string): string {
+  const [det, mask] = key.split('+');
+  const name = det === 'background' ? 'классический (вычитание фона)' : det === 'yolox_tiny' ? 'нейросеть YOLOX-tiny' : det;
+  return mask ? `${name}, маска дороги` : name;
+}

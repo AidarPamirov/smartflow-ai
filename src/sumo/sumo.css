@@ -85,3 +85,7 @@
 .paired-v.better { color: var(--good); }
 .paired-v.worse { color: var(--bad); }
 .paired-v.unclear, .paired-v.same { color: var(--text-secondary); font-weight: 400; }
+@media (max-width: 640px) {
+  .paired-table td:first-child { min-width: 120px; }
+  .paired-table td { font-size: 12px; }
+}

@@ -51,11 +51,18 @@ WARMUP = 10  # кадры, по которым детектор строит ф�
 class RangeFile(io.RawIOBase):
     """Файл по HTTP с произвольным доступом (заголовок Range) — чтобы читать оглавление zip без скачивания."""
 
-    def __init__(self, url: str):
+    def __init__(self, url: str, attempts: int = 4):
         self.pos = 0
-        with urllib.request.urlopen(urllib.request.Request(url, headers={"Range": "bytes=0-0"}), timeout=60) as r:
-            self.size = int(r.headers["Content-Range"].split("/")[1])
-            self.url = r.geturl()
+        for k in range(attempts):
+            try:
+                with urllib.request.urlopen(urllib.request.Request(url, headers={"Range": "bytes=0-0"}), timeout=60) as r:
+                    self.size = int(r.headers["Content-Range"].split("/")[1])
+                    self.url = r.geturl()
+                return
+            except (OSError, urllib.error.URLError):
+                if k == attempts - 1:
+                    raise
+                time.sleep(2 * (k + 1))
 
     def seekable(self) -> bool:
         return True
@@ -94,13 +101,18 @@ class RangeFile(io.RawIOBase):
         return len(d)
 
 
+def is_cached(cache: Path, seq: str, frames: int) -> bool:
+    out = cache / seq
+    return (out / "annotations.csv").exists() and all((out / f"image{i:06d}.jpg").exists() for i in range(1, frames + 1))
+
+
 def fetch_sequence(zf: zipfile.ZipFile, rf: RangeFile, seq: str, frames: int, cache: Path) -> Path:
     """Скачать первые frames кадров и разметку последовательности одним диапазоном байтов; вернуть папку кэша."""
-    folder = next(n.split("/")[0] for n in zf.namelist() if n.endswith(f"_{seq}/annotations.csv"))
     out = cache / seq
-    want = [f"{folder}/image{i:06d}.jpg" for i in range(1, frames + 1)]
-    if out.exists() and all((out / Path(w).name).exists() for w in want) and (out / "annotations.csv").exists():
+    if is_cached(cache, seq, frames):
         return out
+    folder = next(n.split("/")[0] for n in zf.namelist() if n.endswith(f"_{seq}/annotations.csv"))
+    want = [f"{folder}/image{i:06d}.jpg" for i in range(1, frames + 1)]
     out.mkdir(parents=True, exist_ok=True)
     (out / "annotations.csv").write_bytes(zf.read(f"{folder}/annotations.csv"))
     infos = [zf.getinfo(w) for w in want]
@@ -181,8 +193,17 @@ def road_mask(path: Path, size: tuple[int, int], grow: int = 15) -> np.ndarray:
     return cv2.dilate(m, cv2.getStructuringElement(cv2.MORPH_RECT, (2 * grow + 1, 2 * grow + 1)))
 
 
+PRIME_EVERY = 10  # классическому детектору фон задаётся медианой каждого 10-го кадра отрезка
+
+
 def run_detector(folder: Path, frames: int, det) -> tuple[list[list], float, list[float]]:
-    """Детекции по кадрам, среднее время на кадр (мс) и яркость кадров."""
+    """Детекции по кадрам, среднее время на кадр (мс) и яркость кадров.
+
+    Классическому детектору заранее задаётся фон — медиана кадров через 0,4 с по всему отрезку: так работает камера,
+    которая уже давно смотрит на дорогу (иначе фон строится за первые 0,4 с вместе со стоящими машинами).
+    """
+    if hasattr(det, "prime"):
+        det.prime([cv2.imread(str(folder / f"image{k:06d}.jpg")) for k in range(1, frames + 1, PRIME_EVERY)])
     out, lum, t0 = [], [], time.time()
     for k in range(1, frames + 1):
         img = cv2.imread(str(folder / f"image{k:06d}.jpg"))
@@ -276,8 +297,10 @@ def main(argv: list[str] | None = None) -> None:
     ap.add_argument("--no-yolo", action="store_true", help="только классический детектор")
     a = ap.parse_args(argv)
     from .vehicle_detection import YoloxOnnxDetector
-    rf = RangeFile(ZIP_URL)
-    zf = zipfile.ZipFile(io.BufferedReader(rf, buffer_size=1 << 20))
+    rf = zf = None
+    if not all(is_cached(a.cache, q, a.frames) for q in a.sequences):  # сеть нужна, только если кадров ещё нет в кэше
+        rf = RangeFile(ZIP_URL)
+        zf = zipfile.ZipFile(io.BufferedReader(rf, buffer_size=1 << 20))
     weights = None if a.no_yolo else fetch_weights(a.cache)
     rows = []
     for seq in a.sequences:
@@ -329,7 +352,8 @@ def main(argv: list[str] | None = None) -> None:
         "detectors": {"background": BackgroundDetector.name,
                       "yolox_tiny": "YOLOX-tiny (COCO, Apache-2.0), OpenCV DNN, вход 416×416, порог 0,3; без дообучения"},
         "protocol": {"iou": [0.5, 0.3], "ignored_regions": "детекции с центром в игнорируемой области не оцениваются",
-                     "warmup_frames": WARMUP, "road_mask": "+mask — учитываются только детекции с центром в маске дороги (где по разметке ездят машины; заменяет многоугольник, который рисуют один раз на камеру)",
+                     "warmup_frames": WARMUP, "background_prime": f"фон классического детектора — медиана каждого {PRIME_EVERY}-го кадра отрезка",
+                     "road_mask": "+mask — учитываются только детекции с центром в маске дороги (где по разметке ездят машины; заменяет многоугольник, который рисуют один раз на камеру)",
                      "count_line": f"горизонталь на {int(LINE_FRAC * 100)} % высоты кадра; трек считается, если нижняя середина рамки пересекла линию",
                      "cpu_note": "время на кадр — на облачном сервере с 2 ядрами при параллельной нагрузке, ориентир, а не замер для ноутбука"},
         "total": total,

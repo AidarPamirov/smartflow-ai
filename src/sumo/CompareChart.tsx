@@ -68,7 +68,7 @@ export function CompareChart({ title, loads: allLoads, series, metrics }: { titl
                           <line x1={x + bw / 2 - 4} x2={x + bw / 2 + 4} y1={y(v[0] + sd)} y2={y(v[0] + sd)} />
                         </g>
                       )}
-                      <text x={x + bw / 2} y={y(v[0] + sd) - 5} textAnchor="middle" className="cmp-val">{nf(v[0], m.digits === 0 ? 0 : v[0] >= 100 ? 0 : 1)}</text>
+                      <text x={x + bw / 2} y={y(v[0] + sd) - 5} textAnchor="middle" className="cmp-val">{nf(v[0], m.digits === 0 ? 0 : v[0] >= (series.length >= 3 ? 10 : 100) ? 0 : 1)}</text>
                     </g>
                   );
                 })}

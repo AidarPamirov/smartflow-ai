@@ -57,6 +57,16 @@ class BackgroundDetector:
     def reset(self) -> None:
         self._bg, self._seen, self._stack = None, 0, []
 
+    def prime(self, frames: list[np.ndarray]) -> None:
+        """Начальный фон — медиана кадров, взятых через большие промежутки (как у камеры, работающей давно).
+
+        Без этого фон строится по первым warmup кадрам: в плотном потоке машины за 0,4 с почти не сдвигаются
+        и «впечатываются» в фон.
+        """
+        g = [cv2.GaussianBlur(f, (5, 5), 0).astype(np.float32) for f in frames]
+        self._bg = np.median(np.stack(g), axis=0).astype(np.float32)
+        self._seen, self._stack = self.warmup, []
+
     def detect(self, frame: np.ndarray) -> list[Detection]:
         # цветной кадр: машина того же тона, что асфальт, но другого цвета, в оттенках серого «пропадает»
         g = cv2.GaussianBlur(frame if frame.ndim == 3 else frame[..., None].repeat(3, axis=2), (5, 5), 0).astype(np.float32)
