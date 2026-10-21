@@ -19,7 +19,7 @@ import { ALL_SIGNALS, SignalLayer, type SignalFilter } from '../signals/signalLa
 import { SignalSystem, type ItemStatus } from '../signals/system';
 import { Fleet, type ApproachObs, type FleetStats, type SignalHook, type VehiclePose } from './fleet';
 import { NetworkError, loadNetwork, type Network, type NetworkMeta, type RoadClass } from './network';
-import { RouteGenerator, type Route } from './routing';
+import { RouteGenerator, type DemandMode, type Route } from './routing';
 import { TrafficLayer, MIN_ZOOM } from './trafficLayer';
 
 export type TrafficPhase = 'waiting' | 'loading' | 'routing' | 'ready' | 'error';
@@ -85,6 +85,8 @@ export interface TrafficState {
   running: boolean;
   speed: number;
   count: number;
+  /** Сценарий спроса: обычный или утренний/вечерний час пик (синтетика). */
+  demand: DemandMode;
   stats: FleetStats;
   rendered: number;
   inView: number;
@@ -98,7 +100,9 @@ export interface TrafficState {
 }
 
 export const SPEEDS = [1, 2, 5, 10] as const;
-export const COUNTS = [100, 250, 500, 1000] as const;
+export const COUNTS = [100, 250, 500, 1000, 2000, 3000, 4000] as const;
+/** Машин по умолчанию в сценарии часа пик. */
+export const RUSH_COUNT = 3000;
 export const SEED = 2026;
 const POOL_SIZE = 240;
 /** Интервал обновления слоя: 33 мс (≈30 Гц), на медленных устройствах реже — см. tick. */
@@ -112,7 +116,7 @@ const CONGESTION_EVERY_MS = 2000;
 
 export class TrafficController {
   private state: TrafficState = {
-    phase: 'waiting', error: null, progress: 0, poolSize: POOL_SIZE, running: false, speed: 1, count: 250,
+    phase: 'waiting', error: null, progress: 0, poolSize: POOL_SIZE, running: false, speed: 1, count: 250, demand: 'uniform',
     stats: { vehicles: 0, trips: 0, meanSpeed: 0, simTime: 0 }, rendered: 0, inView: 0, zoomTooLow: false, networkVisible: false,
     trafficVisible: true, meta: null,
     signals: { phase: 'off', error: null, visible: true, filter: ALL_SIGNALS, counts: null, stats: null, osmBase: null, heads: 0, selected: null },
@@ -172,7 +176,7 @@ export class TrafficController {
       this.net = await loadNetwork(this.url, this.abort.signal);
       this.emit({ phase: 'routing', meta: this.net.meta });
       const signalsP = this.loadSignals();
-      const gen = new RouteGenerator(this.net, SEED);
+      const gen = new RouteGenerator(this.net, SEED, this.state.demand);
       this.pool = await gen.pool(POOL_SIZE, (done) => this.emit({ progress: done }), this.cancel);
       if (this.cancel.cancelled) return;
       await signalsP;
@@ -242,9 +246,9 @@ export class TrafficController {
   private makeFleet() {
     const net = this.net!;
     // отдельный генератор для продолжения поездок: сброс воспроизводит ту же картину
-    this.cont = new RouteGenerator(net, SEED + 1);
+    this.cont = new RouteGenerator(net, SEED + 1, this.state.demand);
     const cont = this.cont;
-    this.fleet = new Fleet(this.pool, SEED, this.state.count, (r, a) => !net.edges[r.arcs[a].edge].oneway, (node) => cont.from(node), this.hook);
+    this.fleet = new Fleet(this.pool, SEED, this.state.count, (r, a) => !net.edges[r.arcs[a].edge].oneway, (node) => cont.continueTrip(node), this.hook);
   }
 
   private *poses(): Generator<VehiclePose> {
@@ -366,6 +370,31 @@ export class TrafficController {
     this.obs = new Map();
     this.dirty = true;
     this.emit({ stats: this.fleet.stats() });
+  }
+  /**
+   * Сменить сценарий спроса: пул маршрутов строится заново, машины расставляются с тем же seed.
+   * Для часа пик число машин поднимается до RUSH_COUNT и включается карта загруженности.
+   */
+  async setDemand(demand: DemandMode) {
+    if (!this.net || this.state.phase !== 'ready' || demand === this.state.demand) return;
+    const wasRunning = this.state.running;
+    const count = demand !== 'uniform' && this.state.count < RUSH_COUNT ? RUSH_COUNT : demand === 'uniform' && this.state.count > 1000 ? 1000 : this.state.count;
+    this.emit({ demand, count, running: false, phase: 'routing', progress: 0 });
+    try {
+      const gen = new RouteGenerator(this.net, SEED, demand);
+      this.pool = await gen.pool(POOL_SIZE, (done) => this.emit({ progress: done }), this.cancel);
+    } catch (e) {
+      this.emit({ phase: 'error', error: `не удалось построить маршруты: ${(e as Error).message}` });
+      return;
+    }
+    this.signals?.reset();
+    this.cameras?.reset();
+    this.congestion?.reset();
+    this.makeFleet();
+    this.obs = new Map();
+    this.dirty = true;
+    this.emit({ phase: 'ready', running: wasRunning || demand !== 'uniform', stats: this.fleet!.stats() });
+    if (demand !== 'uniform' && !this.state.congestion.visible) this.setCongestionVisible(true);
   }
   setNetworkVisible(v: boolean) {
     this.layer?.setNetworkVisible(v);

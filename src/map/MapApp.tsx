@@ -170,6 +170,20 @@ export default function MapApp() {
     return () => window.removeEventListener('hashchange', go);
   }, [signalsReady, ctrl]);
 
+  // ссылка на сценарий: #rush=morning или #rush=evening — сразу час пик (для показа)
+  const trafficReady = st?.phase === 'ready';
+  const rushDone = useRef('');
+  useEffect(() => {
+    if (!trafficReady || !ctrl) return;
+    const go = () => {
+      const m = /^#rush=(morning|evening)$/.exec(location.hash);
+      if (m && rushDone.current !== m[1]) { rushDone.current = m[1]; void ctrl.setDemand(m[1] as 'morning' | 'evening'); }
+    };
+    go();
+    window.addEventListener('hashchange', go);
+    return () => window.removeEventListener('hashchange', go);
+  }, [trafficReady, ctrl]);
+
   const anySelected = !!(selected || selectedCam);
   useEffect(() => {
     if (!anySelected || !ctrl) return;

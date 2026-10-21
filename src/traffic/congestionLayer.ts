@@ -21,10 +21,12 @@ export class CongestionLayer {
     const map = this.map;
     map.addSource(SRC, { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
     map.addLayer({
-      id: L, type: 'line', source: SRC, layout: { visibility: 'none', 'line-cap': 'round' },
+      id: L, type: 'line', source: SRC, layout: { visibility: 'none', 'line-cap': 'round', 'line-sort-key': ['get', 'l'] },
       paint: {
         'line-color': ['match', ['get', 'l'], 0, LEVEL_COLOR[0], 1, LEVEL_COLOR[1], 2, LEVEL_COLOR[2], LEVEL_COLOR[3]],
-        'line-width': ['interpolate', ['linear'], ['zoom'], 11, 1.5, 15, 3.5, 18, 6],
+        // загруженные участки толще: на мелком масштабе пробка не теряется среди зелёных линий
+        'line-width': ['interpolate', ['linear'], ['zoom'], 11, ['*', 1.5, ['+', 1, ['*', 0.6, ['get', 'l']]]],
+          15, ['*', 3.5, ['+', 1, ['*', 0.4, ['get', 'l']]]], 18, ['*', 6, ['+', 1, ['*', 0.25, ['get', 'l']]]]],
         // zoom может быть только во входе верхнего interpolate: смещение 0 у односторонних (two = 0)
         'line-offset': ['interpolate', ['linear'], ['zoom'], 11, ['*', ['get', 'two'], 1], 15, ['*', ['get', 'two'], 2.5], 18, ['*', ['get', 'two'], 5]],
         'line-opacity': 0.8,

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { COUNTS, SPEEDS, type TrafficController, type TrafficState } from './controller';
+import type { DemandMode } from './routing';
 import { MIN_ZOOM } from './trafficLayer';
 
 const fmtTime = (t: number) => {
@@ -7,6 +8,7 @@ const fmtTime = (t: number) => {
   return `${h ? `${h}:` : ''}${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 };
 const nf = (n: number) => n.toLocaleString('ru-RU');
+const DEMAND: [DemandMode, string][] = [['uniform', 'обычный'], ['morning', 'утренний пик'], ['evening', 'вечерний пик']];
 
 /**
  * Панель демо-трафика. Только интерфейс: всю работу делает TrafficController (общий с панелями светофоров).
@@ -53,6 +55,21 @@ export function TrafficPanel({ ctrl: c, st, mapReady }: { ctrl: TrafficControlle
             </div>
           </div>
           <div className="traffic-row">
+            <span className="traffic-label">Спрос</span>
+            <div className="traffic-seg" role="group" aria-label="Сценарий спроса">
+              {DEMAND.map(([k, label]) => (
+                <button key={k} className={st.demand === k ? 'on' : ''} aria-pressed={st.demand === k} onClick={() => void c?.setDemand(k)}>{label}</button>
+              ))}
+            </div>
+          </div>
+          {st.demand !== 'uniform' && (
+            <p className="traffic-rush">
+              {st.demand === 'morning' ? 'Утро: ' : 'Вечер: '}
+              {st.demand === 'morning' ? '¾ поездок едут с окраин и въездов в город в центр' : '¾ поездок едут из центра на окраины и к выездам'}.
+              Сравните Baseline и Adaptive AI в панели слоёв. Это синтетический сценарий, а не данные о реальных пробках.
+            </p>
+          )}
+          <div className="traffic-row">
             <label htmlFor="traffic-count">Машин</label>
             <select id="traffic-count" value={st.count} onChange={(e) => c?.setCount(Number(e.target.value))}>
               {COUNTS.map((n) => <option key={n} value={n}>{n}</option>)}
@@ -74,6 +91,12 @@ export function TrafficPanel({ ctrl: c, st, mapReady }: { ctrl: TrafficControlle
               Синтетические поездки, не реальные данные о движении. Начало и конец каждой поездки выбираются случайно,
               путь — кратчайший по времени по реальной сети дорог OpenStreetMap
               {st.meta ? ` (центр Бишкека, ${nf(Math.round(st.meta.km))} км дорог, ${nf(st.meta.edges)} участков)` : ''}.
+            </p>
+            <p>
+              Час пик — тоже синтетика: три четверти поездок утром едут из окраин в центр (радиус 2,2 км от площади Ала-Тоо),
+              вечером — обратно. 60 % из них начинаются на въездах в город — узлах магистралей у края графа, потому что
+              крупные спальные районы и пригороды лежат за его пределами. Доехав, машина «паркуется», а на окраине выезжает новая.
+              Реальных данных о трафике Бишкека в открытом доступе нет, поэтому совпадение с конкретными пробками не гарантировано.
             </p>
             <p>
               На перекрёстках, где в OpenStreetMap отмечен светофор, машины останавливаются на красный виртуального

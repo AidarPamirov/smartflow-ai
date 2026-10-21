@@ -3,7 +3,7 @@
  * Только графовые вычисления — ничего не знает о карте и отрисовке.
  */
 import { mulberry32, type Rng } from '../sim/rng';
-import type { Arc, Network, RoadClass } from './network';
+import { toXY, type Arc, type Network, type RoadClass } from './network';
 
 /**
  * Условные скорости свободного движения по классам дорог, м/с. Это допущение демо-модели,
@@ -149,19 +149,93 @@ export function buildRoute(net: Network, arcs: Arc[], from: number): Route {
 }
 
 /**
- * Генератор синтетических поездок: случайная пара узлов на расстоянии не меньше MIN_TRIP,
- * кратчайший по времени путь между ними. Детерминирован по seed.
+ * Сценарий спроса (синтетический, не измерения):
+ *  uniform — начало и конец поездки случайны по всей сети;
+ *  morning — утренний час пик: большинство поездок из окраин в центр;
+ *  evening — вечерний час пик: из центра на окраины.
+ */
+export type DemandMode = 'uniform' | 'morning' | 'evening';
+
+/** Центр притяжения поездок — площадь Ала-Тоо (условно: рабочие места, учёба, услуги). */
+export const CITY_CENTER: [number, number] = [74.6037, 42.8766];
+/** «Центр» — узлы ближе этого к площади Ала-Тоо, м. */
+export const CENTER_R = 2200;
+/** «Окраины» (спальные районы в пределах графа) — узлы дальше этого, м. */
+export const PERIPHERY_R = 3500;
+/** Доля поездок по направлению часа пик; остальные — случайные, как в обычном режиме. */
+export const RUSH_SHARE = 0.75;
+/**
+ * Доля поездок часа пик через «въезды»: концы магистралей на границе графа (узел, где улица выходит за
+ * пределы выгрузки, далеко от центра). Граф покрывает только центр, а крупные спальные районы и пригороды
+ * лежат за его краем — их машины въезжают в город по магистралям.
+ */
+export const GATE_SHARE = 0.6;
+/** Вес въезда по классу магистрали: по крупным дорогам въезжает больше машин. */
+const GATE_WEIGHT: Partial<Record<RoadClass, number>> = { motorway: 4, trunk: 4, primary: 3, secondary: 1 };
+
+/**
+ * Генератор синтетических поездок: пара узлов на расстоянии не меньше MIN_TRIP (случайная или по сценарию
+ * часа пик), кратчайший по времени путь между ними. Детерминирован по seed.
  */
 export class RouteGenerator {
   private rng: Rng;
-  constructor(private net: Network, seed: number) {
+  private center: number[] = [];
+  private periphery: number[] = [];
+  /** Въезды и накопленные веса для выбора с вероятностью по весу. */
+  readonly gates: number[] = [];
+  private gateCum: number[] = [];
+
+  constructor(private net: Network, seed: number, readonly demand: DemandMode = 'uniform') {
     this.rng = mulberry32(seed);
+    if (demand !== 'uniform') {
+      const [cx, cy] = toXY(net.proj, CITY_CENTER[0], CITY_CENTER[1]);
+      for (let i = 0; i < net.nodeX.length; i++) {
+        const d = Math.hypot(net.nodeX[i] - cx, net.nodeY[i] - cy);
+        if (d <= CENTER_R) this.center.push(i);
+        else if (d >= PERIPHERY_R) this.periphery.push(i);
+      }
+      if (!this.center.length || !this.periphery.length) throw new Error('в графе нет узлов центра или окраин для сценария часа пик');
+      const deg = new Int32Array(net.nodeX.length);
+      const w = new Float64Array(net.nodeX.length);
+      for (const e of net.edges)
+        for (const n of [e.from, e.to]) { deg[n]++; w[n] = Math.max(w[n], GATE_WEIGHT[e.cls] ?? 0); }
+      let acc = 0;
+      for (let i = 0; i < net.nodeX.length; i++) {
+        // въезд — тупик графа на магистрали (улица продолжается за границей выгрузки) далеко от центра
+        if (deg[i] !== 1 || !w[i] || Math.hypot(net.nodeX[i] - cx, net.nodeY[i] - cy) < PERIPHERY_R) continue;
+        this.gates.push(i);
+        acc += w[i];
+        this.gateCum.push(acc);
+      }
+    }
+  }
+
+  /** Пара «откуда — куда» по сценарию спроса. */
+  private pair(): [number, number] {
+    const n = this.net.nodeX.length;
+    const any = () => Math.floor(this.rng() * n);
+    if (this.demand === 'uniform' || this.rng() >= RUSH_SHARE) return [any(), any()];
+    const c = this.center[Math.floor(this.rng() * this.center.length)];
+    let p: number;
+    if (this.gates.length && this.rng() < GATE_SHARE) {
+      const u = this.rng() * this.gateCum[this.gateCum.length - 1];
+      p = this.gates[this.gateCum.findIndex((x) => x > u)];
+    } else p = this.periphery[Math.floor(this.rng() * this.periphery.length)];
+    return this.demand === 'morning' ? [p, c] : [c, p];
+  }
+
+  /**
+   * Следующая поездка машины, закончившей маршрут в узле node. В обычном режиме — из того же узла.
+   * В час пик — новая поездка по сценарию: машина «припарковалась», а в другом месте выехала другая
+   * (иначе утром все машины быстро собрались бы в центре и поток иссяк).
+   */
+  continueTrip(node: number): Route | null {
+    return this.demand === 'uniform' ? this.from(node) : this.next();
   }
 
   next(maxAttempts = 30): Route | null {
-    const n = this.net.nodeX.length;
     for (let i = 0; i < maxAttempts; i++) {
-      const a = Math.floor(this.rng() * n), b = Math.floor(this.rng() * n);
+      const [a, b] = this.pair();
       const d = Math.hypot(this.net.nodeX[a] - this.net.nodeX[b], this.net.nodeY[a] - this.net.nodeY[b]);
       if (d < MIN_TRIP) continue;
       const arcs = shortestPath(this.net, a, b);

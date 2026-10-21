@@ -335,3 +335,5 @@
 .cam-settings label.cam-check { display: flex; align-items: center; gap: 6px; color: var(--map-text); }
 .cam-settings input[type='range'] { width: 100%; accent-color: var(--map-accent); }
 .cam-settings b { color: var(--map-text); font-weight: 600; }
+.traffic-label { color: var(--map-muted); font-size: 12.5px; }
+.traffic-rush { margin: 0; font-size: 12px; line-height: 1.45; color: var(--map-muted); border-left: 2px solid #ff8a3d; padding-left: 8px; }
