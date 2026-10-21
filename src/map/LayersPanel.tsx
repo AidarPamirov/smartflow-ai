@@ -77,7 +77,7 @@ export function LayersPanel({ ctrl, st }: { ctrl: TrafficController | null; st: 
                   </label>
                 ))}
               </div>
-              <p className="lay-muted">Поток, скорость и линия — по синтетическому трафику; ремень — визуальный макет без модели. Реальных видеопотоков нет.</p>
+              <p className="lay-muted">Поток, скорость и линия — по синтетическому трафику; ремень — визуальный макет без модели. Реальных видеопотоков нет. Модули анализа видео проверяются отдельно: <a href="#cv">компьютерное зрение</a>.</p>
             </div>
           )}
           <div className="lay-block lay-legend">

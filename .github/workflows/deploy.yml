@@ -43,8 +43,20 @@ jobs:
         env:
           SMARTFLOW_REQUIRE_SUMO: '1'
 
+  vision:
+    # Модули компьютерного зрения: геометрия, скорость, линия, трекер, ремень, конвейер на синтетической сцене, тестовое видео
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: pip install -r vision/requirements.txt
+      - run: python -m unittest discover -s tests -t . -v
+        working-directory: vision
+
   deploy:
-    needs: [build, sumo]
+    needs: [build, sumo, vision]
     runs-on: ubuntu-latest
     environment:
       name: github-pages

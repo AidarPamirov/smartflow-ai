@@ -6,9 +6,10 @@ import './ui/styles.css';
 // Карта грузится отдельным файлом: лаборатория перекрёстка не тянет MapLibre.
 const MapApp = lazy(() => import('./map/MapApp'));
 const SumoApp = lazy(() => import('./sumo/SumoApp'));
+const CvApp = lazy(() => import('./cv/CvApp'));
 
-/** Простая навигация по адресу: «#lab» — лаборатория перекрёстка, «#sumo» — эксперимент SUMO, иначе — карта Бишкека. */
-const currentView = () => (location.hash === '#lab' ? 'lab' : location.hash === '#sumo' ? 'sumo' : 'map');
+/** Простая навигация по адресу: «#lab» — лаборатория перекрёстка, «#sumo» — эксперимент SUMO, «#cv» — компьютерное зрение, иначе — карта Бишкека. */
+const currentView = () => (location.hash === '#lab' ? 'lab' : location.hash === '#sumo' ? 'sumo' : location.hash === '#cv' ? 'cv' : 'map');
 
 function Root() {
   const [view, setView] = useState(currentView);
@@ -22,6 +23,12 @@ function Root() {
     return (
       <Suspense fallback={<div className="boot">Загружаю эксперимент SUMO…</div>}>
         <SumoApp />
+      </Suspense>
+    );
+  if (view === 'cv')
+    return (
+      <Suspense fallback={<div className="boot">Загружаю результаты компьютерного зрения…</div>}>
+        <CvApp />
       </Suspense>
     );
   return (

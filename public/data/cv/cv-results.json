@@ -1,0 +1,1366 @@
+{
+ "format": "smartflow-cv-eval/1",
+ "generated": "2026-10-21T15:26:24+00:00",
+ "opencv": "5.0.0",
+ "scene": {
+  "note": "Синтетическая сцена: прямая дорога из 3 полос, камера на высоте 12 м, машины-параллелепипеды по модели IDM, светофор у стоп-линии в 50 м, перестроения, в том числе через сплошную. Не видео с улиц Бишкека.",
+  "fps": 25.0,
+  "duration_s": 90.0,
+  "frame_px": [
+   960,
+   540
+  ],
+  "camera_height_m": 12.0,
+  "solid_line_x_m": [
+   18.0,
+   38.0
+  ],
+  "stop_line_x_m": 50.0,
+  "eval_zone_x_m": [
+   10.0,
+   56.0
+  ],
+  "speed_limit_kmh": 60.0,
+  "speed_tolerance_kmh": 5.0
+ },
+ "modules": [
+  {
+   "id": "vehicle_detection",
+   "title": "Детекция машин",
+   "impl": "вычитание фона (OpenCV), без нейросети",
+   "verified": "синтетическая сцена",
+   "alt": "адаптер YOLO (ultralytics) — не установлен и не проверялся"
+  },
+  {
+   "id": "vehicle_tracking",
+   "title": "Сопровождение",
+   "impl": "IoU + венгерский алгоритм, анонимные номера треков",
+   "verified": "синтетическая сцена"
+  },
+  {
+   "id": "speed_estimation",
+   "title": "Скорость",
+   "impl": "перемещение в метрах по калибровке за 1 с (МНК)",
+   "verified": "синтетическая сцена"
+  },
+  {
+   "id": "lane_crossing_detection",
+   "title": "Пересечение сплошной",
+   "impl": "траектория трека против отрезка линии на дороге, гистерезис 0,6 м",
+   "verified": "синтетическая сцена"
+  },
+  {
+   "id": "traffic_density_estimation",
+   "title": "Плотность, очередь, поток",
+   "impl": "по трекам на плоскости дороги",
+   "verified": "синтетическая сцена"
+  },
+  {
+   "id": "seatbelt_assessment",
+   "title": "Ремень безопасности",
+   "impl": "интерфейс для специализированной модели + проверка качества кадра",
+   "verified": null,
+   "alt": "модель не подключена: всегда «невозможно определить»"
+  }
+ ],
+ "conditions": {
+  "light": "Свободный поток",
+  "clear": "Плотный поток с очередями",
+  "noisy": "Плотный + шум и мерцание",
+  "lowres": "Плотный, 480×270",
+  "dropout": "Свободный, камера пропала на 3 с",
+  "uncalibrated": "Свободный, без калибровки"
+ },
+ "summary": [
+  {
+   "condition": "light",
+   "title": "Свободный поток",
+   "seeds": [
+    1,
+    2
+   ],
+   "detection_precision_pct": [
+    79.15,
+    2.05
+   ],
+   "detection_recall_pct": [
+    57.4,
+    2.69
+   ],
+   "detection_recall_isolated_pct": [
+    90.6,
+    0.85
+   ],
+   "detection_recall_overlapping_pct": [
+    20.1,
+    4.1
+   ],
+   "overlapping_share_pct": [
+    47.25,
+    7.14
+   ],
+   "id_switches_per_vehicle": [
+    0.24,
+    0.02
+   ],
+   "speed_coverage_pct": [
+    84.2,
+    4.53
+   ],
+   "speed_mae_kmh": [
+    2.86,
+    0.52
+   ],
+   "speed_p95_abs_err_kmh": [
+    6.94,
+    3.56
+   ],
+   "speed_within_5kmh_pct": [
+    95.05,
+    5.02
+   ],
+   "speeding_gt": 5,
+   "speeding_true": 5,
+   "speeding_false": 1,
+   "solid_gt": 7,
+   "solid_events": 5,
+   "solid_true": 5,
+   "solid_insufficient": 1,
+   "count_gt": 30,
+   "count_est": 29,
+   "density_count_mae": [
+    0.79,
+    0.59
+   ],
+   "queue_mae_m": [
+    2.19,
+    1.73
+   ],
+   "ms_per_frame": [
+    38.4,
+    3.54
+   ],
+   "missing_frames": 0,
+   "module_status": {
+    "vehicle_detection": "ok",
+    "vehicle_tracking": "ok",
+    "speed_estimation": "ok",
+    "seatbelt_assessment": "unavailable",
+    "lane_crossing_detection": "ok",
+    "traffic_density_estimation": "ok"
+   }
+  },
+  {
+   "condition": "clear",
+   "title": "Плотный поток с очередями",
+   "seeds": [
+    1,
+    2
+   ],
+   "detection_precision_pct": [
+    79.35,
+    1.48
+   ],
+   "detection_recall_pct": [
+    53.95,
+    2.62
+   ],
+   "detection_recall_isolated_pct": [
+    87.3,
+    2.69
+   ],
+   "detection_recall_overlapping_pct": [
+    12.85,
+    9.83
+   ],
+   "overlapping_share_pct": [
+    44.9,
+    0.42
+   ],
+   "id_switches_per_vehicle": [
+    0.37,
+    0.07
+   ],
+   "speed_coverage_pct": [
+    80.45,
+    1.2
+   ],
+   "speed_mae_kmh": [
+    2.05,
+    0.01
+   ],
+   "speed_p95_abs_err_kmh": [
+    4.16,
+    0.18
+   ],
+   "speed_within_5kmh_pct": [
+    96.5,
+    0.28
+   ],
+   "speeding_gt": 4,
+   "speeding_true": 4,
+   "speeding_false": 0,
+   "solid_gt": 9,
+   "solid_events": 1,
+   "solid_true": 1,
+   "solid_insufficient": 7,
+   "count_gt": 75,
+   "count_est": 67,
+   "density_count_mae": [
+    2.31,
+    0.29
+   ],
+   "queue_mae_m": [
+    4.06,
+    0.61
+   ],
+   "ms_per_frame": [
+    36.95,
+    0.07
+   ],
+   "missing_frames": 0,
+   "module_status": {
+    "vehicle_detection": "ok",
+    "vehicle_tracking": "ok",
+    "speed_estimation": "ok",
+    "seatbelt_assessment": "unavailable",
+    "lane_crossing_detection": "ok",
+    "traffic_density_estimation": "ok"
+   }
+  },
+  {
+   "condition": "noisy",
+   "title": "Плотный + шум и мерцание",
+   "seeds": [
+    1,
+    2
+   ],
+   "detection_precision_pct": [
+    67.75,
+    1.63
+   ],
+   "detection_recall_pct": [
+    49.95,
+    0.49
+   ],
+   "detection_recall_isolated_pct": [
+    80.4,
+    4.1
+   ],
+   "detection_recall_overlapping_pct": [
+    12.55,
+    4.45
+   ],
+   "overlapping_share_pct": [
+    44.9,
+    0.42
+   ],
+   "id_switches_per_vehicle": [
+    0.42,
+    0.11
+   ],
+   "speed_coverage_pct": [
+    80.0,
+    1.13
+   ],
+   "speed_mae_kmh": [
+    2.65,
+    0.07
+   ],
+   "speed_p95_abs_err_kmh": [
+    8.01,
+    0.64
+   ],
+   "speed_within_5kmh_pct": [
+    90.4,
+    1.56
+   ],
+   "speeding_gt": 4,
+   "speeding_true": 4,
+   "speeding_false": 2,
+   "solid_gt": 9,
+   "solid_events": 2,
+   "solid_true": 1,
+   "solid_insufficient": 6,
+   "count_gt": 75,
+   "count_est": 87,
+   "density_count_mae": [
+    2.19,
+    0.32
+   ],
+   "queue_mae_m": [
+    4.08,
+    0.64
+   ],
+   "ms_per_frame": [
+    36.8,
+    0.42
+   ],
+   "missing_frames": 0,
+   "module_status": {
+    "vehicle_detection": "ok",
+    "vehicle_tracking": "ok",
+    "speed_estimation": "ok",
+    "seatbelt_assessment": "unavailable",
+    "lane_crossing_detection": "ok",
+    "traffic_density_estimation": "ok"
+   }
+  },
+  {
+   "condition": "lowres",
+   "title": "Плотный, 480×270",
+   "seeds": [
+    1,
+    2
+   ],
+   "detection_precision_pct": [
+    74.85,
+    4.03
+   ],
+   "detection_recall_pct": [
+    51.55,
+    0.92
+   ],
+   "detection_recall_isolated_pct": [
+    80.45,
+    5.87
+   ],
+   "detection_recall_overlapping_pct": [
+    15.95,
+    5.73
+   ],
+   "overlapping_share_pct": [
+    44.9,
+    0.42
+   ],
+   "id_switches_per_vehicle": [
+    0.34,
+    0.13
+   ],
+   "speed_coverage_pct": [
+    79.2,
+    1.98
+   ],
+   "speed_mae_kmh": [
+    2.23,
+    0.09
+   ],
+   "speed_p95_abs_err_kmh": [
+    4.87,
+    0.52
+   ],
+   "speed_within_5kmh_pct": [
+    95.2,
+    0.99
+   ],
+   "speeding_gt": 4,
+   "speeding_true": 4,
+   "speeding_false": 0,
+   "solid_gt": 9,
+   "solid_events": 1,
+   "solid_true": 1,
+   "solid_insufficient": 7,
+   "count_gt": 75,
+   "count_est": 66,
+   "density_count_mae": [
+    2.25,
+    0.3
+   ],
+   "queue_mae_m": [
+    3.66,
+    1.12
+   ],
+   "ms_per_frame": [
+    10.15,
+    0.21
+   ],
+   "missing_frames": 0,
+   "module_status": {
+    "vehicle_detection": "ok",
+    "vehicle_tracking": "ok",
+    "speed_estimation": "ok",
+    "seatbelt_assessment": "unavailable",
+    "lane_crossing_detection": "ok",
+    "traffic_density_estimation": "ok"
+   }
+  },
+  {
+   "condition": "dropout",
+   "title": "Свободный, камера пропала на 3 с",
+   "seeds": [
+    1,
+    2
+   ],
+   "detection_precision_pct": [
+    79.2,
+    3.68
+   ],
+   "detection_recall_pct": [
+    58.25,
+    1.48
+   ],
+   "detection_recall_isolated_pct": [
+    90.25,
+    1.34
+   ],
+   "detection_recall_overlapping_pct": [
+    18.1,
+    6.79
+   ],
+   "overlapping_share_pct": [
+    44.65,
+    7.28
+   ],
+   "id_switches_per_vehicle": [
+    0.26,
+    0.06
+   ],
+   "speed_coverage_pct": [
+    83.7,
+    3.82
+   ],
+   "speed_mae_kmh": [
+    2.89,
+    0.57
+   ],
+   "speed_p95_abs_err_kmh": [
+    7.82,
+    4.81
+   ],
+   "speed_within_5kmh_pct": [
+    94.7,
+    5.52
+   ],
+   "speeding_gt": 5,
+   "speeding_true": 5,
+   "speeding_false": 1,
+   "solid_gt": 7,
+   "solid_events": 5,
+   "solid_true": 5,
+   "solid_insufficient": 1,
+   "count_gt": 30,
+   "count_est": 28,
+   "density_count_mae": [
+    0.73,
+    0.54
+   ],
+   "queue_mae_m": [
+    1.98,
+    1.62
+   ],
+   "ms_per_frame": [
+    33.6,
+    0.99
+   ],
+   "missing_frames": 150,
+   "module_status": {
+    "vehicle_detection": "ok",
+    "vehicle_tracking": "ok",
+    "speed_estimation": "ok",
+    "seatbelt_assessment": "unavailable",
+    "lane_crossing_detection": "ok",
+    "traffic_density_estimation": "ok"
+   }
+  },
+  {
+   "condition": "uncalibrated",
+   "title": "Свободный, без калибровки",
+   "seeds": [
+    1,
+    2
+   ],
+   "detection_precision_pct": [
+    79.15,
+    2.05
+   ],
+   "detection_recall_pct": [
+    57.4,
+    2.69
+   ],
+   "detection_recall_isolated_pct": [
+    90.6,
+    0.85
+   ],
+   "detection_recall_overlapping_pct": [
+    20.1,
+    4.1
+   ],
+   "overlapping_share_pct": [
+    47.25,
+    7.14
+   ],
+   "id_switches_per_vehicle": [
+    0.24,
+    0.02
+   ],
+   "speed_coverage_pct": [
+    null,
+    null
+   ],
+   "speed_mae_kmh": [
+    null,
+    null
+   ],
+   "speed_p95_abs_err_kmh": [
+    null,
+    null
+   ],
+   "speed_within_5kmh_pct": [
+    null,
+    null
+   ],
+   "speeding_gt": 5,
+   "speeding_true": null,
+   "speeding_false": null,
+   "solid_gt": 7,
+   "solid_events": null,
+   "solid_true": null,
+   "solid_insufficient": null,
+   "count_gt": 30,
+   "count_est": null,
+   "density_count_mae": [
+    null,
+    null
+   ],
+   "queue_mae_m": [
+    null,
+    null
+   ],
+   "ms_per_frame": [
+    32.6,
+    0.42
+   ],
+   "missing_frames": 0,
+   "module_status": {
+    "vehicle_detection": "ok",
+    "vehicle_tracking": "ok",
+    "speed_estimation": "no_calibration",
+    "seatbelt_assessment": "unavailable",
+    "lane_crossing_detection": "no_calibration",
+    "traffic_density_estimation": "ok"
+   }
+  }
+ ],
+ "runs": [
+  {
+   "condition": "light",
+   "seed": 1,
+   "frames": 2250,
+   "missing_frames": 0,
+   "ms_per_frame": 35.9,
+   "detection": {
+    "precision_pct": 80.6,
+    "recall_pct": 55.5,
+    "tp": 3374,
+    "fp": 813,
+    "fn": 2702,
+    "recall_isolated_pct": 91.2,
+    "recall_overlapping_pct": 23.0,
+    "overlapping_share_pct": 52.3
+   },
+   "tracking": {
+    "id_switches": 5,
+    "vehicles": 20,
+    "id_switches_per_vehicle": 0.25
+   },
+   "speed": {
+    "status_counts": {
+     "ok": 3863,
+     "no_calibration": 0,
+     "insufficient_data": 644
+    },
+    "coverage_pct": 81.0,
+    "mae_kmh": 2.49,
+    "p95_abs_err_kmh": 4.42,
+    "within_5kmh_pct": 98.6
+   },
+   "speeding": {
+    "gt_speeders": 3,
+    "events": 3,
+    "true_events": 3,
+    "false_events": 0,
+    "recall_pct": 100.0
+   },
+   "solid_line": {
+    "gt_crossings": 5,
+    "events": 4,
+    "true_events": 4,
+    "insufficient_data": 0,
+    "precision_pct": 100.0,
+    "recall_pct": 80.0
+   },
+   "counting": {
+    "gt": 21,
+    "estimated": 20
+   },
+   "density": {
+    "count_mae": 1.21
+   },
+   "queue": {
+    "mae_m": 3.41
+   },
+   "module_status": {
+    "vehicle_detection": "ok",
+    "vehicle_tracking": "ok",
+    "speed_estimation": "ok",
+    "seatbelt_assessment": "unavailable",
+    "lane_crossing_detection": "ok",
+    "traffic_density_estimation": "ok"
+   }
+  },
+  {
+   "condition": "light",
+   "seed": 2,
+   "frames": 2250,
+   "missing_frames": 0,
+   "ms_per_frame": 40.9,
+   "detection": {
+    "precision_pct": 77.7,
+    "recall_pct": 59.3,
+    "tp": 1707,
+    "fp": 490,
+    "fn": 1173,
+    "recall_isolated_pct": 90.0,
+    "recall_overlapping_pct": 17.2,
+    "overlapping_share_pct": 42.2
+   },
+   "tracking": {
+    "id_switches": 2,
+    "vehicles": 9,
+    "id_switches_per_vehicle": 0.222
+   },
+   "speed": {
+    "status_counts": {
+     "ok": 2046,
+     "no_calibration": 0,
+     "insufficient_data": 287
+    },
+    "coverage_pct": 87.4,
+    "mae_kmh": 3.22,
+    "p95_abs_err_kmh": 9.46,
+    "within_5kmh_pct": 91.5
+   },
+   "speeding": {
+    "gt_speeders": 2,
+    "events": 3,
+    "true_events": 2,
+    "false_events": 1,
+    "recall_pct": 100.0
+   },
+   "solid_line": {
+    "gt_crossings": 2,
+    "events": 1,
+    "true_events": 1,
+    "insufficient_data": 1,
+    "precision_pct": 100.0,
+    "recall_pct": 50.0
+   },
+   "counting": {
+    "gt": 9,
+    "estimated": 9
+   },
+   "density": {
+    "count_mae": 0.37
+   },
+   "queue": {
+    "mae_m": 0.97
+   },
+   "module_status": {
+    "vehicle_detection": "ok",
+    "vehicle_tracking": "ok",
+    "speed_estimation": "ok",
+    "seatbelt_assessment": "unavailable",
+    "lane_crossing_detection": "ok",
+    "traffic_density_estimation": "ok"
+   }
+  },
+  {
+   "condition": "clear",
+   "seed": 1,
+   "frames": 2250,
+   "missing_frames": 0,
+   "ms_per_frame": 37.0,
+   "detection": {
+    "precision_pct": 78.3,
+    "recall_pct": 52.1,
+    "tp": 6086,
+    "fp": 1684,
+    "fn": 5596,
+    "recall_isolated_pct": 89.2,
+    "recall_overlapping_pct": 5.9,
+    "overlapping_share_pct": 44.6
+   },
+   "tracking": {
+    "id_switches": 13,
+    "vehicles": 41,
+    "id_switches_per_vehicle": 0.317
+   },
+   "speed": {
+    "status_counts": {
+     "ok": 6773,
+     "no_calibration": 0,
+     "insufficient_data": 1946
+    },
+    "coverage_pct": 81.3,
+    "mae_kmh": 2.06,
+    "p95_abs_err_kmh": 4.03,
+    "within_5kmh_pct": 96.7
+   },
+   "speeding": {
+    "gt_speeders": 3,
+    "events": 3,
+    "true_events": 3,
+    "false_events": 0,
+    "recall_pct": 100.0
+   },
+   "solid_line": {
+    "gt_crossings": 5,
+    "events": 0,
+    "true_events": 0,
+    "insufficient_data": 5,
+    "precision_pct": null,
+    "recall_pct": 0.0
+   },
+   "counting": {
+    "gt": 40,
+    "estimated": 37
+   },
+   "density": {
+    "count_mae": 2.52
+   },
+   "queue": {
+    "mae_m": 4.49
+   },
+   "module_status": {
+    "vehicle_detection": "ok",
+    "vehicle_tracking": "ok",
+    "speed_estimation": "ok",
+    "seatbelt_assessment": "unavailable",
+    "lane_crossing_detection": "ok",
+    "traffic_density_estimation": "ok"
+   }
+  },
+  {
+   "condition": "clear",
+   "seed": 2,
+   "frames": 2250,
+   "missing_frames": 0,
+   "ms_per_frame": 36.9,
+   "detection": {
+    "precision_pct": 80.4,
+    "recall_pct": 55.8,
+    "tp": 5558,
+    "fp": 1353,
+    "fn": 4405,
+    "recall_isolated_pct": 85.4,
+    "recall_overlapping_pct": 19.8,
+    "overlapping_share_pct": 45.2
+   },
+   "tracking": {
+    "id_switches": 15,
+    "vehicles": 36,
+    "id_switches_per_vehicle": 0.417
+   },
+   "speed": {
+    "status_counts": {
+     "ok": 5934,
+     "no_calibration": 0,
+     "insufficient_data": 1694
+    },
+    "coverage_pct": 79.6,
+    "mae_kmh": 2.04,
+    "p95_abs_err_kmh": 4.28,
+    "within_5kmh_pct": 96.3
+   },
+   "speeding": {
+    "gt_speeders": 1,
+    "events": 2,
+    "true_events": 1,
+    "false_events": 0,
+    "recall_pct": 100.0
+   },
+   "solid_line": {
+    "gt_crossings": 4,
+    "events": 1,
+    "true_events": 1,
+    "insufficient_data": 2,
+    "precision_pct": 100.0,
+    "recall_pct": 25.0
+   },
+   "counting": {
+    "gt": 35,
+    "estimated": 30
+   },
+   "density": {
+    "count_mae": 2.11
+   },
+   "queue": {
+    "mae_m": 3.63
+   },
+   "module_status": {
+    "vehicle_detection": "ok",
+    "vehicle_tracking": "ok",
+    "speed_estimation": "ok",
+    "seatbelt_assessment": "unavailable",
+    "lane_crossing_detection": "ok",
+    "traffic_density_estimation": "ok"
+   }
+  },
+  {
+   "condition": "noisy",
+   "seed": 1,
+   "frames": 2250,
+   "missing_frames": 0,
+   "ms_per_frame": 37.1,
+   "detection": {
+    "precision_pct": 68.9,
+    "recall_pct": 50.3,
+    "tp": 5880,
+    "fp": 2659,
+    "fn": 5802,
+    "recall_isolated_pct": 83.3,
+    "recall_overlapping_pct": 9.4,
+    "overlapping_share_pct": 44.6
+   },
+   "tracking": {
+    "id_switches": 14,
+    "vehicles": 41,
+    "id_switches_per_vehicle": 0.341
+   },
+   "speed": {
+    "status_counts": {
+     "ok": 7079,
+     "no_calibration": 0,
+     "insufficient_data": 2165
+    },
+    "coverage_pct": 80.8,
+    "mae_kmh": 2.6,
+    "p95_abs_err_kmh": 7.55,
+    "within_5kmh_pct": 91.5
+   },
+   "speeding": {
+    "gt_speeders": 3,
+    "events": 4,
+    "true_events": 3,
+    "false_events": 1,
+    "recall_pct": 100.0
+   },
+   "solid_line": {
+    "gt_crossings": 5,
+    "events": 1,
+    "true_events": 0,
+    "insufficient_data": 4,
+    "precision_pct": 0.0,
+    "recall_pct": 0.0
+   },
+   "counting": {
+    "gt": 40,
+    "estimated": 51
+   },
+   "density": {
+    "count_mae": 2.41
+   },
+   "queue": {
+    "mae_m": 4.53
+   },
+   "module_status": {
+    "vehicle_detection": "ok",
+    "vehicle_tracking": "ok",
+    "speed_estimation": "ok",
+    "seatbelt_assessment": "unavailable",
+    "lane_crossing_detection": "ok",
+    "traffic_density_estimation": "ok"
+   }
+  },
+  {
+   "condition": "noisy",
+   "seed": 2,
+   "frames": 2250,
+   "missing_frames": 0,
+   "ms_per_frame": 36.5,
+   "detection": {
+    "precision_pct": 66.6,
+    "recall_pct": 49.6,
+    "tp": 4943,
+    "fp": 2479,
+    "fn": 5020,
+    "recall_isolated_pct": 77.5,
+    "recall_overlapping_pct": 15.7,
+    "overlapping_share_pct": 45.2
+   },
+   "tracking": {
+    "id_switches": 18,
+    "vehicles": 36,
+    "id_switches_per_vehicle": 0.5
+   },
+   "speed": {
+    "status_counts": {
+     "ok": 6195,
+     "no_calibration": 0,
+     "insufficient_data": 1746
+    },
+    "coverage_pct": 79.2,
+    "mae_kmh": 2.7,
+    "p95_abs_err_kmh": 8.46,
+    "within_5kmh_pct": 89.3
+   },
+   "speeding": {
+    "gt_speeders": 1,
+    "events": 3,
+    "true_events": 1,
+    "false_events": 1,
+    "recall_pct": 100.0
+   },
+   "solid_line": {
+    "gt_crossings": 4,
+    "events": 1,
+    "true_events": 1,
+    "insufficient_data": 2,
+    "precision_pct": 100.0,
+    "recall_pct": 25.0
+   },
+   "counting": {
+    "gt": 35,
+    "estimated": 36
+   },
+   "density": {
+    "count_mae": 1.96
+   },
+   "queue": {
+    "mae_m": 3.62
+   },
+   "module_status": {
+    "vehicle_detection": "ok",
+    "vehicle_tracking": "ok",
+    "speed_estimation": "ok",
+    "seatbelt_assessment": "unavailable",
+    "lane_crossing_detection": "ok",
+    "traffic_density_estimation": "ok"
+   }
+  },
+  {
+   "condition": "lowres",
+   "seed": 1,
+   "frames": 2250,
+   "missing_frames": 0,
+   "ms_per_frame": 10.0,
+   "detection": {
+    "precision_pct": 77.7,
+    "recall_pct": 52.2,
+    "tp": 6100,
+    "fp": 1752,
+    "fn": 5582,
+    "recall_isolated_pct": 84.6,
+    "recall_overlapping_pct": 11.9,
+    "overlapping_share_pct": 44.6
+   },
+   "tracking": {
+    "id_switches": 10,
+    "vehicles": 41,
+    "id_switches_per_vehicle": 0.244
+   },
+   "speed": {
+    "status_counts": {
+     "ok": 6842,
+     "no_calibration": 0,
+     "insufficient_data": 1896
+    },
+    "coverage_pct": 80.6,
+    "mae_kmh": 2.17,
+    "p95_abs_err_kmh": 4.5,
+    "within_5kmh_pct": 95.9
+   },
+   "speeding": {
+    "gt_speeders": 3,
+    "events": 3,
+    "true_events": 3,
+    "false_events": 0,
+    "recall_pct": 100.0
+   },
+   "solid_line": {
+    "gt_crossings": 5,
+    "events": 0,
+    "true_events": 0,
+    "insufficient_data": 5,
+    "precision_pct": null,
+    "recall_pct": 0.0
+   },
+   "counting": {
+    "gt": 40,
+    "estimated": 36
+   },
+   "density": {
+    "count_mae": 2.47
+   },
+   "queue": {
+    "mae_m": 4.45
+   },
+   "module_status": {
+    "vehicle_detection": "ok",
+    "vehicle_tracking": "ok",
+    "speed_estimation": "ok",
+    "seatbelt_assessment": "unavailable",
+    "lane_crossing_detection": "ok",
+    "traffic_density_estimation": "ok"
+   }
+  },
+  {
+   "condition": "lowres",
+   "seed": 2,
+   "frames": 2250,
+   "missing_frames": 0,
+   "ms_per_frame": 10.3,
+   "detection": {
+    "precision_pct": 72.0,
+    "recall_pct": 50.9,
+    "tp": 5072,
+    "fp": 1968,
+    "fn": 4891,
+    "recall_isolated_pct": 76.3,
+    "recall_overlapping_pct": 20.0,
+    "overlapping_share_pct": 45.2
+   },
+   "tracking": {
+    "id_switches": 15,
+    "vehicles": 35,
+    "id_switches_per_vehicle": 0.429
+   },
+   "speed": {
+    "status_counts": {
+     "ok": 6061,
+     "no_calibration": 0,
+     "insufficient_data": 1638
+    },
+    "coverage_pct": 77.8,
+    "mae_kmh": 2.3,
+    "p95_abs_err_kmh": 5.24,
+    "within_5kmh_pct": 94.5
+   },
+   "speeding": {
+    "gt_speeders": 1,
+    "events": 2,
+    "true_events": 1,
+    "false_events": 0,
+    "recall_pct": 100.0
+   },
+   "solid_line": {
+    "gt_crossings": 4,
+    "events": 1,
+    "true_events": 1,
+    "insufficient_data": 2,
+    "precision_pct": 100.0,
+    "recall_pct": 25.0
+   },
+   "counting": {
+    "gt": 35,
+    "estimated": 30
+   },
+   "density": {
+    "count_mae": 2.04
+   },
+   "queue": {
+    "mae_m": 2.86
+   },
+   "module_status": {
+    "vehicle_detection": "ok",
+    "vehicle_tracking": "ok",
+    "speed_estimation": "ok",
+    "seatbelt_assessment": "unavailable",
+    "lane_crossing_detection": "ok",
+    "traffic_density_estimation": "ok"
+   }
+  },
+  {
+   "condition": "dropout",
+   "seed": 1,
+   "frames": 2250,
+   "missing_frames": 75,
+   "ms_per_frame": 34.3,
+   "detection": {
+    "precision_pct": 81.8,
+    "recall_pct": 57.2,
+    "tp": 3302,
+    "fp": 735,
+    "fn": 2470,
+    "recall_isolated_pct": 91.2,
+    "recall_overlapping_pct": 22.9,
+    "overlapping_share_pct": 49.8
+   },
+   "tracking": {
+    "id_switches": 6,
+    "vehicles": 20,
+    "id_switches_per_vehicle": 0.3
+   },
+   "speed": {
+    "status_counts": {
+     "ok": 3683,
+     "no_calibration": 0,
+     "insufficient_data": 672
+    },
+    "coverage_pct": 81.0,
+    "mae_kmh": 2.49,
+    "p95_abs_err_kmh": 4.42,
+    "within_5kmh_pct": 98.6
+   },
+   "speeding": {
+    "gt_speeders": 3,
+    "events": 3,
+    "true_events": 3,
+    "false_events": 0,
+    "recall_pct": 100.0
+   },
+   "solid_line": {
+    "gt_crossings": 5,
+    "events": 4,
+    "true_events": 4,
+    "insufficient_data": 0,
+    "precision_pct": 100.0,
+    "recall_pct": 80.0
+   },
+   "counting": {
+    "gt": 21,
+    "estimated": 20
+   },
+   "density": {
+    "count_mae": 1.11
+   },
+   "queue": {
+    "mae_m": 3.13
+   },
+   "module_status": {
+    "vehicle_detection": "ok",
+    "vehicle_tracking": "ok",
+    "speed_estimation": "ok",
+    "seatbelt_assessment": "unavailable",
+    "lane_crossing_detection": "ok",
+    "traffic_density_estimation": "ok"
+   }
+  },
+  {
+   "condition": "dropout",
+   "seed": 2,
+   "frames": 2250,
+   "missing_frames": 75,
+   "ms_per_frame": 32.9,
+   "detection": {
+    "precision_pct": 76.6,
+    "recall_pct": 59.3,
+    "tp": 1530,
+    "fp": 467,
+    "fn": 1050,
+    "recall_isolated_pct": 89.3,
+    "recall_overlapping_pct": 13.3,
+    "overlapping_share_pct": 39.5
+   },
+   "tracking": {
+    "id_switches": 2,
+    "vehicles": 9,
+    "id_switches_per_vehicle": 0.222
+   },
+   "speed": {
+    "status_counts": {
+     "ok": 1815,
+     "no_calibration": 0,
+     "insufficient_data": 317
+    },
+    "coverage_pct": 86.4,
+    "mae_kmh": 3.29,
+    "p95_abs_err_kmh": 11.22,
+    "within_5kmh_pct": 90.8
+   },
+   "speeding": {
+    "gt_speeders": 2,
+    "events": 3,
+    "true_events": 2,
+    "false_events": 1,
+    "recall_pct": 100.0
+   },
+   "solid_line": {
+    "gt_crossings": 2,
+    "events": 1,
+    "true_events": 1,
+    "insufficient_data": 1,
+    "precision_pct": 100.0,
+    "recall_pct": 50.0
+   },
+   "counting": {
+    "gt": 9,
+    "estimated": 8
+   },
+   "density": {
+    "count_mae": 0.34
+   },
+   "queue": {
+    "mae_m": 0.84
+   },
+   "module_status": {
+    "vehicle_detection": "ok",
+    "vehicle_tracking": "ok",
+    "speed_estimation": "ok",
+    "seatbelt_assessment": "unavailable",
+    "lane_crossing_detection": "ok",
+    "traffic_density_estimation": "ok"
+   }
+  },
+  {
+   "condition": "uncalibrated",
+   "seed": 1,
+   "frames": 2250,
+   "missing_frames": 0,
+   "ms_per_frame": 32.9,
+   "detection": {
+    "precision_pct": 80.6,
+    "recall_pct": 55.5,
+    "tp": 3374,
+    "fp": 813,
+    "fn": 2702,
+    "recall_isolated_pct": 91.2,
+    "recall_overlapping_pct": 23.0,
+    "overlapping_share_pct": 52.3
+   },
+   "tracking": {
+    "id_switches": 5,
+    "vehicles": 20,
+    "id_switches_per_vehicle": 0.25
+   },
+   "speed": {
+    "status_counts": {
+     "ok": 0,
+     "no_calibration": 0,
+     "insufficient_data": 0
+    },
+    "coverage_pct": null,
+    "mae_kmh": null,
+    "p95_abs_err_kmh": null,
+    "within_5kmh_pct": null
+   },
+   "speeding": {
+    "gt_speeders": 3,
+    "events": null,
+    "true_events": null,
+    "false_events": null,
+    "recall_pct": null
+   },
+   "solid_line": {
+    "gt_crossings": 5,
+    "events": null,
+    "true_events": null,
+    "insufficient_data": null,
+    "precision_pct": null,
+    "recall_pct": null
+   },
+   "counting": {
+    "gt": 21,
+    "estimated": null
+   },
+   "density": {
+    "count_mae": null
+   },
+   "queue": {
+    "mae_m": null
+   },
+   "module_status": {
+    "vehicle_detection": "ok",
+    "vehicle_tracking": "ok",
+    "speed_estimation": "no_calibration",
+    "seatbelt_assessment": "unavailable",
+    "lane_crossing_detection": "no_calibration",
+    "traffic_density_estimation": "ok"
+   }
+  },
+  {
+   "condition": "uncalibrated",
+   "seed": 2,
+   "frames": 2250,
+   "missing_frames": 0,
+   "ms_per_frame": 32.3,
+   "detection": {
+    "precision_pct": 77.7,
+    "recall_pct": 59.3,
+    "tp": 1707,
+    "fp": 490,
+    "fn": 1173,
+    "recall_isolated_pct": 90.0,
+    "recall_overlapping_pct": 17.2,
+    "overlapping_share_pct": 42.2
+   },
+   "tracking": {
+    "id_switches": 2,
+    "vehicles": 9,
+    "id_switches_per_vehicle": 0.222
+   },
+   "speed": {
+    "status_counts": {
+     "ok": 0,
+     "no_calibration": 0,
+     "insufficient_data": 0
+    },
+    "coverage_pct": null,
+    "mae_kmh": null,
+    "p95_abs_err_kmh": null,
+    "within_5kmh_pct": null
+   },
+   "speeding": {
+    "gt_speeders": 2,
+    "events": null,
+    "true_events": null,
+    "false_events": null,
+    "recall_pct": null
+   },
+   "solid_line": {
+    "gt_crossings": 2,
+    "events": null,
+    "true_events": null,
+    "insufficient_data": null,
+    "precision_pct": null,
+    "recall_pct": null
+   },
+   "counting": {
+    "gt": 9,
+    "estimated": null
+   },
+   "density": {
+    "count_mae": null
+   },
+   "queue": {
+    "mae_m": null
+   },
+   "module_status": {
+    "vehicle_detection": "ok",
+    "vehicle_tracking": "ok",
+    "speed_estimation": "no_calibration",
+    "seatbelt_assessment": "unavailable",
+    "lane_crossing_detection": "no_calibration",
+    "traffic_density_estimation": "ok"
+   }
+  }
+ ],
+ "images": [
+  {
+   "file": "cv-light-1.jpg",
+   "condition": "light",
+   "t": 30.0
+  },
+  {
+   "file": "cv-clear-1.jpg",
+   "condition": "clear",
+   "t": 26.0
+  },
+  {
+   "file": "cv-clear-2.jpg",
+   "condition": "clear",
+   "t": 52.0
+  },
+  {
+   "file": "cv-noisy-1.jpg",
+   "condition": "noisy",
+   "t": 52.0
+  },
+  {
+   "file": "cv-lowres-1.jpg",
+   "condition": "lowres",
+   "t": 52.0
+  }
+ ],
+ "elapsed_s": 1731.2
+}

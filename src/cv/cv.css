@@ -1,0 +1,9 @@
+/* Страница модулей компьютерного зрения. Токены — из styles.css, разметка таблиц — общая со страницей SUMO. */
+.cv .panel h2 { font-size: 15px; text-transform: none; letter-spacing: 0; color: var(--text-primary); margin: 0 0 8px; }
+.cv-na { color: var(--text-muted); font-style: italic; font-family: var(--sans); }
+.cv-ok { color: var(--good); font-weight: 600; }
+.cv-group td { font-weight: 700; color: var(--text-secondary); text-transform: uppercase; font-size: 11.5px; letter-spacing: 0.05em; padding-top: 14px; }
+.cv-table td:first-child { min-width: 220px; white-space: normal; }
+.cv-shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+.cv-shots figure { margin: 0; }
+.cv-shots img { width: 100%; height: auto; display: block; border-radius: 8px; border: 1px solid var(--border); }

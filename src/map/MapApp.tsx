@@ -243,6 +243,7 @@ export default function MapApp() {
         <p className="map-hint">Вращение и наклон: правая кнопка мыши или Ctrl + перетаскивание; на телефоне — двумя пальцами.</p>
         <a className="map-link" href="#lab">Лаборатория перекрёстка →</a>
         <a className="map-link" href="#sumo">Эксперимент SUMO: перекрёсток Чуй × Манаса →</a>
+        <a className="map-link" href="#cv">Компьютерное зрение: проверка модулей →</a>
       </details>
       <LayersPanel ctrl={ctrl} st={st} />
       </div>
