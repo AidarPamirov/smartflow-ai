@@ -53,32 +53,36 @@ export const COLORS = {
   water: '#0d2131',
   waterway: '#15344b',
   rail: '#3a4350',
-  roadMinor: '#28303b',
-  roadTertiary: '#323b48',
-  roadSecondary: '#3c4756',
-  roadPrimary: '#4a586b',
-  roadTrunk: '#5a6a80',
+  roadMinor: '#2c3540',
+  roadTertiary: '#38424f',
+  roadSecondary: '#45515f',
+  roadPrimary: '#56657a',
+  roadTrunk: '#66788f',
   buildingFlat: '#1f2834',
   buildingLow: '#273140',
   buildingMid: '#3a4859',
   buildingHigh: '#5a6c84',
   buildingTop: '#8396ae',
-  label: '#8b98ab',
+  label: '#a7b3c4',
   labelHalo: '#0f141b',
 } as const;
 
 const SRC = 'openmaptiles';
 
-/** Ширина линии по зуму: экспоненциальная интерполяция, как принято для дорог. */
+/**
+ * Ширина линии по зуму в пикселях. После 15-го зума растёт вдвое на каждый зум (основание 2),
+ * то есть остаётся постоянной в метрах: на 18-м зуме в Бишкеке 1 px ≈ 0,44 м.
+ */
 const width = (z12: number, z15: number, z18: number): ExpressionSpecification =>
-  ['interpolate', ['exponential', 1.6], ['zoom'], 12, z12, 15, z15, 18, z18];
+  ['interpolate', ['exponential', 2], ['zoom'], 12, z12, 15, z15, 18, z18];
 
 const roadClasses: { id: string; classes: string[]; color: string; w: [number, number, number]; minzoom: number }[] = [
-  { id: 'road-minor', classes: ['minor', 'service', 'track'], color: COLORS.roadMinor, w: [0.3, 2.2, 10], minzoom: 13 },
-  { id: 'road-tertiary', classes: ['tertiary'], color: COLORS.roadTertiary, w: [0.6, 3.2, 14], minzoom: 11 },
-  { id: 'road-secondary', classes: ['secondary'], color: COLORS.roadSecondary, w: [0.9, 4.2, 18], minzoom: 10 },
-  { id: 'road-primary', classes: ['primary'], color: COLORS.roadPrimary, w: [1.2, 5.2, 22], minzoom: 9 },
-  { id: 'road-trunk', classes: ['trunk', 'motorway'], color: COLORS.roadTrunk, w: [1.5, 6.2, 26], minzoom: 8 },
+  // Ширина на 18-м зуме ≈ типичной ширине проезжей части: 6 / 10 / 14 / 18 / 22 м.
+  { id: 'road-minor', classes: ['minor', 'service', 'track'], color: COLORS.roadMinor, w: [0.4, 1.7, 14], minzoom: 13 },
+  { id: 'road-tertiary', classes: ['tertiary'], color: COLORS.roadTertiary, w: [0.7, 2.8, 22], minzoom: 11 },
+  { id: 'road-secondary', classes: ['secondary'], color: COLORS.roadSecondary, w: [1, 4, 32], minzoom: 10 },
+  { id: 'road-primary', classes: ['primary'], color: COLORS.roadPrimary, w: [1.3, 5, 40], minzoom: 9 },
+  { id: 'road-trunk', classes: ['trunk', 'motorway'], color: COLORS.roadTrunk, w: [1.6, 6, 50], minzoom: 8 },
 ];
 
 const heightExpr: ExpressionSpecification = ['coalesce', ['get', 'render_height'], DEFAULT_BUILDING_HEIGHT];
@@ -157,7 +161,7 @@ export function buildLayers(): LayerSpecification[] {
         'symbol-placement': 'line',
         'text-field': ['coalesce', ['get', 'name:ru'], ['get', 'name']],
         'text-font': ['Noto Sans Regular'],
-        'text-size': ['interpolate', ['linear'], ['zoom'], 14, 10.5, 18, 13],
+        'text-size': ['interpolate', ['linear'], ['zoom'], 14, 11, 18, 15],
         'text-max-angle': 30,
         'symbol-spacing': 320,
       },
