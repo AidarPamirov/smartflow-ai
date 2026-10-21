@@ -1,0 +1,40 @@
+# Временный workflow: проверка карты в настоящем браузере с доступом к тайлам.
+# Отчёт (логи и скриншоты) публикуется в ветку map-preview-report. На main не попадает.
+name: Map preview (temporary)
+
+on:
+  push:
+    branches: [map-preview]
+
+permissions:
+  contents: write
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: mkdir -p report && npm install > report/install.log 2>&1
+      - run: npm test > report/test.log 2>&1
+        continue-on-error: true
+      - run: npm run build > report/build.log 2>&1
+        continue-on-error: true
+      - run: |
+          npm i --no-save playwright@1.48.2 > report/pw.log 2>&1
+          npx playwright install --with-deps chromium >> report/pw.log 2>&1
+      - run: |
+          (npx vite preview --port 4173 --strictPort > report/server.log 2>&1 &)
+          sleep 4
+          node .github/preview/shots.mjs report > report/shots.log 2>&1
+        continue-on-error: true
+      - if: always()
+        run: |
+          ls -la dist dist/assets > report/dist.txt 2>&1 || true
+          cd report
+          git init -q -b map-preview-report
+          git add -A
+          git -c user.name=ci -c user.email=ci@users.noreply.github.com commit -qm "preview $GITHUB_SHA"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" map-preview-report
