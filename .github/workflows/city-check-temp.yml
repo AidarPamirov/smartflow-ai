@@ -1,0 +1,87 @@
+# Временный: полная проверка ветки и скриншоты с настоящими тайлами. Отчёт — в ветку city-check-report.
+name: City check (temporary)
+on:
+  push:
+    branches: [city-check2]
+permissions:
+  contents: write
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: mkdir -p report
+      - run: npm install > report/npm-install.log 2>&1
+      - run: npm test > report/npm-test.log 2>&1; echo "exit $?" >> report/npm-test.log
+      - run: npm run build > report/build.log 2>&1; echo "exit $?" >> report/build.log
+      - run: |
+          pip install eclipse-sumo==1.28.0 traci==1.28.0 sumolib==1.28.0 > /dev/null 2>&1
+          cd sumo && SMARTFLOW_REQUIRE_SUMO=1 python -m unittest discover -s tests -t . > ../report/sumo-tests.log 2>&1; echo "exit $?" >> ../report/sumo-tests.log
+      - run: |
+          npx vite preview --port 4173 --strictPort > report/preview.log 2>&1 &
+          mkdir shot && cd shot && npm init -y > /dev/null && npm install playwright@1.47.2 > /dev/null && npx playwright install --with-deps chromium > /dev/null
+          cat > s.mjs <<'JS'
+          import { chromium } from 'playwright';
+          import { writeFileSync } from 'fs';
+          const b = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
+          const log = [];
+          async function page(name, url, opt, fn) {
+            const p = await b.newPage(opt);
+            p.on('console', (m) => { if (m.type() === 'error') log.push(`${name} console: ${m.text()}`); });
+            p.on('pageerror', (e) => log.push(`${name} pageerror: ${e.message}`));
+            await p.goto(url);
+            try { await fn(p); } catch (e) { log.push(`${name}: ${e.message}`); }
+            await p.screenshot({ path: `../report/${name}.png` });
+            await p.close();
+          }
+          await page('signal-desktop', 'http://localhost:4173/#signal=tls-244504528', { viewport: { width: 1440, height: 900 } }, async (p) => {
+            await p.waitForSelector('.sig-panel', { timeout: 60000 });
+            await p.waitForTimeout(9000);
+            log.push('panel: ' + (await p.textContent('.sig-panel')).slice(0, 500));
+          });
+          await page('city-desktop', 'http://localhost:4173/', { viewport: { width: 1440, height: 900 } }, async (p) => {
+            await p.waitForSelector('.traffic-play', { timeout: 60000 });
+            await p.waitForTimeout(6000);
+            log.push('layers: ' + (await p.textContent('.map-layers')).slice(0, 300));
+          });
+          await page('signal-phone', 'http://localhost:4173/#signal=tls-244504528', { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 }, async (p) => {
+            await p.waitForSelector('.sig-panel', { timeout: 60000 });
+            await p.waitForTimeout(6000);
+            log.push('phone scroll width: ' + (await p.evaluate(() => document.documentElement.scrollWidth)));
+          });
+          await page('camera-flow', 'http://localhost:4173/#camera=cam-flow-001', { viewport: { width: 1440, height: 900 } }, async (p) => {
+            await p.waitForSelector('.cam-panel', { timeout: 60000 });
+            await p.click('.traffic-seg >> text=10×');
+            await p.check('text=Загруженность');
+            await p.waitForTimeout(15000);
+            log.push('camera: ' + (await p.textContent('.cam-panel')).slice(0, 400));
+          });
+          await page('camera-speed', 'http://localhost:4173/#camera=cam-speed-002', { viewport: { width: 1440, height: 900 } }, async (p) => {
+            await p.waitForSelector('.cam-panel', { timeout: 60000 });
+            await p.waitForTimeout(5000);
+          });
+          await page('sumo', 'http://localhost:4173/#sumo', { viewport: { width: 1360, height: 900 } }, async (p) => {
+            await p.waitForSelector('.sumo-view canvas', { timeout: 30000 });
+          });
+          await page('lab', 'http://localhost:4173/#lab', { viewport: { width: 1360, height: 900 } }, async (p) => {
+            await p.waitForSelector('canvas', { timeout: 30000 });
+            await p.click('text=▶ Старт').catch(() => {});
+            await p.waitForTimeout(4000);
+          });
+          await b.close();
+          writeFileSync('../report/shots.log', log.join('\n'));
+          JS
+          node s.mjs || echo "shots failed" >> ../report/shots.log
+      - if: always()
+        run: |
+          cd report
+          git init -q -b city-check-report
+          git add -A
+          git -c user.name=ci -c user.email=ci@users.noreply.github.com commit -qm "report $GITHUB_SHA"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" city-check-report
