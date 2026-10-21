@@ -1,0 +1,25 @@
+# Временный: выгрузка фактов OSM (сеть Overpass недоступна из среды разработки). Отчёт — в ветку data-preview-report.
+name: OSM data (temporary)
+on:
+  push:
+    branches: [data-preview]
+permissions:
+  contents: write
+jobs:
+  osm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: |
+          mkdir -p report
+          node scripts/build-signals.mjs report/bishkek-signals-osm.json > report/signals.log 2>&1 || true
+      - if: always()
+        run: |
+          cd report
+          git init -q -b data-preview-report
+          git add -A
+          git -c user.name=ci -c user.email=ci@users.noreply.github.com commit -qm "report $GITHUB_SHA"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" data-preview-report
