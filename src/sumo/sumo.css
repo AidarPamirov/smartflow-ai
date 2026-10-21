@@ -17,7 +17,7 @@
 .sumo-scrub input { flex: 1; min-width: 0; accent-color: var(--accent); }
 .sumo-views { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .sumo-view { margin: 0; min-width: 0; }
-.sumo-view figcaption { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 10px; margin-bottom: 6px; }
+.sumo-view figcaption { display: flex; flex-direction: column; gap: 2px; margin-bottom: 6px; }
 .sumo-view canvas { width: 100%; height: auto; aspect-ratio: 1 / 1; display: block; border-radius: 8px; border: 1px solid var(--border); }
 .sumo-results tr.grp td { border-top: 2px solid var(--border); }
 .sumo-load { vertical-align: top; }
