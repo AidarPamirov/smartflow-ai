@@ -1,0 +1,10 @@
+desktop load ms 3245 tiles {"ok":11,"fail":0,"kb":511.216796875}
+desktop info {"readout":"z 15,4наклон 58°азимут 342°42.8766° N, 74.6036° E","error":null,"attrib":"OpenFreeMap © OpenMapTiles Data from © OpenStreetMap contributors","scale":"100 m","hscroll":false}
+plan {"readout":"z 15,4наклон 0°азимут 0°42.8766° N, 74.6036° E","error":null,"attrib":"OpenFreeMap © OpenMapTiles Data from © OpenStreetMap contributors","scale":"100 m","hscroll":false}
+zoomed {"readout":"z 17,4наклон 58°азимут 12°42.8766° N, 74.6036° E","error":null,"attrib":"OpenFreeMap © OpenMapTiles Data from © OpenStreetMap contributors","scale":"30 m","hscroll":false}
+city {"readout":"z 13,4наклон 58°азимут 12°42.8766° N, 74.6036° E","error":null,"attrib":"OpenFreeMap © OpenMapTiles Data from © OpenStreetMap contributors","scale":"500 m","hscroll":false}
+reset {"readout":"z 15,4наклон 58°азимут 342°42.8766° N, 74.6036° E","error":null,"attrib":"OpenFreeMap © OpenMapTiles Data from © OpenStreetMap contributors","scale":"100 m","hscroll":false}
+lab visible true
+desktop errors [] tiles {"ok":72,"fail":0,"kb":2306.4306640625}
+phone load ms 3558 info {"readout":"z 15,4наклон 58°азимут 342°42.8766° N, 74.6036° E","error":null,"attrib":"OpenFreeMap © OpenMapTiles Data from © OpenStreetMap contributors","scale":"100 m","hscroll":false}
+phone errors []

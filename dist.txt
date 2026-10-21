@@ -1,0 +1,15 @@
+dist:
+total 16
+drwxr-xr-x 3 runner runner 4096 Oct 21 08:03 .
+drwxr-xr-x 9 runner runner 4096 Oct 21 08:03 ..
+drwxr-xr-x 2 runner runner 4096 Oct 21 08:03 assets
+-rw-r--r-- 1 runner runner  812 Oct 21 08:03 index.html
+
+dist/assets:
+total 1088
+drwxr-xr-x 2 runner runner   4096 Oct 21 08:03 .
+drwxr-xr-x 3 runner runner   4096 Oct 21 08:03 ..
+-rw-r--r-- 1 runner runner  70723 Oct 21 08:03 MapApp-CH7FO4ZS.css
+-rw-r--r-- 1 runner runner 815151 Oct 21 08:03 MapApp-CaoXn53G.js
+-rw-r--r-- 1 runner runner   9536 Oct 21 08:03 index-Dd9mIyhw.css
+-rw-r--r-- 1 runner runner 197748 Oct 21 08:03 index-DsmeQcJA.js
