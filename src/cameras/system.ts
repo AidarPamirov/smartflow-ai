@@ -74,7 +74,7 @@ export class CameraSystem {
   /** Есть ли поток данных (трафик загружен и идёт). */
   live = false;
 
-  constructor(private net: Network, cameras?: Camera[], sys?: SignalSystem) {
+  constructor(net: Network, cameras?: Camera[], sys?: SignalSystem) {
     if (!cameras && !sys) throw new Error('нужны камеры или сеть светофоров для расстановки');
     this.cameras = cameras ?? placeCameras(net, sys!);
     this.st = this.cameras.map((c) => ({

@@ -14,6 +14,7 @@ const nf = (n: number) => n.toLocaleString('ru-RU');
 /** Слои карты, фильтры светофоров, общий режим Baseline / Adaptive AI и легенда. */
 export function LayersPanel({ ctrl, st }: { ctrl: TrafficController | null; st: TrafficState | null }) {
   const sg = st?.signals;
+  const cams = st?.cameras;
   const ready = sg?.phase === 'ready' && ctrl;
   const f = sg?.filter;
   const c = sg?.counts;
@@ -64,15 +65,15 @@ export function LayersPanel({ ctrl, st }: { ctrl: TrafficController | null; st: 
               ))}
             </div>
           </div>
-          {st.cameras.counts && (
+          {cams?.counts && (
             <div className="lay-block">
               <div className="lay-title">Камеры (виртуальные)</div>
               <div className="lay-row">
                 {(Object.keys(TYPE_LABEL) as (keyof CameraFilter)[]).map((k) => (
                   <label key={k}>
-                    <input type="checkbox" checked={st.cameras.filter[k]} onChange={(e) => ctrl.setCameraFilter({ ...st.cameras.filter, [k]: e.target.checked })} />
+                    <input type="checkbox" checked={cams.filter[k]} onChange={(e) => ctrl.setCameraFilter({ ...cams.filter, [k]: e.target.checked })} />
                     <i className="lay-cam" style={{ background: k === 'seatbelt' ? 'transparent' : CAMERA_COLOR[k], borderColor: CAMERA_COLOR[k] }} />
-                    {TYPE_LABEL[k].replace('Камера ', '')} <span className="lay-n">{st.cameras.counts![k]}</span>
+                    {TYPE_LABEL[k].replace('Камера ', '')} <span className="lay-n">{cams.counts![k]}</span>
                   </label>
                 ))}
               </div>
