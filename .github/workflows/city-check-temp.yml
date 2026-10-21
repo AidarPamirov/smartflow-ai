@@ -18,6 +18,12 @@ jobs:
           python-version: '3.12'
       - run: mkdir -p report
       - run: npm install > report/npm-install.log 2>&1
+      - run: |
+          mkdir -p report/types/@types
+          cp -r node_modules/@types/react node_modules/@types/react-dom report/types/@types/
+          [ -d node_modules/@types/prop-types ] && cp -r node_modules/@types/prop-types report/types/@types/ || true
+          cp -r node_modules/csstype report/types/
+          mkdir -p report/types/vite && cp node_modules/vite/client.d.ts report/types/vite/ && cp -r node_modules/vite/types report/types/vite/
       - run: npm test > report/npm-test.log 2>&1; echo "exit $?" >> report/npm-test.log
       - run: npm run build > report/build.log 2>&1; echo "exit $?" >> report/build.log
       - run: |
