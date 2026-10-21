@@ -313,5 +313,6 @@
 .sig-src code { font-family: var(--map-mono); color: var(--map-text); }
 .sig-panel .sig-off { justify-self: start; color: var(--map-muted); }
 @media (max-width: 640px) {
-  .sig-panel { top: calc(96px + env(safe-area-inset-top, 0px)); left: 12px; right: 12px; width: auto; max-height: 52vh; z-index: 4; }
+  .sig-panel { top: calc(96px + env(safe-area-inset-top, 0px)); left: 12px; right: 12px; width: auto; max-height: calc(100% - 96px - 230px); z-index: 4; }
+  .has-sel .map-side { display: none; }
 }

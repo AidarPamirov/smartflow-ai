@@ -175,7 +175,7 @@ export default function MapApp() {
   }, [selected, ctrl]);
 
   return (
-    <div className="map-root">
+    <div className={`map-root${selected ? ' has-sel' : ''}`}>
       <div ref={containerRef} className="map-canvas" aria-label="Интерактивная карта Бишкека" />
 
       <header className="map-panel map-head">

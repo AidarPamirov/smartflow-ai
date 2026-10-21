@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { TrafficController, TrafficState } from '../traffic/controller';
 import { MODE_LABEL } from '../signals/SignalPanel';
 import type { ControlMode } from '../signals/runtime';
@@ -15,9 +16,11 @@ export function LayersPanel({ ctrl, st }: { ctrl: TrafficController | null; st: 
   const c = sg?.counts;
   const allMode: ControlMode | null = c ? (c.adaptive === c.working + c.inactive && c.adaptive > 0 ? 'adaptive' : c.fixed === c.working + c.inactive ? 'fixed' : null) : null;
   const setF = (patch: (f: SignalFilter) => SignalFilter) => { if (ctrl && f) ctrl.setSignalFilter(patch(f)); };
+  // на телефоне панель свёрнута, чтобы не закрывать карту
+  const [openAtStart] = useState(() => typeof window === 'undefined' || window.innerWidth > 640);
 
   return (
-    <details className="map-panel map-layers" open>
+    <details className="map-panel map-layers" open={openAtStart}>
       <summary>Слои и светофоры</summary>
       <div className="lay-row">
         <label><input type="checkbox" checked={!!sg?.visible} disabled={!ready} onChange={(e) => ctrl?.setSignalsVisible(e.target.checked)} /> Светофоры</label>
