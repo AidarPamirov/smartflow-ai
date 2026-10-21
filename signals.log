@@ -1,0 +1,18 @@
+{
+  "title": "Светофоры и пешеходные переходы центра Бишкека (факты OSM)",
+  "source": "OpenStreetMap через Overpass API",
+  "endpoint": "https://overpass-api.de/api/interpreter",
+  "osm_base": "2026-10-21T10:52:30Z",
+  "generated": "2026-10-21T10:53:25.387Z",
+  "license": "ODbL 1.0",
+  "attribution": "© OpenStreetMap contributors",
+  "bbox": [
+    74.54,
+    42.83,
+    74.68,
+    42.9
+  ],
+  "signals": 327,
+  "crossings": 2083,
+  "signalized_crossings": 721
+}
