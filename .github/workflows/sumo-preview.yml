@@ -20,13 +20,6 @@ jobs:
         run: |
           mkdir -p report
           python sumo/tools/osm_probe.py > report/osm_probe.json 2> report/osm_probe.log || true
-      - name: SUMO wheels for local development (py3.13, manylinux)
-        run: |
-          mkdir -p report/wheels
-          pip download eclipse-sumo traci sumolib --only-binary=:all: --python-version 3.13 --platform manylinux2014_x86_64 --platform manylinux_2_28_x86_64 --platform any -d wheels > report/pip.log 2>&1 || true
-          ls -la wheels >> report/pip.log
-          cd wheels && for f in *.whl; do split -b 45m -d "$f" "../report/wheels/$f.part"; done
-          ls -la ../report/wheels >> ../report/pip.log
       - if: always()
         run: |
           cd report

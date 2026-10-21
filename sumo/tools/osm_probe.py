@@ -16,6 +16,8 @@ import urllib.request
 
 ENDPOINTS = [
     "https://overpass-api.de/api/interpreter",
+    "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+    "https://overpass.private.coffee/api/interpreter",
     "https://overpass.kumi.systems/api/interpreter",
 ]
 BBOX = "42.83,74.54,42.90,74.68"
@@ -25,8 +27,9 @@ TAGS = ("highway", "name", "oneway", "lanes", "lanes:forward", "lanes:backward",
 
 
 def overpass(q: str) -> dict:
+    import time
     err = []
-    for url in ENDPOINTS:
+    for url in ENDPOINTS * 2:
         try:
             req = urllib.request.Request(url, data=urllib.parse.urlencode({"data": q}).encode(),
                                          headers={"User-Agent": UA})
@@ -34,6 +37,7 @@ def overpass(q: str) -> dict:
                 return json.load(r)
         except Exception as e:  # noqa: BLE001
             err.append(f"{url}: {e}")
+            time.sleep(5)
     raise SystemExit("Overpass недоступен: " + "; ".join(err))
 
 
