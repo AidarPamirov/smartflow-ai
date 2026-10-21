@@ -19,7 +19,7 @@ jobs:
       - name: OSM facts about candidate intersections
         run: |
           mkdir -p report
-          python sumo/tools/osm_probe.py > report/osm_probe.json 2> report/osm_probe.log || true
+          python sumo/tools/osm_probe.py --restrictions 42.877856 74.562291 > report/restrictions.json 2> report/restrictions.log || true
       - if: always()
         run: |
           cd report

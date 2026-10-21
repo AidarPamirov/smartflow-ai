@@ -2,9 +2,12 @@
 """Сбор фактов об одном перекрёстке из OpenStreetMap (Overpass API).
 
     python sumo/tools/osm_probe.py "Чуй проспект" "проспект Манаса" > probe.json
+    python sumo/tools/osm_probe.py --restrictions 42.877856 74.562291 > restrictions.json
 
 Ищет узлы, общие для двух улиц, и выводит линии, проходящие через них (теги lanes, oneway,
 turn:lanes, maxspeed, начальная геометрия), а также светофоры в радиусе 60 м.
+С ключом --restrictions выводит запреты и предписания поворотов (отношения type=restriction),
+у которых узел «via» лежит в заданном радиусе от точки.
 Только сбор фактов: модель SUMO строится отдельно (sumo/scenario/*.json), с явными допущениями.
 Данные © OpenStreetMap contributors, ODbL.
 """
@@ -102,7 +105,44 @@ out body geom;"""
     }
 
 
+def restrictions(lat: float, lon: float, radius: float = 80.0) -> dict:
+    q = f"""[out:json][timeout:90];
+(node(around:{radius},{lat},{lon}); way(around:{radius},{lat},{lon})[highway];)->.near;
+(relation(bn.near)[type~"^restriction"]; relation(bw.near)[type~"^restriction"];)->.r;
+.r out body;
+(way(r.r); node(r.r);)->.m;
+.m out tags center;"""
+    data = overpass(q)
+    c = {"lat": lat, "lon": lon}
+    el = {(e["type"], e["id"]): e for e in data["elements"]}
+
+    def desc(m):
+        e = el.get((m["type"], m["ref"]), {})
+        t = e.get("tags", {})
+        pos = e.get("center") or ({"lat": e["lat"], "lon": e["lon"]} if "lat" in e else None)
+        return {"type": m["type"], "id": m["ref"], "name": t.get("name:ru") or t.get("name"), "highway": t.get("highway"),
+                "dist_m": round(dist(c, pos), 1) if pos else None}
+
+    out = []
+    for r in (e for e in data["elements"] if e["type"] == "relation"):
+        mem = {"from": [], "via": [], "to": []}
+        for m in r.get("members", []):
+            if m.get("role") in mem:
+                mem[m["role"]].append(desc(m))
+        via_d = [v["dist_m"] for v in mem["via"] if v["dist_m"] is not None]
+        out.append({"id": r["id"], "tags": r.get("tags", {}), **mem, "via_within_radius": bool(via_d) and min(via_d) <= radius})
+    return {
+        "center": c, "radius_m": radius, "osm_base": data.get("osm3s", {}).get("timestamp_osm_base"),
+        "restrictions_at_intersection": [r for r in out if r["via_within_radius"]],
+        "restrictions_nearby_other": [r for r in out if not r["via_within_radius"]],
+        "attribution": "© OpenStreetMap contributors, ODbL",
+    }
+
+
 if __name__ == "__main__":
+    if len(sys.argv) >= 4 and sys.argv[1] == "--restrictions":
+        json.dump(restrictions(float(sys.argv[2]), float(sys.argv[3])), sys.stdout, ensure_ascii=False, indent=1)
+        raise SystemExit
     pairs = [sys.argv[1:3]] if len(sys.argv) >= 3 else [
         ["Чуй проспект", "улица Жусупа Абдрахманова"],
         ["Чуй проспект", "проспект Чынгыза Айтматова"],
