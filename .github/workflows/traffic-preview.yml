@@ -1,0 +1,52 @@
+# Временный workflow: выгрузка дорожной сети из OSM и проверка демо-трафика в браузере.
+# Отчёт публикуется в ветку traffic-preview-report. На main не попадает.
+name: Traffic preview (temporary)
+
+on:
+  push:
+    branches: [traffic-preview]
+
+permissions:
+  contents: write
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Road network from OSM (only if not committed yet)
+        run: |
+          mkdir -p report
+          if [ ! -f public/data/bishkek-roads.json ]; then
+            mkdir -p public/data
+            node scripts/build-road-network.mjs public/data/bishkek-roads.json > report/network.log 2>&1 || (cat report/network.log; exit 1)
+            cp public/data/bishkek-roads.json report/
+          else
+            echo "network already in repo" > report/network.log
+          fi
+      - if: hashFiles('src/traffic/**') != ''
+        run: npm install > report/install.log 2>&1
+      - if: hashFiles('src/traffic/**') != ''
+        run: npm test > report/test.log 2>&1
+        continue-on-error: true
+      - if: hashFiles('src/traffic/**') != ''
+        run: npm run build > report/build.log 2>&1
+        continue-on-error: true
+      - if: hashFiles('src/traffic/**') != ''
+        run: |
+          npm i --no-save playwright@1.48.2 > report/pw.log 2>&1
+          npx playwright install --with-deps chromium >> report/pw.log 2>&1
+          (npx vite preview --port 4173 --strictPort > report/server.log 2>&1 &)
+          sleep 4
+          node .github/preview/traffic-shots.mjs report > report/shots.log 2>&1
+        continue-on-error: true
+      - if: always()
+        run: |
+          cd report
+          git init -q -b traffic-preview-report
+          git add -A
+          git -c user.name=ci -c user.email=ci@users.noreply.github.com commit -qm "report $GITHUB_SHA"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" traffic-preview-report
