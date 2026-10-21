@@ -8,15 +8,16 @@ import math
 import os
 import shutil
 import tempfile
+import time
 import unittest
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
-from smartflow_sumo.build import (BUILD_DIR, SCENARIO_DIR as SC_DIR, allowed_turns, build_net, load_scenario, make_plan, read_links_and_foes,
+from smartflow_sumo.build import (BUILD_DIR, SCENARIO_DIR as SC_DIR, Demand, allowed_turns, build_net, load_scenario, make_plan, read_links_and_foes,
                                   sumo_bin, target)
 from smartflow_sumo.control import Movement, Timing
-from smartflow_sumo.experiment import demand_for, fixed_plan, lane_flows
-from smartflow_sumo.run import classify, run
+from smartflow_sumo.experiment import LOADS, TURNS, demand_for, fixed_plan, lane_flows
+from smartflow_sumo.run import Faults, SimulatorConnectionError, classify, run
 from smartflow_sumo.trace import TraceRecorder, validate_trace
 
 try:
@@ -145,6 +146,23 @@ class RunTests(unittest.TestCase):
                 self.assertEqual(r.collisions, 0)
                 self.assertEqual(r.conflict_steps, 0, "в SUMO горели зелёные конфликтующим связям")
                 self.assertEqual(r.teleports, 0)
+                self.assertEqual(r.safety_overrides, 0, "в SUMO горело не то, что задано")
+                self.assertIsNone(r.fallback_at, "контроллер не должен уходить в резерв в обычном прогоне")
+
+    def test_decision_log_and_extended_metrics(self):
+        for ctrl, r in self.results.items():
+            with self.subTest(ctrl):
+                self.assertEqual(len(r.decisions), r.switches, "каждая смена фазы записана")
+                self.assertTrue(all(d["reason"] for d in r.decisions))
+                self.assertGreater(r.p95_travel_time, 0)
+                self.assertGreaterEqual(r.p95_travel_time, r.mean_wait)
+                self.assertGreater(r.throughput_veh_h, 0)
+                self.assertGreaterEqual(r.mean_stops, 0)
+                self.assertEqual(set(r.wait_by_approach), set("NESW"))
+                for a in "NESW":
+                    self.assertGreaterEqual(r.max_wait_by_approach[a], r.wait_by_approach[a])
+        self.assertIn("фиксированный план", self.results["fixed"].decision_reasons)
+        self.assertTrue(set(self.results["adaptive"].decision_reasons) & {"разрыв потока", "максимум зелёного фазы", "защита от голодания"})
 
     def test_signal_sequence_in_sumo(self):
         """Фактическая история сигнала в SUMO: зелёный ≥ 8 с, затем жёлтый 3 с, затем «все красные» 2 с."""
@@ -207,6 +225,100 @@ class RunTests(unittest.TestCase):
         broken = json.loads(json.dumps(self.trace["fixed"]))
         broken["frames"][3]["signal"] = "G"
         self.assertTrue(validate_trace(broken))
+
+
+@unittest.skipUnless(HAVE_SUMO, "SUMO не установлен")
+class EdgeCaseTests(unittest.TestCase):
+    """Крайние случаи: нет машин, перегрузка одного направления, закрытая полоса, сбои датчиков, контроллера,
+    чужая команда светофору, авария симулятора."""
+
+    @classmethod
+    def setUpClass(cls):
+        if not (BUILD_DIR / SC.id / "net.net.xml").exists():
+            build_net(SC)
+        cls.fixed = fixed_plan(SC, Timing())
+        cls.work = Path(tempfile.mkdtemp())
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.work, ignore_errors=True)
+
+    def go(self, ctrl, flows, duration=600.0, faults=None, seed=3, drain=900.0):
+        d = Demand(flows=dict(flows), turns=dict(TURNS), duration=duration)
+        return run(SC, ctrl, "edge", d, seed, fixed_greens=self.fixed["greens_s"], drain=drain, keep_states=True,
+                   work_dir=self.work, faults=faults)
+
+    def assertSafe(self, r):
+        self.assertEqual(r.collisions, 0)
+        self.assertEqual(r.teleports, 0)
+        for (t0, s0), (t1, s1) in zip(r.states, r.states[1:]):
+            if classify(s0) == "green" and classify(s1) == "green":
+                self.fail(f"зелёный сменился зелёным в t={t1}")
+
+    def test_no_vehicles(self):
+        for ctrl in ("fixed", "adaptive"):
+            with self.subTest(ctrl):
+                r = self.go(ctrl, {a: 0 for a in "NESW"}, duration=400, drain=0)
+                self.assertSafe(r)
+                self.assertEqual(r.demand_vehicles, 0)
+                self.assertEqual(r.completed, 0)
+                for k in ("mean_wait", "p95_travel_time", "mean_stops", "total_wait_veh_h"):
+                    self.assertIsNone(getattr(r, k), f"{k}: без машин метрика не выдумывается")
+                self.assertEqual(r.throughput_veh_h, 0.0)
+                if ctrl == "adaptive":
+                    self.assertTrue(r.decisions and all("жёсткий максимум" in d["reason"] for d in r.decisions),
+                                    "без спроса адаптивный не переключает, фазы меняет только страж по максимуму")
+
+    def test_one_direction_overload(self):
+        flows = {"E": 1000, "W": 0, "N": 80, "S": 0}
+        res = {c: self.go(c, flows) for c in ("fixed", "adaptive")}
+        for c, r in res.items():
+            with self.subTest(c):
+                self.assertSafe(r)
+                self.assertEqual(r.unfinished, 0)
+        a = res["adaptive"]
+        self.assertLess(a.wait_by_approach["E"], res["fixed"].wait_by_approach["E"], "перегруженному подходу адаптивный даёт больше зелёного")
+        self.assertLessEqual(a.max_wait_by_approach["N"], 120 + 3 * (5 + 8) + 10, "малый поток не ждёт бесконечно (защита от голодания)")
+
+    def test_lane_closure(self):
+        # средняя полоса подхода с запада («прямо») закрыта с начала: прямые едут по полосе «прямо + направо»
+        r = self.go("adaptive", LOADS["low"], faults=Faults(closed_lanes={"W_in_1": 0.0}))
+        self.assertSafe(r)
+        self.assertEqual(r.unfinished, 0)
+        self.assertEqual(r.conflict_steps, 0)
+
+    def test_sensor_failure_falls_back_to_fixed_plan(self):
+        r = self.go("adaptive", LOADS["medium"], faults=Faults(sensor_fail_at=200.0, sensor_approach="N"))
+        self.assertSafe(r)
+        self.assertIsNotNone(r.fallback_at)
+        self.assertTrue(200 <= r.fallback_at <= 200 + 130, r.fallback_at)
+        self.assertIn("SensorError", r.fallback_reason)
+        after = [d for d in r.decisions if d["time"] > r.fallback_at]
+        self.assertTrue(after and all("резервный план" in d["reason"] or "страж" in d["controller"] for d in after))
+        self.assertEqual(r.unfinished, 0)
+
+    def test_controller_exception_falls_back(self):
+        r = self.go("adaptive", LOADS["medium"], faults=Faults(controller_fail_at=150.0))
+        self.assertSafe(r)
+        self.assertTrue(150 <= r.fallback_at <= 150 + 130, r.fallback_at)
+        self.assertIn("RuntimeError", r.fallback_reason)
+        self.assertEqual(r.conflict_steps, 0)
+
+    def test_foreign_signal_state_forces_all_red(self):
+        r = self.go("fixed", LOADS["low"], faults=Faults(foreign_state_at=100.0))
+        self.assertEqual(r.safety_overrides, 1)
+        self.assertEqual(r.conflict_steps, 1, "чужие конфликтующие зелёные продержались ровно один шаг")
+        self.assertEqual(r.collisions, 0)
+        i = next(k for k, (t, s) in enumerate(r.states) if set(s) == {"G"})
+        self.assertEqual(classify(r.states[i + 1][1]), "allred", "сразу после обнаружения — «все красные»")
+        self.assertTrue(any("вместо заданного" in d["reason"] for d in r.decisions))
+
+    def test_simulator_crash_raises_clear_error(self):
+        t0 = time.time()
+        with self.assertRaises(SimulatorConnectionError) as cm:
+            self.go("adaptive", LOADS["low"], faults=Faults(kill_at=60.0))
+        self.assertLess(time.time() - t0, 60, "прогон не зависает")
+        self.assertIn("связь с SUMO потеряна", str(cm.exception))
 
 
 if __name__ == "__main__":

@@ -6,7 +6,10 @@
   SignalSupervisor  — единственный, кто меняет сигнал: минимальный зелёный, жёлтый, «все красные»,
                       абсолютный максимум зелёного. Переход «зелёный → другой зелёный» без жёлтого
                       и «все красные» невозможен по построению.
-  FixedTimeController, AdaptiveController — только выбирают, какую фазу хотят следующей.
+  FixedTimeController, AdaptiveController — только выбирают, какую фазу хотят следующей,
+                      и объясняют выбор (last_reason) для журнала решений.
+  SafeController    — обёртка: при исключении, неверном ответе или отсутствии данных датчиков
+                      переключается на заранее заданный фиксированный план и больше к основному не возвращается.
 """
 from __future__ import annotations
 
@@ -105,18 +108,49 @@ class SignalPlan:
 
 @dataclass
 class Observation:
-    """Наблюдение за перекрёстком на текущем шаге (заполняет runner из TraCI)."""
+    """Наблюдение за перекрёстком на текущем шаге (заполняет runner из TraCI).
+
+    Значение None у полосы — датчик не дал данных (неисправность); контроллер такие данные не принимает.
+    """
     time: float
     #: стоящих машин на полосе (скорость < 0,1 м/с)
-    queue: Mapping[str, int] = field(default_factory=dict)
+    queue: Mapping[str, int | None] = field(default_factory=dict)
     #: суммарное накопленное ожидание машин на полосе, с
-    wait: Mapping[str, float] = field(default_factory=dict)
+    wait: Mapping[str, float | None] = field(default_factory=dict)
     #: движущихся машин в зоне детектора перед стоп-линией
-    approaching: Mapping[str, int] = field(default_factory=dict)
+    approaching: Mapping[str, int | None] = field(default_factory=dict)
+
+
+class SensorError(ValueError):
+    """Нет данных или неверные данные датчиков."""
+
+
+def check_observation(obs: Observation, lanes: Iterable[str]) -> None:
+    """Бросает SensorError, если датчик полосы сообщил «нет данных» (None) или отрицательное значение.
+
+    Полоса, которой нет в наблюдении, считается пустой (0): так задаются наблюдения в тестах.
+    """
+    for l in lanes:
+        for name, m in (("очередь", obs.queue), ("ожидание", obs.wait), ("подъезжающие", obs.approaching)):
+            v = m.get(l, 0)
+            if v is None or v < 0:
+                raise SensorError(f"нет данных датчика «{name}» на полосе {l}")
+
+
+@dataclass(frozen=True)
+class Decision:
+    """Запись журнала: смена фазы и её причина."""
+    time: float
+    from_phase: int
+    to_phase: int
+    controller: str
+    reason: str
 
 
 class Controller(Protocol):
     name: str
+    #: почему был сделан последний запрос смены фазы (для журнала)
+    last_reason: str
 
     def request(self, phase: int, green_elapsed: float, obs: Observation, plan: SignalPlan) -> int | None:
         """Фаза, которую контроллер хочет включить следующей, или None — продолжать текущую."""
@@ -179,11 +213,15 @@ class FixedTimeController:
         if any(g <= 0 for g in greens):
             raise ValueError("длительности зелёного должны быть > 0")
         self.greens = list(greens)
+        self.last_reason = ""
 
     def request(self, phase: int, green_elapsed: float, obs: Observation, plan: SignalPlan) -> int | None:
         if len(self.greens) != plan.n:
             raise ValueError("число длительностей не совпадает с числом фаз")
-        return (phase + 1) % plan.n if green_elapsed >= self.greens[phase] - 1e-9 else None
+        if green_elapsed >= self.greens[phase] - 1e-9:
+            self.last_reason = f"фиксированный план: зелёный {self.greens[phase]:g} с"
+            return (phase + 1) % plan.n
+        return None
 
 
 @dataclass
@@ -214,6 +252,7 @@ class AdaptiveController:
     def __init__(self, params: AdaptiveParams | None = None):
         self.p = params or AdaptiveParams()
         self._last_green: dict[int, float] = {}
+        self.last_reason = ""
 
     def pressure(self, k: int, obs: Observation, plan: SignalPlan) -> float:
         lanes = plan.phase_lanes[k]
@@ -224,6 +263,7 @@ class AdaptiveController:
         return any(obs.queue.get(l, 0) > 0 or obs.approaching.get(l, 0) > 0 for l in lanes)
 
     def request(self, phase: int, green_elapsed: float, obs: Observation, plan: SignalPlan) -> int | None:
+        check_observation(obs, set().union(*plan.phase_lanes))
         self._last_green[phase] = obs.time
         others = [k for k in range(plan.n) if k != phase and self.demand(k, obs, plan)]
         if not others:
@@ -231,21 +271,69 @@ class AdaptiveController:
         pres = {k: self.pressure(k, obs, plan) for k in others}
         # при равном давлении — следующая по кругу
         best = max(others, key=lambda k: (pres[k], -((k - phase) % plan.n)))
+        why_best = f"следующая — фаза {best + 1}: давление {pres[best]:.1f} (очередь + ожидание / {self.p.wait_weight:g} с)"
         starving = [k for k in others if obs.time - self._last_green.get(k, 0.0) >= self.p.starvation]
         if starving:
-            return max(starving, key=lambda k: obs.time - self._last_green.get(k, 0.0))
+            k = max(starving, key=lambda k: obs.time - self._last_green.get(k, 0.0))
+            self.last_reason = f"защита от голодания: фаза {k + 1} без зелёного {obs.time - self._last_green.get(k, 0.0):.0f} с"
+            return k
         limit = self.p.max_green_by_phase[phase] if self.p.max_green_by_phase else self.p.max_green
         if green_elapsed >= limit:
+            self.last_reason = f"максимум зелёного фазы {limit:g} с; {why_best}"
             return best
         if not self.demand(phase, obs, plan):
-            return best  # разрыв потока: очередь разъехалась, в детекторе пусто
+            self.last_reason = f"разрыв потока: на фазе {phase + 1} нет очереди и в {30} м никто не подъезжает; {why_best}"
+            return best
         return None
 
 
-def tick(sup: SignalSupervisor, ctrl: Controller, obs: Observation, dt: float) -> str:
+class SafeController:
+    """Основной контроллер с безопасным резервом.
+
+    Если основной контроллер бросил исключение, вернул недопустимую фазу или датчики не дали данных,
+    управление навсегда переходит к резервному фиксированному плану (fallback), а причина записывается.
+    Сам переход сигналов по-прежнему делает SignalSupervisor: конфликтующих зелёных не бывает и при сбое.
+    """
+
+    def __init__(self, primary: Controller, fallback: FixedTimeController):
+        self.primary = primary
+        self.fallback = fallback
+        self.name = primary.name
+        self.failed_at: float | None = None
+        self.failure: str | None = None
+        self.last_reason = ""
+
+    @property
+    def active(self) -> str:
+        return self.primary.name if self.failed_at is None else f"{self.fallback.name} (резерв)"
+
+    def request(self, phase: int, green_elapsed: float, obs: Observation, plan: SignalPlan) -> int | None:
+        if self.failed_at is None:
+            try:
+                k = self.primary.request(phase, green_elapsed, obs, plan)
+                if k is not None and not (isinstance(k, int) and 0 <= k < plan.n):
+                    raise ValueError(f"недопустимая фаза {k!r}")
+                self.last_reason = self.primary.last_reason
+                return k
+            except Exception as e:  # noqa: BLE001 — любой сбой контроллера ведёт в резервный план
+                self.failed_at = obs.time
+                self.failure = f"{type(e).__name__}: {e}"
+        k = self.fallback.request(phase, green_elapsed, obs, plan)
+        self.last_reason = f"резервный план после сбоя ({self.failure}); {self.fallback.last_reason}"
+        return k
+
+
+def tick(sup: SignalSupervisor, ctrl: Controller, obs: Observation, dt: float, log: list[Decision] | None = None) -> str:
     """Один шаг управления: контроллер видит зелёный с учётом наступающего шага, страж решает.
 
     Контроллер опрашивается только на зелёном; на жёлтом и «все красные» страж ведёт переход сам.
+    Каждая смена фазы записывается в log с причиной: решение контроллера или жёсткий максимум стража.
     """
     req = ctrl.request(sup.phase, sup.green_elapsed + dt, obs, sup.plan) if sup.stage == "green" else None
-    return sup.step(dt, req)
+    was_green, phase = sup.stage == "green", sup.phase
+    state = sup.step(dt, req)
+    if log is not None and was_green and sup.stage == "yellow":
+        by_ctrl = req is not None and req == sup.next_phase
+        reason = getattr(ctrl, "last_reason", "") if by_ctrl else f"страж: жёсткий максимум зелёного {sup.timing.hard_max_green:g} с"
+        log.append(Decision(obs.time, phase, sup.next_phase, getattr(ctrl, "active", ctrl.name), reason))
+    return state

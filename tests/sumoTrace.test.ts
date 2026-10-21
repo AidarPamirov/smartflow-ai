@@ -62,6 +62,28 @@ describe('данные эксперимента SUMO (public/data/sumo)', () => 
     assert.ok(checked > 0);
   });
 
+  it('журнал решений в записи: внутри окна, у каждой смены фазы есть причина', () => {
+    for (const tr of Object.values(traces)) {
+      const ds = tr.decisions ?? [];
+      assert.ok(ds.length > 3, `${tr.meta.controller}: решений ${ds.length}`);
+      const [w0, w1] = tr.meta.window;
+      for (const d of ds) {
+        assert.ok(d.time >= w0 && d.time <= w1);
+        assert.ok(d.reason.length > 5);
+        assert.ok(d.to_phase >= 0 && d.to_phase < tr.phases.length);
+      }
+    }
+  });
+
+  it('новые метрики: перцентиль не меньше среднего ожидания, худший подход не лучше среднего', () => {
+    for (const r of results.summary) {
+      assert.ok(r.p95_travel_time && r.p95_travel_time[0]! > r.mean_wait[0]!);
+      assert.ok(r.worst_approach_wait && r.worst_approach_wait[0]! >= r.mean_wait[0]! - 0.05, "среднее по подходам не больше худшего подхода");
+      assert.equal(r.safety_overrides, 0);
+      assert.equal(r.fallbacks, 0);
+    }
+  });
+
   it('сводка: оба контроллера на каждой нагрузке, без столкновений и конфликтов, все поездки завершены', () => {
     const loads = Object.keys(results.params.loads_veh_h);
     assert.ok(loads.length >= 3);

@@ -4,7 +4,8 @@ import unittest
 
 from smartflow_sumo.build import webster_greens
 from smartflow_sumo.control import (AdaptiveController, AdaptiveParams, FixedTimeController, Link, Movement, Observation,
-                                    Phase, SignalPlan, SignalSupervisor, Timing, UnsafePlanError, tick)
+                                    Phase, SafeController, SensorError, SignalPlan, SignalSupervisor, Timing, UnsafePlanError,
+                                    check_observation, tick)
 
 M = Movement
 # Упрощённый перекрёсток: 4 связи «прямо» по одной полосе на подход. N/S конфликтуют с E/W.
@@ -137,6 +138,81 @@ class WebsterTests(unittest.TestCase):
         self.assertTrue(60 <= cycle <= 120)
         self.assertGreater(greens[0], greens[1])
         self.assertTrue(all(g >= 8 and g == int(g) for g in greens))
+
+
+class SafetyAndLogTests(unittest.TestCase):
+    """Безопасный резерв, данные датчиков и журнал решений."""
+
+    def run_steps(self, ctrl, seconds, obs_fn, log=None):
+        sup = SignalSupervisor(plan(), Timing())
+        history = []
+        for k in range(int(seconds)):
+            st = tick(sup, ctrl, obs_fn(float(k)), 1.0, log)
+            history.append(st)
+            self.assertEqual(plan().conflicting_greens(st), [], f"t={k}")
+        return sup, history
+
+    def test_sensor_none_is_error(self):
+        o = Observation(time=0, queue={"N_in_0": None}, wait={}, approaching={})
+        with self.assertRaises(SensorError):
+            check_observation(o, ["N_in_0"])
+        check_observation(Observation(time=0), ["N_in_0"])  # полосы нет в наблюдении — пусто, не ошибка
+        with self.assertRaises(SensorError):
+            check_observation(Observation(time=0, wait={"N_in_0": -1.0}), ["N_in_0"])
+
+    def test_fallback_on_sensor_failure(self):
+        ctrl = SafeController(AdaptiveController(), FixedTimeController([20, 20]))
+        log = []
+        def o(t):
+            q = {"N_in_0": 3, "S_in_0": 1, "E_in_0": 4, "W_in_0": 2}
+            if t >= 100:
+                q["E_in_0"] = None
+            return Observation(time=t, queue=q, wait={}, approaching={})
+        sup, _ = self.run_steps(ctrl, 400, o, log)
+        self.assertEqual(ctrl.failed_at, 100.0)
+        self.assertIn("SensorError", ctrl.failure)
+        self.assertEqual(ctrl.active, "fixed (резерв)")
+        after = [d for d in log if d.time > 100]
+        self.assertTrue(after and all("резервный план" in d.reason for d in after))
+
+    def test_fallback_on_exception_and_invalid_phase(self):
+        class Bad:
+            name = "bad"
+            last_reason = ""
+            def __init__(self, out):
+                self.out = out
+            def request(self, *a):
+                if isinstance(self.out, Exception):
+                    raise self.out
+                return self.out
+        for out in (RuntimeError("сбой"), 7, "1", -1):
+            ctrl = SafeController(Bad(out), FixedTimeController([15, 15]))
+            sup, hist = self.run_steps(ctrl, 200, lambda t: obs(t))
+            self.assertIsNotNone(ctrl.failed_at, repr(out))
+            self.assertGreater(sup.switches, 3, "резервный план продолжает переключать фазы")
+
+    def test_decision_log_has_reasons(self):
+        log = []
+        ctrl = AdaptiveController(AdaptiveParams(max_green=30))
+        self.run_steps(ctrl, 300, lambda t: obs(t, N=2, E=3), log)
+        self.assertTrue(log)
+        self.assertTrue(all(d.reason for d in log))
+        self.assertTrue(any(d.reason.startswith("максимум зелёного") for d in log))
+        log2 = []
+        self.run_steps(FixedTimeController([10, 12]), 100, lambda t: obs(t), log2)
+        self.assertTrue(all(d.reason.startswith("фиксированный план") for d in log2))
+
+    def test_forced_switch_logged_as_supervisor(self):
+        class Never:
+            name = "never"
+            last_reason = ""
+            def request(self, *a):
+                return None
+        log = []
+        self.run_steps(Never(), 300, lambda t: obs(t), log)
+        self.assertTrue(log)
+        self.assertTrue(all("жёсткий максимум" in d.reason for d in log))
+        self.assertTrue(all(d.time % 1 == 0 for d in log))
 
 
 if __name__ == "__main__":

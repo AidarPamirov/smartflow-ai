@@ -125,9 +125,8 @@ def write_plain_xml(sc: Scenario, out: Path) -> dict[str, Path]:
 
 
 def sumo_bin(name: str) -> str:
-    path = shutil.which(name)
-    if path:
-        return path
+    """Путь к программе SUMO. Сначала — сам исполняемый файл из пакета eclipse-sumo (без промежуточной обёртки
+    из pip, чтобы процесс TraCI был настоящим процессом SUMO), затем — из PATH."""
     try:
         import sumo  # eclipse-sumo из pip
         p = Path(sumo.SUMO_HOME) / "bin" / name
@@ -135,6 +134,9 @@ def sumo_bin(name: str) -> str:
             return str(p)
     except ImportError:
         pass
+    path = shutil.which(name)
+    if path:
+        return path
     raise FileNotFoundError(f"{name} не найден: установите SUMO (pip install eclipse-sumo)")
 
 

@@ -233,7 +233,22 @@ function View({ trace, t, zoom, title }: { trace: Trace; t: number; zoom: 'near'
         </span>
       </figcaption>
       <canvas ref={ref} aria-label={`${title}: кадр симуляции SUMO`} />
+      <Decisions trace={trace} t={t} />
     </figure>
+  );
+}
+
+/** Последние решения контроллера к моменту t (журнал из прогона SUMO). */
+function Decisions({ trace, t }: { trace: Trace; t: number }) {
+  const ds = (trace.decisions ?? []).filter((d) => d.time <= t).slice(-3).reverse();
+  if (!trace.decisions) return null;
+  return (
+    <ol className="sumo-decisions" aria-label="Журнал решений">
+      {ds.length === 0 && <li className="muted">решений в этом отрезке ещё не было</li>}
+      {ds.map((d) => (
+        <li key={d.time} title={d.reason}><span className="mono">{fmtT(d.time)}</span> фаза {d.from_phase + 1} → {d.to_phase + 1}: {d.reason}</li>
+      ))}
+    </ol>
   );
 }
 
@@ -246,6 +261,12 @@ function ResultsTable({ results }: { results: Results }) {
     { label: 'Средняя потеря времени', get: (r) => r.mean_time_loss, unit: 'с', d: 1, lower: true },
     { label: 'Стоящих машин на подходах, в среднем', get: (r) => r.mean_queue, unit: 'авт', d: 1, lower: true },
     { label: 'Макс. очередь на подходе', get: (r) => r.max_queue_approach, unit: 'авт', d: 0, lower: true },
+    { label: '95-й перцентиль времени поездки', get: (r) => r.p95_travel_time ?? [null, null], unit: 'с', d: 1, lower: true },
+    { label: 'Суммарное ожидание за час', get: (r) => r.total_wait_veh_h ?? [null, null], unit: 'авт·ч', d: 2, lower: true },
+    { label: 'Остановок на поездку', get: (r) => r.mean_stops ?? [null, null], unit: '', d: 2, lower: true },
+    { label: 'Худший подход: среднее ожидание', get: (r) => r.worst_approach_wait ?? [null, null], unit: 'с', d: 1, lower: true },
+    { label: 'Самое долгое ожидание одной машины', get: (r) => r.max_wait_vehicle ?? [null, null], unit: 'с', d: 0, lower: true },
+    { label: 'Пропускная способность (выехало)', get: (r) => r.throughput_veh_h ?? [null, null], unit: 'авт/ч', d: 0, lower: false },
     { label: 'Завершено поездок', get: (r) => r.completed, unit: '', d: 0, lower: false },
     { label: 'Не доехали к концу', get: (r) => r.unfinished, unit: '', d: 0, lower: true },
   ];
@@ -294,18 +315,37 @@ function ResultsTable({ results }: { results: Results }) {
       <h3>Безопасность во всех прогонах</h3>
       <div className="table-wrap">
         <table>
-          <thead><tr><th>Нагрузка</th><th>Контроллер</th><th>Столкновения</th><th>Шаги с конфликтующими зелёными</th><th>Телепортации</th><th>Мин. зелёный / жёлтый / все красные, с</th></tr></thead>
+          <thead><tr><th>Нагрузка</th><th>Контроллер</th><th>Столкновения</th><th>Шаги с конфликтующими зелёными</th><th>Телепортации</th><th>Вмешательства стража</th><th>Переходы в резерв</th><th>Мин. зелёный / жёлтый / все красные, с</th></tr></thead>
           <tbody>
             {results.summary.map((r) => (
               <tr key={r.load + r.controller}>
                 <td>{LOAD_LABEL[r.load] ?? r.load}</td><td>{r.controller === 'fixed' ? 'фиксированный' : 'адаптивный'}</td>
                 <td className="mono">{r.collisions}</td><td className="mono">{r.conflict_steps}</td><td className="mono">{r.teleports}</td>
+                <td className="mono">{r.safety_overrides ?? '—'}</td><td className="mono">{r.fallbacks ?? '—'}</td>
                 <td className="mono">{nf(r.min_green_seen, 0)} / {nf(r.min_yellow_seen, 0)} / {nf(r.min_allred_seen, 0)}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      {results.summary.some((r) => r.decision_reasons) && (
+        <>
+          <h3>Почему переключались фазы (журнал решений, все seed)</h3>
+          <div className="table-wrap">
+            <table>
+              <thead><tr><th>Нагрузка</th><th>Контроллер</th><th>Причины смены фазы</th></tr></thead>
+              <tbody>
+                {results.summary.map((r) => (
+                  <tr key={r.load + r.controller + 'why'}>
+                    <td>{LOAD_LABEL[r.load] ?? r.load}</td><td>{r.controller === 'fixed' ? 'фиксированный' : 'адаптивный'}</td>
+                    <td className="small">{Object.entries(r.decision_reasons ?? {}).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} — ${v}`).join('; ')}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
     </section>
   );
 }

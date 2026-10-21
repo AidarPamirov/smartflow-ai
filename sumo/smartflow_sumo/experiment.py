@@ -89,8 +89,27 @@ def summarize(runs: list[RunResult]) -> list[dict]:
                 "min_green_seen": min(r.min_green_seen for r in rs if r.min_green_seen is not None),
                 "min_yellow_seen": min(r.min_yellow_seen for r in rs if r.min_yellow_seen is not None),
                 "min_allred_seen": min(r.min_allred_seen for r in rs if r.min_allred_seen is not None),
+                "p95_travel_time": m(lambda r: r.p95_travel_time),
+                "total_wait_veh_h": m(lambda r: r.total_wait_veh_h),
+                "mean_stops": m(lambda r: r.mean_stops),
+                "throughput_veh_h": m(lambda r: r.throughput_veh_h),
+                # худший подход: наибольшее среднее ожидание среди подходов (чтобы выигрыш в среднем не прятал проигрыш направления)
+                "worst_approach_wait": m(lambda r: max(r.wait_by_approach.values()) if r.wait_by_approach else None),
+                "wait_by_approach": {a: m(lambda r, a=a: r.wait_by_approach.get(a)) for a in "NESW"},
+                "max_wait_vehicle": m(lambda r: max(r.max_wait_by_approach.values()) if r.max_wait_by_approach else None),
+                "safety_overrides": sum(r.safety_overrides for r in rs),
+                "fallbacks": sum(1 for r in rs if r.fallback_at is not None),
+                "decision_reasons": _merge(r.decision_reasons for r in rs),
             })
     return rows
+
+
+def _merge(dicts) -> dict:
+    out: dict[str, int] = {}
+    for d in dicts:
+        for k, v in d.items():
+            out[k] = out.get(k, 0) + v
+    return out
 
 
 def sumo_version() -> str:
@@ -140,7 +159,7 @@ def main(argv: list[str] | None = None) -> None:
             "adaptive": asdict(__import__("smartflow_sumo.control", fromlist=["AdaptiveParams"]).AdaptiveParams()),
         },
         "summary": summarize(runs),
-        "runs": [asdict(r) | {"states": None} for r in runs],
+        "runs": [asdict(r) | {"states": None, "decisions": None} for r in runs],
         "elapsed_s": round(time.time() - t0, 1),
     }
     a.out.mkdir(parents=True, exist_ok=True)

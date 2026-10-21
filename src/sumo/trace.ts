@@ -29,7 +29,11 @@ export interface Trace {
   phases: { name: string; movements: string[] }[];
   frames: TraceFrame[];
   summary: Record<string, unknown>;
+  /** Смены фаз внутри окна записи с причинами (журнал решений контроллера и стража). */
+  decisions?: TraceDecision[];
 }
+
+export interface TraceDecision { time: number; from_phase: number; to_phase: number; controller: string; reason: string }
 
 export class TraceError extends Error {}
 
@@ -79,6 +83,10 @@ export interface ResultRow {
   completed: Stat; unfinished: Stat; demand_vehicles: Stat;
   collisions: number; teleports: number; conflict_steps: number;
   min_green_seen: number; min_yellow_seen: number; min_allred_seen: number;
+  /** Добавлено в эксперименте с журналом решений; в старых файлах может отсутствовать. */
+  p95_travel_time?: Stat; total_wait_veh_h?: Stat; mean_stops?: Stat; throughput_veh_h?: Stat;
+  worst_approach_wait?: Stat; max_wait_vehicle?: Stat; wait_by_approach?: Record<string, Stat>;
+  safety_overrides?: number; fallbacks?: number; decision_reasons?: Record<string, number>;
 }
 
 export interface Results {

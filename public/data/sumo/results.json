@@ -21,7 +21,7 @@
   ]
  },
  "sumo_version": "SUMO 1.28.0",
- "generated": "2026-10-21T09:59:50+00:00",
+ "generated": "2026-10-21T11:58:06+00:00",
  "params": {
   "loads_veh_h": {
    "low": {
@@ -129,7 +129,54 @@
    "conflict_steps": 0,
    "min_green_seen": 15.0,
    "min_yellow_seen": 3.0,
-   "min_allred_seen": 2.0
+   "min_allred_seen": 2.0,
+   "p95_travel_time": [
+    104.33,
+    0.58
+   ],
+   "total_wait_veh_h": [
+    10.44,
+    0.37
+   ],
+   "mean_stops": [
+    0.82,
+    0.01
+   ],
+   "throughput_veh_h": [
+    1342.57,
+    30.04
+   ],
+   "worst_approach_wait": [
+    36.76,
+    3.6
+   ],
+   "wait_by_approach": {
+    "N": [
+     28.67,
+     0.87
+    ],
+    "E": [
+     30.43,
+     0.9
+    ],
+    "S": [
+     36.76,
+     3.6
+    ],
+    "W": [
+     29.14,
+     1.33
+    ]
+   },
+   "max_wait_vehicle": [
+    105.0,
+    25.53
+   ],
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "decision_reasons": {
+    "фиксированный план": 456
+   }
   },
   {
    "load": "low",
@@ -173,7 +220,55 @@
    "conflict_steps": 0,
    "min_green_seen": 8.0,
    "min_yellow_seen": 3.0,
-   "min_allred_seen": 2.0
+   "min_allred_seen": 2.0,
+   "p95_travel_time": [
+    76.97,
+    0.06
+   ],
+   "total_wait_veh_h": [
+    5.29,
+    0.26
+   ],
+   "mean_stops": [
+    0.79,
+    0.01
+   ],
+   "throughput_veh_h": [
+    1346.53,
+    28.52
+   ],
+   "worst_approach_wait": [
+    22.33,
+    1.47
+   ],
+   "wait_by_approach": {
+    "N": [
+     16.53,
+     0.76
+    ],
+    "E": [
+     13.49,
+     0.25
+    ],
+    "S": [
+     22.33,
+     1.47
+    ],
+    "W": [
+     14.08,
+     0.98
+    ]
+   },
+   "max_wait_vehicle": [
+    77.67,
+    2.08
+   ],
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "decision_reasons": {
+    "разрыв потока": 757,
+    "защита от голодания": 4
+   }
   },
   {
    "load": "medium",
@@ -217,7 +312,54 @@
    "conflict_steps": 0,
    "min_green_seen": 15.0,
    "min_yellow_seen": 3.0,
-   "min_allred_seen": 2.0
+   "min_allred_seen": 2.0,
+   "p95_travel_time": [
+    111.67,
+    2.52
+   ],
+   "total_wait_veh_h": [
+    16.0,
+    0.75
+   ],
+   "mean_stops": [
+    0.9,
+    0.03
+   ],
+   "throughput_veh_h": [
+    1834.53,
+    13.74
+   ],
+   "worst_approach_wait": [
+    44.76,
+    6.65
+   ],
+   "wait_by_approach": {
+    "N": [
+     32.92,
+     1.75
+    ],
+    "E": [
+     35.23,
+     1.09
+    ],
+    "S": [
+     44.76,
+     6.65
+    ],
+    "W": [
+     30.17,
+     2.37
+    ]
+   },
+   "max_wait_vehicle": [
+    133.33,
+    28.11
+   ],
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "decision_reasons": {
+    "фиксированный план": 458
+   }
   },
   {
    "load": "medium",
@@ -261,7 +403,56 @@
    "conflict_steps": 0,
    "min_green_seen": 8.0,
    "min_yellow_seen": 3.0,
-   "min_allred_seen": 2.0
+   "min_allred_seen": 2.0,
+   "p95_travel_time": [
+    91.0,
+    2.65
+   ],
+   "total_wait_veh_h": [
+    9.65,
+    0.54
+   ],
+   "mean_stops": [
+    0.83,
+    0.02
+   ],
+   "throughput_veh_h": [
+    1834.2,
+    11.7
+   ],
+   "worst_approach_wait": [
+    30.69,
+    0.89
+   ],
+   "wait_by_approach": {
+    "N": [
+     21.62,
+     1.5
+    ],
+    "E": [
+     18.34,
+     1.71
+    ],
+    "S": [
+     30.69,
+     0.89
+    ],
+    "W": [
+     18.8,
+     0.55
+    ]
+   },
+   "max_wait_vehicle": [
+    96.0,
+    8.89
+   ],
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "decision_reasons": {
+    "разрыв потока": 631,
+    "максимум зелёного фазы": 7,
+    "защита от голодания": 1
+   }
   },
   {
    "load": "high",
@@ -305,7 +496,54 @@
    "conflict_steps": 0,
    "min_green_seen": 15.0,
    "min_yellow_seen": 3.0,
-   "min_allred_seen": 2.0
+   "min_allred_seen": 2.0,
+   "p95_travel_time": [
+    246.48,
+    43.4
+   ],
+   "total_wait_veh_h": [
+    44.0,
+    13.06
+   ],
+   "mean_stops": [
+    1.51,
+    0.3
+   ],
+   "throughput_veh_h": [
+    2219.63,
+    28.76
+   ],
+   "worst_approach_wait": [
+    125.21,
+    42.05
+   ],
+   "wait_by_approach": {
+    "N": [
+     50.65,
+     3.64
+    ],
+    "E": [
+     125.21,
+     42.05
+    ],
+    "S": [
+     96.57,
+     50.3
+    ],
+    "W": [
+     35.98,
+     3.05
+    ]
+   },
+   "max_wait_vehicle": [
+    254.67,
+    41.49
+   ],
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "decision_reasons": {
+    "фиксированный план": 479
+   }
   },
   {
    "load": "high",
@@ -349,7 +587,56 @@
    "conflict_steps": 0,
    "min_green_seen": 8.0,
    "min_yellow_seen": 3.0,
-   "min_allred_seen": 2.0
+   "min_allred_seen": 2.0,
+   "p95_travel_time": [
+    116.15,
+    1.88
+   ],
+   "total_wait_veh_h": [
+    18.72,
+    1.54
+   ],
+   "mean_stops": [
+    0.88,
+    0.01
+   ],
+   "throughput_veh_h": [
+    2267.27,
+    49.93
+   ],
+   "worst_approach_wait": [
+    44.75,
+    3.97
+   ],
+   "wait_by_approach": {
+    "N": [
+     33.6,
+     0.44
+    ],
+    "E": [
+     30.1,
+     1.87
+    ],
+    "S": [
+     44.75,
+     3.97
+    ],
+    "W": [
+     29.8,
+     2.93
+    ]
+   },
+   "max_wait_vehicle": [
+    123.0,
+    7.21
+   ],
+   "safety_overrides": 0,
+   "fallbacks": 0,
+   "decision_reasons": {
+    "разрыв потока": 395,
+    "максимум зелёного фазы": 60,
+    "защита от голодания": 16
+   }
   }
  ],
  "runs": [
@@ -381,6 +668,29 @@
    "min_allred_seen": 2.0,
    "sim_end": 3707.0,
    "measured_trips": 1234,
+   "p95_travel_time": 104.0,
+   "total_wait_veh_h": 10.43,
+   "mean_stops": 0.82,
+   "throughput_veh_h": 1340.7,
+   "wait_by_approach": {
+    "N": 28.78,
+    "E": 29.51,
+    "S": 38.58,
+    "W": 29.52
+   },
+   "max_wait_by_approach": {
+    "N": 75.0,
+    "E": 72.0,
+    "S": 83.0,
+    "W": 74.0
+   },
+   "decisions": null,
+   "decision_reasons": {
+    "фиксированный план": 152
+   },
+   "fallback_at": null,
+   "fallback_reason": null,
+   "safety_overrides": 0,
    "fixed_cycle": {
     "greens": [
      22.0,
@@ -419,6 +729,29 @@
    "min_allred_seen": 2.0,
    "sim_end": 3654.0,
    "measured_trips": 1234,
+   "p95_travel_time": 77.0,
+   "total_wait_veh_h": 5.26,
+   "mean_stops": 0.8,
+   "throughput_veh_h": 1342.9,
+   "wait_by_approach": {
+    "N": 17.05,
+    "E": 13.46,
+    "S": 24.0,
+    "W": 13.07
+   },
+   "max_wait_by_approach": {
+    "N": 61.0,
+    "E": 53.0,
+    "S": 76.0,
+    "W": 56.0
+   },
+   "decisions": null,
+   "decision_reasons": {
+    "разрыв потока": 254
+   },
+   "fallback_at": null,
+   "fallback_reason": null,
+   "safety_overrides": 0,
    "fixed_cycle": null,
    "states": null
   },
@@ -450,6 +783,29 @@
    "min_allred_seen": 2.0,
    "sim_end": 3684.0,
    "measured_trips": 1263,
+   "p95_travel_time": 105.0,
+   "total_wait_veh_h": 10.81,
+   "mean_stops": 0.83,
+   "throughput_veh_h": 1373.5,
+   "wait_by_approach": {
+    "N": 29.49,
+    "E": 31.31,
+    "S": 39.09,
+    "W": 27.67
+   },
+   "max_wait_by_approach": {
+    "N": 71.0,
+    "E": 83.0,
+    "S": 133.0,
+    "W": 73.0
+   },
+   "decisions": null,
+   "decision_reasons": {
+    "фиксированный план": 152
+   },
+   "fallback_at": null,
+   "fallback_reason": null,
+   "safety_overrides": 0,
    "fixed_cycle": {
     "greens": [
      22.0,
@@ -488,6 +844,30 @@
    "min_allred_seen": 2.0,
    "sim_end": 3668.0,
    "measured_trips": 1263,
+   "p95_travel_time": 76.9,
+   "total_wait_veh_h": 5.56,
+   "mean_stops": 0.78,
+   "throughput_veh_h": 1376.7,
+   "wait_by_approach": {
+    "N": 16.88,
+    "E": 13.76,
+    "S": 21.75,
+    "W": 15.03
+   },
+   "max_wait_by_approach": {
+    "N": 56.0,
+    "E": 59.0,
+    "S": 80.0,
+    "W": 61.0
+   },
+   "decisions": null,
+   "decision_reasons": {
+    "разрыв потока": 249,
+    "защита от голодания": 2
+   },
+   "fallback_at": null,
+   "fallback_reason": null,
+   "safety_overrides": 0,
    "fixed_cycle": null,
    "states": null
   },
@@ -519,6 +899,29 @@
    "min_allred_seen": 2.0,
    "sim_end": 3684.0,
    "measured_trips": 1210,
+   "p95_travel_time": 104.0,
+   "total_wait_veh_h": 10.07,
+   "mean_stops": 0.81,
+   "throughput_veh_h": 1313.5,
+   "wait_by_approach": {
+    "N": 27.75,
+    "E": 30.46,
+    "S": 32.61,
+    "W": 30.24
+   },
+   "max_wait_by_approach": {
+    "N": 70.0,
+    "E": 73.0,
+    "S": 99.0,
+    "W": 74.0
+   },
+   "decisions": null,
+   "decision_reasons": {
+    "фиксированный план": 152
+   },
+   "fallback_at": null,
+   "fallback_reason": null,
+   "safety_overrides": 0,
    "fixed_cycle": {
     "greens": [
      22.0,
@@ -557,6 +960,30 @@
    "min_allred_seen": 2.0,
    "sim_end": 3668.0,
    "measured_trips": 1210,
+   "p95_travel_time": 77.0,
+   "total_wait_veh_h": 5.04,
+   "mean_stops": 0.8,
+   "throughput_veh_h": 1320.0,
+   "wait_by_approach": {
+    "N": 15.65,
+    "E": 13.26,
+    "S": 21.23,
+    "W": 14.13
+   },
+   "max_wait_by_approach": {
+    "N": 70.0,
+    "E": 60.0,
+    "S": 77.0,
+    "W": 53.0
+   },
+   "decisions": null,
+   "decision_reasons": {
+    "разрыв потока": 254,
+    "защита от голодания": 2
+   },
+   "fallback_at": null,
+   "fallback_reason": null,
+   "safety_overrides": 0,
    "fixed_cycle": null,
    "states": null
   },
@@ -588,6 +1015,29 @@
    "min_allred_seen": 2.0,
    "sim_end": 3709.0,
    "measured_trips": 1687,
+   "p95_travel_time": 114.0,
+   "total_wait_veh_h": 16.75,
+   "mean_stops": 0.92,
+   "throughput_veh_h": 1832.7,
+   "wait_by_approach": {
+    "N": 34.89,
+    "E": 35.25,
+    "S": 47.64,
+    "W": 32.78
+   },
+   "max_wait_by_approach": {
+    "N": 122.0,
+    "E": 99.0,
+    "S": 147.0,
+    "W": 89.0
+   },
+   "decisions": null,
+   "decision_reasons": {
+    "фиксированный план": 153
+   },
+   "fallback_at": null,
+   "fallback_reason": null,
+   "safety_overrides": 0,
    "fixed_cycle": {
     "greens": [
      22.0,
@@ -626,6 +1076,31 @@
    "min_allred_seen": 2.0,
    "sim_end": 3678.0,
    "measured_trips": 1687,
+   "p95_travel_time": 93.0,
+   "total_wait_veh_h": 9.83,
+   "mean_stops": 0.82,
+   "throughput_veh_h": 1840.4,
+   "wait_by_approach": {
+    "N": 21.93,
+    "E": 19.14,
+    "S": 30.95,
+    "W": 18.75
+   },
+   "max_wait_by_approach": {
+    "N": 88.0,
+    "E": 80.0,
+    "S": 106.0,
+    "W": 74.0
+   },
+   "decisions": null,
+   "decision_reasons": {
+    "разрыв потока": 207,
+    "максимум зелёного фазы": 4,
+    "защита от голодания": 1
+   },
+   "fallback_at": null,
+   "fallback_reason": null,
+   "safety_overrides": 0,
    "fixed_cycle": null,
    "states": null
   },
@@ -657,6 +1132,29 @@
    "min_allred_seen": 2.0,
    "sim_end": 3705.0,
    "measured_trips": 1674,
+   "p95_travel_time": 109.0,
+   "total_wait_veh_h": 15.26,
+   "mean_stops": 0.87,
+   "throughput_veh_h": 1821.8,
+   "wait_by_approach": {
+    "N": 31.55,
+    "E": 36.31,
+    "S": 37.15,
+    "W": 28.15
+   },
+   "max_wait_by_approach": {
+    "N": 86.0,
+    "E": 95.0,
+    "S": 101.0,
+    "W": 74.0
+   },
+   "decisions": null,
+   "decision_reasons": {
+    "фиксированный план": 152
+   },
+   "fallback_at": null,
+   "fallback_reason": null,
+   "safety_overrides": 0,
    "fixed_cycle": {
     "greens": [
      22.0,
@@ -695,6 +1193,29 @@
    "min_allred_seen": 2.0,
    "sim_end": 3675.0,
    "measured_trips": 1674,
+   "p95_travel_time": 88.0,
+   "total_wait_veh_h": 9.04,
+   "mean_stops": 0.82,
+   "throughput_veh_h": 1820.7,
+   "wait_by_approach": {
+    "N": 19.99,
+    "E": 16.38,
+    "S": 31.42,
+    "W": 18.28
+   },
+   "max_wait_by_approach": {
+    "N": 76.0,
+    "E": 58.0,
+    "S": 89.0,
+    "W": 67.0
+   },
+   "decisions": null,
+   "decision_reasons": {
+    "разрыв потока": 215
+   },
+   "fallback_at": null,
+   "fallback_reason": null,
+   "safety_overrides": 0,
    "fixed_cycle": null,
    "states": null
   },
@@ -726,6 +1247,29 @@
    "min_allred_seen": 2.0,
    "sim_end": 3708.0,
    "measured_trips": 1688,
+   "p95_travel_time": 112.0,
+   "total_wait_veh_h": 15.99,
+   "mean_stops": 0.9,
+   "throughput_veh_h": 1849.1,
+   "wait_by_approach": {
+    "N": 32.31,
+    "E": 34.13,
+    "S": 49.48,
+    "W": 29.57
+   },
+   "max_wait_by_approach": {
+    "N": 99.0,
+    "E": 106.0,
+    "S": 152.0,
+    "W": 84.0
+   },
+   "decisions": null,
+   "decision_reasons": {
+    "фиксированный план": 153
+   },
+   "fallback_at": null,
+   "fallback_reason": null,
+   "safety_overrides": 0,
    "fixed_cycle": {
     "greens": [
      22.0,
@@ -764,6 +1308,30 @@
    "min_allred_seen": 2.0,
    "sim_end": 3660.0,
    "measured_trips": 1688,
+   "p95_travel_time": 92.0,
+   "total_wait_veh_h": 10.07,
+   "mean_stops": 0.85,
+   "throughput_veh_h": 1841.5,
+   "wait_by_approach": {
+    "N": 22.94,
+    "E": 19.5,
+    "S": 29.7,
+    "W": 19.37
+   },
+   "max_wait_by_approach": {
+    "N": 71.0,
+    "E": 77.0,
+    "S": 93.0,
+    "W": 86.0
+   },
+   "decisions": null,
+   "decision_reasons": {
+    "разрыв потока": 209,
+    "максимум зелёного фазы": 3
+   },
+   "fallback_at": null,
+   "fallback_reason": null,
+   "safety_overrides": 0,
    "fixed_cycle": null,
    "states": null
   },
@@ -795,6 +1363,29 @@
    "min_allred_seen": 2.0,
    "sim_end": 3860.0,
    "measured_trips": 2049,
+   "p95_travel_time": 269.0,
+   "total_wait_veh_h": 38.35,
+   "mean_stops": 1.38,
+   "throughput_veh_h": 2200.4,
+   "wait_by_approach": {
+    "N": 50.14,
+    "E": 114.73,
+    "S": 53.34,
+    "W": 36.74
+   },
+   "max_wait_by_approach": {
+    "N": 156.0,
+    "E": 262.0,
+    "S": 129.0,
+    "W": 111.0
+   },
+   "decisions": null,
+   "decision_reasons": {
+    "фиксированный план": 159
+   },
+   "fallback_at": null,
+   "fallback_reason": null,
+   "safety_overrides": 0,
    "fixed_cycle": {
     "greens": [
      22.0,
@@ -833,6 +1424,31 @@
    "min_allred_seen": 2.0,
    "sim_end": 3676.0,
    "measured_trips": 2049,
+   "p95_travel_time": 114.0,
+   "total_wait_veh_h": 17.69,
+   "mean_stops": 0.89,
+   "throughput_veh_h": 2242.9,
+   "wait_by_approach": {
+    "N": 33.85,
+    "E": 29.4,
+    "S": 41.43,
+    "W": 27.74
+   },
+   "max_wait_by_approach": {
+    "N": 119.0,
+    "E": 100.0,
+    "S": 121.0,
+    "W": 94.0
+   },
+   "decisions": null,
+   "decision_reasons": {
+    "разрыв потока": 135,
+    "максимум зелёного фазы": 21,
+    "защита от голодания": 6
+   },
+   "fallback_at": null,
+   "fallback_reason": null,
+   "safety_overrides": 0,
    "fixed_cycle": null,
    "states": null
   },
@@ -864,6 +1480,29 @@
    "min_allred_seen": 2.0,
    "sim_end": 3928.0,
    "measured_trips": 2119,
+   "p95_travel_time": 274.0,
+   "total_wait_veh_h": 58.93,
+   "mean_stops": 1.85,
+   "throughput_veh_h": 2252.7,
+   "wait_by_approach": {
+    "N": 54.52,
+    "E": 171.51,
+    "S": 151.77,
+    "W": 38.57
+   },
+   "max_wait_by_approach": {
+    "N": 134.0,
+    "E": 270.0,
+    "S": 292.0,
+    "W": 107.0
+   },
+   "decisions": null,
+   "decision_reasons": {
+    "фиксированный план": 162
+   },
+   "fallback_at": null,
+   "fallback_reason": null,
+   "safety_overrides": 0,
    "fixed_cycle": {
     "greens": [
      22.0,
@@ -902,6 +1541,31 @@
    "min_allred_seen": 2.0,
    "sim_end": 3696.0,
    "measured_trips": 2119,
+   "p95_travel_time": 117.0,
+   "total_wait_veh_h": 20.49,
+   "mean_stops": 0.88,
+   "throughput_veh_h": 2324.7,
+   "wait_by_approach": {
+    "N": 33.09,
+    "E": 32.22,
+    "S": 49.15,
+    "W": 33.16
+   },
+   "max_wait_by_approach": {
+    "N": 115.0,
+    "E": 96.0,
+    "S": 131.0,
+    "W": 95.0
+   },
+   "decisions": null,
+   "decision_reasons": {
+    "разрыв потока": 118,
+    "максимум зелёного фазы": 22,
+    "защита от голодания": 5
+   },
+   "fallback_at": null,
+   "fallback_reason": null,
+   "safety_overrides": 0,
    "fixed_cycle": null,
    "states": null
   },
@@ -933,6 +1597,29 @@
    "min_allred_seen": 2.0,
    "sim_end": 3835.0,
    "measured_trips": 2052,
+   "p95_travel_time": 196.45,
+   "total_wait_veh_h": 34.71,
+   "mean_stops": 1.29,
+   "throughput_veh_h": 2205.8,
+   "wait_by_approach": {
+    "N": 47.3,
+    "E": 89.39,
+    "S": 84.59,
+    "W": 32.62
+   },
+   "max_wait_by_approach": {
+    "N": 137.0,
+    "E": 208.0,
+    "S": 210.0,
+    "W": 78.0
+   },
+   "decisions": null,
+   "decision_reasons": {
+    "фиксированный план": 158
+   },
+   "fallback_at": null,
+   "fallback_reason": null,
+   "safety_overrides": 0,
    "fixed_cycle": {
     "greens": [
      22.0,
@@ -971,9 +1658,34 @@
    "min_allred_seen": 2.0,
    "sim_end": 3685.0,
    "measured_trips": 2052,
+   "p95_travel_time": 117.45,
+   "total_wait_veh_h": 17.97,
+   "mean_stops": 0.88,
+   "throughput_veh_h": 2234.2,
+   "wait_by_approach": {
+    "N": 33.85,
+    "E": 28.69,
+    "S": 43.66,
+    "W": 28.5
+   },
+   "max_wait_by_approach": {
+    "N": 111.0,
+    "E": 117.0,
+    "S": 114.0,
+    "W": 117.0
+   },
+   "decisions": null,
+   "decision_reasons": {
+    "разрыв потока": 142,
+    "максимум зелёного фазы": 17,
+    "защита от голодания": 5
+   },
+   "fallback_at": null,
+   "fallback_reason": null,
+   "safety_overrides": 0,
    "fixed_cycle": null,
    "states": null
   }
  ],
- "elapsed_s": 416.9
+ "elapsed_s": 417.4
 }

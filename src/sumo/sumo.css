@@ -29,3 +29,6 @@
 @media (max-width: 860px) {
   .sumo-views, .sumo-cols { grid-template-columns: 1fr; }
 }
+.sumo-decisions { list-style: none; margin: 6px 0 0; padding: 0; font-size: 12px; color: var(--text-secondary); display: grid; gap: 2px; min-height: 3.6em; }
+.sumo-decisions li { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sumo-decisions .mono { color: var(--text-primary); }
