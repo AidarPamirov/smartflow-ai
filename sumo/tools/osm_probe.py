@@ -3,6 +3,7 @@
 
     python sumo/tools/osm_probe.py "Чуй проспект" "проспект Манаса" > probe.json
     python sumo/tools/osm_probe.py --restrictions 42.877856 74.562291 > restrictions.json
+    python sumo/tools/osm_probe.py --geometry 42.877856 74.562291 > geometry.json
 
 Ищет узлы, общие для двух улиц, и выводит линии, проходящие через них (теги lanes, oneway,
 turn:lanes, maxspeed, начальная геометрия), а также светофоры в радиусе 60 м.
@@ -139,7 +140,29 @@ def restrictions(lat: float, lon: float, radius: float = 80.0) -> dict:
     }
 
 
+def geometry(lat: float, lon: float, radius: float = 160.0) -> dict:
+    """Все автомобильные линии в радиусе: теги и полная геометрия (для сравнения с моделью SUMO)."""
+    q = f"""[out:json][timeout:90];
+way(around:{radius},{lat},{lon})[highway~"^(motorway|trunk|primary|secondary|tertiary|unclassified|residential)(_link)?$"];
+out body geom;
+node(around:{radius},{lat},{lon})[highway=traffic_signals];
+out body;"""
+    data = overpass(q)
+    return {
+        "center": {"lat": lat, "lon": lon}, "radius_m": radius, "osm_base": data.get("osm3s", {}).get("timestamp_osm_base"),
+        "ways": [{"id": w["id"], "tags": {k: v for k, v in w.get("tags", {}).items() if k in TAGS},
+                  "geometry": [[p["lat"], p["lon"]] for p in w.get("geometry", [])]}
+                 for w in data["elements"] if w["type"] == "way"],
+        "traffic_signals": [{"id": n["id"], "lat": n["lat"], "lon": n["lon"], "tags": n.get("tags", {})}
+                            for n in data["elements"] if n["type"] == "node"],
+        "attribution": "© OpenStreetMap contributors, ODbL",
+    }
+
+
 if __name__ == "__main__":
+    if len(sys.argv) >= 4 and sys.argv[1] == "--geometry":
+        json.dump(geometry(float(sys.argv[2]), float(sys.argv[3])), sys.stdout, ensure_ascii=False, indent=1)
+        raise SystemExit
     if len(sys.argv) >= 4 and sys.argv[1] == "--restrictions":
         json.dump(restrictions(float(sys.argv[2]), float(sys.argv[3])), sys.stdout, ensure_ascii=False, indent=1)
         raise SystemExit

@@ -20,6 +20,7 @@ jobs:
         run: |
           mkdir -p report
           python sumo/tools/osm_probe.py --restrictions 42.877856 74.562291 > report/restrictions.json 2> report/restrictions.log || true
+          python sumo/tools/osm_probe.py --geometry 42.877856 74.562291 > report/geometry.json 2> report/geometry.log || true
       - if: always()
         run: |
           cd report
