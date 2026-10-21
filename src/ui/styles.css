@@ -217,3 +217,7 @@ summary { cursor: pointer; color: var(--text-secondary); }
   .kpis { grid-template-columns: 1fr 1fr; }
   .kpi-value { font-size: 18px; }
 }
+
+.boot { position: fixed; inset: 0; display: grid; place-items: center; background: #0f141b; color: #8d9bb0; font-size: 14px; }
+.top-link { font-size: 13px; color: var(--accent); text-decoration: none; }
+.top-link:hover { text-decoration: underline; }
