@@ -5,6 +5,7 @@ import './map.css';
 import { TrafficPanel } from '../traffic/TrafficPanel';
 import { useCity } from '../traffic/useCity';
 import { SignalPanel } from '../signals/SignalPanel';
+import { CameraPanel } from '../cameras/CameraPanel';
 import { LayersPanel } from './LayersPanel';
 import { ATTRIBUTION, BISHKEK, DEFAULT_BUILDING_HEIGHT, LEVEL_HEIGHT, buildStyle, buildingVisibility, type MapMode } from './style';
 
@@ -153,29 +154,32 @@ export default function MapApp() {
   const disabled = !mapObj;
   const { ctrl, st } = useCity(mapObj, status === 'ready');
   const selected = st?.signals.selected ?? null;
+  const selectedCam = st?.cameras.selected ?? null;
 
   // ссылка на светофор: #signal=tls-…
   const signalsReady = st?.signals.phase === 'ready';
   useEffect(() => {
     if (!signalsReady || !ctrl) return;
     const go = () => {
-      const m = /^#signal=([\w-]+)$/.exec(location.hash);
-      if (m) ctrl.selectSignalById(m[1]);
+      const m = /^#(signal|camera)=([\w-]+)$/.exec(location.hash);
+      if (m?.[1] === 'signal') ctrl.selectSignalById(m[2]);
+      if (m?.[1] === 'camera') ctrl.selectCameraById(m[2]);
     };
     go();
     window.addEventListener('hashchange', go);
     return () => window.removeEventListener('hashchange', go);
   }, [signalsReady, ctrl]);
 
+  const anySelected = !!(selected || selectedCam);
   useEffect(() => {
-    if (!selected || !ctrl) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') ctrl.selectSignal(null); };
+    if (!anySelected || !ctrl) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { ctrl.selectSignal(null); ctrl.selectCamera(null); } };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [selected, ctrl]);
+  }, [anySelected, ctrl]);
 
   return (
-    <div className={`map-root${selected ? ' has-sel' : ''}`}>
+    <div className={`map-root${anySelected ? ' has-sel' : ''}`}>
       <div ref={containerRef} className="map-canvas" aria-label="Интерактивная карта Бишкека" />
 
       <header className="map-panel map-head">
@@ -186,7 +190,7 @@ export default function MapApp() {
             <p>Бишкек · цифровой двойник дорожной сети</p>
           </div>
         </div>
-        <span className="map-stage">Этап 4 · светофоры</span>
+        <span className="map-stage">Этап 4 · светофоры и камеры</span>
       </header>
 
       <nav className="map-panel map-controls" aria-label="Управление картой">
@@ -235,6 +239,7 @@ export default function MapApp() {
         <p><b>Высота зданий:</b> из OSM — тег <code>height</code> или этажность × {fmt(LEVEL_HEIGHT, 2)} м. Если данных нет, здание показано условно низким ({DEFAULT_BUILDING_HEIGHT} м).</p>
         <p><b>Трафик:</b> синтетический демонстрационный слой — случайные поездки по реальной сети дорог OSM. Это не данные о реальном движении.</p>
         <p><b>Светофоры:</b> стоят только там, где светофор отмечен в OSM. Фазы и очереди — модель, а не данные городских систем: к реальным светофорам и камерам проект не подключён.</p>
+        <p><b>Камеры:</b> виртуальные, расставлены по правилам модели. Считают по синтетическому трафику; камера ремня — только макет.</p>
         <p className="map-hint">Вращение и наклон: правая кнопка мыши или Ctrl + перетаскивание; на телефоне — двумя пальцами.</p>
         <a className="map-link" href="#lab">Лаборатория перекрёстка →</a>
         <a className="map-link" href="#sumo">Эксперимент SUMO: перекрёсток Чуй × Манаса →</a>
@@ -243,6 +248,7 @@ export default function MapApp() {
       </div>
 
       {selected && ctrl && <SignalPanel ctrl={ctrl} sel={selected} />}
+      {selectedCam && ctrl && <CameraPanel ctrl={ctrl} sel={selectedCam} />}
 
       <TrafficPanel ctrl={ctrl} st={st} mapReady={status === 'ready'} />
 

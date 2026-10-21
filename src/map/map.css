@@ -316,3 +316,22 @@
   .sig-panel { top: calc(96px + env(safe-area-inset-top, 0px)); left: 12px; right: 12px; width: auto; max-height: calc(100% - 96px - 230px); z-index: 4; }
   .has-sel .map-side { display: none; }
 }
+
+/* Камеры и загруженность */
+.lay-cam { display: inline-block; width: 9px; height: 9px; border-radius: 50%; border: 2px solid transparent; }
+.lay-cong { margin-top: 6px; }
+.lay-legend i.bar { width: 16px; height: 4px; border-radius: 2px; border: 0; }
+.lay-note { flex-basis: 100%; color: var(--map-muted); font-size: 11.5px; }
+.cam-panel h2 { display: flex; align-items: center; gap: 8px; }
+.cam-dot { display: inline-block; width: 11px; height: 11px; border-radius: 50%; border: 2px solid transparent; }
+.cam-panel .sig-hint a { color: var(--map-accent); }
+.cam-metrics { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 0; font-size: 12.5px; }
+.cam-metrics dt { color: var(--map-muted); }
+.cam-metrics dd { margin: 0; text-align: right; font-family: var(--map-mono); font-variant-numeric: tabular-nums; }
+.cam-bad { color: var(--map-err); }
+.cam-weak { opacity: 0.7; }
+.cam-settings { display: grid; gap: 8px; border-top: 1px solid var(--map-border); padding-top: 8px; color: var(--map-muted); }
+.cam-settings label { display: grid; gap: 4px; }
+.cam-settings label.cam-check { display: flex; align-items: center; gap: 6px; color: var(--map-text); }
+.cam-settings input[type='range'] { width: 100%; accent-color: var(--map-accent); }
+.cam-settings b { color: var(--map-text); font-weight: 600; }

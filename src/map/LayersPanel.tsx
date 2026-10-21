@@ -3,6 +3,9 @@ import type { TrafficController, TrafficState } from '../traffic/controller';
 import { MODE_LABEL } from '../signals/SignalPanel';
 import type { ControlMode } from '../signals/runtime';
 import { LIGHT_COLOR, MODE_COLOR, STATUS_COLOR, type SignalFilter } from '../signals/signalLayer';
+import { CAMERA_COLOR, type CameraFilter } from '../cameras/cameraLayer';
+import { TYPE_LABEL } from '../cameras/types';
+import { LEVEL_COLOR, LEVEL_LABEL } from '../traffic/congestion';
 import type { ItemStatus } from '../signals/system';
 
 const STATUS_NAME: Record<ItemStatus, string> = { working: 'работает', inactive: 'выключен', no_data: 'нет данных' };
@@ -25,7 +28,16 @@ export function LayersPanel({ ctrl, st }: { ctrl: TrafficController | null; st: 
       <div className="lay-row">
         <label><input type="checkbox" checked={!!sg?.visible} disabled={!ready} onChange={(e) => ctrl?.setSignalsVisible(e.target.checked)} /> Светофоры</label>
         <label><input type="checkbox" checked={!!st?.trafficVisible} disabled={st?.phase !== 'ready'} onChange={(e) => ctrl?.setTrafficVisible(e.target.checked)} /> Машины (демо)</label>
+        <label><input type="checkbox" checked={!!st?.cameras.visible} disabled={st?.cameras.phase !== 'ready'} onChange={(e) => ctrl?.setCamerasVisible(e.target.checked)} /> Камеры</label>
+        <label><input type="checkbox" checked={!!st?.congestion.visible} disabled={st?.phase !== 'ready'} onChange={(e) => ctrl?.setCongestionVisible(e.target.checked)} /> Загруженность</label>
       </div>
+      {st?.congestion.visible && (
+        <div className="lay-legend lay-cong">
+          {LEVEL_LABEL.map((l, i) => <span key={l}><i className="bar" style={{ background: LEVEL_COLOR[i] }} />{l}{st.congestion.histogram ? <span className="lay-n">{st.congestion.histogram[i]}</span> : null}</span>)}
+          <span className="lay-note">доля условной свободной скорости по синтетическим машинам; без машин участок не окрашен</span>
+        </div>
+      )}
+      {st?.cameras.phase === 'error' && <p className="lay-err">Камеры недоступны: {st.cameras.error}.</p>}
       {sg?.phase === 'loading' && <p className="lay-muted">Загружаю светофоры из OSM…</p>}
       {sg?.phase === 'error' && <p className="lay-err">Светофоры недоступны: {sg.error}. Трафик едет без регулирования.</p>}
       {ready && c && f && sg.stats && (
@@ -52,6 +64,21 @@ export function LayersPanel({ ctrl, st }: { ctrl: TrafficController | null; st: 
               ))}
             </div>
           </div>
+          {st.cameras.counts && (
+            <div className="lay-block">
+              <div className="lay-title">Камеры (виртуальные)</div>
+              <div className="lay-row">
+                {(Object.keys(TYPE_LABEL) as (keyof CameraFilter)[]).map((k) => (
+                  <label key={k}>
+                    <input type="checkbox" checked={st.cameras.filter[k]} onChange={(e) => ctrl.setCameraFilter({ ...st.cameras.filter, [k]: e.target.checked })} />
+                    <i className="lay-cam" style={{ background: k === 'seatbelt' ? 'transparent' : CAMERA_COLOR[k], borderColor: CAMERA_COLOR[k] }} />
+                    {TYPE_LABEL[k].replace('Камера ', '')} <span className="lay-n">{st.cameras.counts![k]}</span>
+                  </label>
+                ))}
+              </div>
+              <p className="lay-muted">Поток, скорость и линия — по синтетическому трафику; ремень — визуальный макет без модели. Реальных видеопотоков нет.</p>
+            </div>
+          )}
           <div className="lay-block lay-legend">
             <div className="lay-title">Легенда</div>
             <span><i style={{ background: MODE_COLOR.fixed }} />Baseline</span>
