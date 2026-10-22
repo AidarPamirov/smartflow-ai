@@ -124,6 +124,12 @@ python -m smartflow_cv.detrac_eval --out ../public/data/cv/cv-real-results.json 
 # тестовое видео: записать синтетическое и обработать его как запись с камеры
 python -m smartflow_cv.synthetic --out demo --seconds 20
 python -m smartflow_cv.run --video demo/synthetic.avi --calibration demo/calibration.json --config demo/camera.json --out events.json
+
+# то же, но с видео-разметкой, которое можно открыть в любом плеере
+python -m smartflow_cv.run --video demo/synthetic.avi --calibration demo/calibration.json --config demo/camera.json --save-video demo/annotated.mp4
+
+# своё видео с нейросетью YOLOX-tiny (веса ~20 МБ скачаются в ~/.cache при первом запуске)
+python -m smartflow_cv.run --video clip.mp4 --detector yolox --save-video clip-annotated.mp4
 ```
 
 Своё видео: нужна калибровка этой камеры (JSON с гомографией, см. `calibration.py`) и `camera.json` с линией и зоной в метрах на дороге. Без калибровки работают только детекция и треки. Если размер кадра не совпадает с калибровкой, обработка останавливается с ошибкой: неверные метры хуже, чем никаких.

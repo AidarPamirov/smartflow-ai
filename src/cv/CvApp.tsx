@@ -158,7 +158,13 @@ function Report({ data }: { data: CvResults }) {
 python -m unittest discover -s tests -t .
 python -m smartflow_cv.evaluate --out ../public/data/cv
 python -m smartflow_cv.detrac_eval --out ../public/data/cv/cv-real-results.json   # скачивает кадры UA-DETRAC в кэш
-python -m smartflow_cv.run --video clip.mp4 --calibration calib.json --config camera.json`}</pre>
+
+# посмотреть, как работают модули: записать тестовое видео и получить его копию с разметкой
+python -m smartflow_cv.synthetic --out demo --seconds 20
+python -m smartflow_cv.run --video demo/synthetic.avi --calibration demo/calibration.json --config demo/camera.json --save-video demo/annotated.mp4
+
+# своё видео (без калибровки — только детекция и треки), нейросетевой детектор
+python -m smartflow_cv.run --video clip.mp4 --detector yolox --save-video clip-annotated.mp4`}</pre>
         <p className="hint">Сгенерировано {new Date(data.generated).toLocaleString('ru-RU')}, расчёт занял {nf(data.elapsed_s / 60, 1)} мин.</p>
       </section>
     </main>

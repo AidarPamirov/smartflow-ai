@@ -84,5 +84,23 @@ class PrimeTests(unittest.TestCase):
         self.assertLessEqual(abs(y1 - 80), 3)
 
 
+class AnnotatedVideoTests(unittest.TestCase):
+    def test_save_video_writes_annotated_frames(self):
+        import cv2
+        from smartflow_cv.calibration import Calibration
+        from smartflow_cv.run import load_config, process_video
+        from smartflow_cv.synthetic import write_demo
+        with tempfile.TemporaryDirectory() as d:
+            files = write_demo(d, seconds=2.0)
+            out = Path(d) / "annotated.mp4"
+            r = process_video(Path(files["video"]), load_config(Path(files["config"])), Calibration.load(Path(files["calibration"])),
+                              save_video=out)
+            cap = cv2.VideoCapture(str(out))
+            n = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            cap.release()
+            self.assertEqual(n, r["source"]["frames"])
+            self.assertIn("записано", r["note"])
+
+
 if __name__ == "__main__":
     unittest.main()
