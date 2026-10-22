@@ -71,7 +71,7 @@ function Report({ data }: { data: CvResults }) {
       <section className="panel">
         <h2>Модули</h2>
         <div className="table-wrap">
-          <table>
+          <table className="cv-modules">
             <thead><tr><th>Модуль</th><th>Как устроен</th><th>Проверен на</th></tr></thead>
             <tbody>
               {data.modules.map((m) => (

@@ -7,3 +7,8 @@
 .cv-shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
 .cv-shots figure { margin: 0; }
 .cv-shots img { width: 100%; height: auto; display: block; border-radius: 8px; border: 1px solid var(--border); }
+
+/* Таблица модулей: длинные описания переносятся, без горизонтальной прокрутки */
+.cv-modules td { white-space: normal; vertical-align: top; }
+.cv-modules td:first-child { white-space: nowrap; }
+.cv-modules td:last-child { min-width: 180px; max-width: 320px; }
