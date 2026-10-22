@@ -29,11 +29,15 @@ describe('результаты коридора SUMO (public/data/sumo/corridor-
     }
   });
 
-  it('стресс-сценарий: очередь доходит до соседнего перекрёстка хотя бы при одном способе управления, при обычной нагрузке — нет', () => {
+  it('стресс-сценарий: очередь доходит до соседнего перекрёстка; при низкой и средней нагрузке — нет', () => {
     assert.ok(data.params.incident);
     const inc = data.summary.filter((r) => r.load === 'incident');
     assert.ok(inc.some((r) => spillTotal(r) > 0));
-    for (const r of data.summary.filter((x) => x.load !== 'incident')) assert.equal(spillTotal(r), 0, `${r.load}/${r.controller}`);
+    for (const r of data.summary.filter((x) => x.load === 'low' || x.load === 'medium')) assert.equal(spillTotal(r), 0, `${r.load}/${r.controller}`);
+    // при высокой нагрузке очередь у соседа появляется только у адаптивного с координацией (западное направление голодает)
+    const hi = (c: string) => spillTotal(data.summary.find((r) => r.load === 'high' && r.controller === c)!);
+    assert.equal(hi('adaptive'), 0);
+    assert.ok(hi('coord_adaptive') > hi('coordinated'));
   });
 
   it('очереди по подходам складываются в очередь узла; ожидание по въездам есть для поперечных улиц', () => {

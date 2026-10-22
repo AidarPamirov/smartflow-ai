@@ -1,0 +1,1190 @@
+{
+ "format": "smartflow-cv-real/1",
+ "generated": "2026-10-21T22:08:46+00:00",
+ "dataset": {
+  "name": "UA-DETRAC (обучающая часть)",
+  "paper": "https://arxiv.org/abs/1511.04136",
+  "copy": "https://huggingface.co/datasets/abhineet123/ua_detrac",
+  "sequences": [
+   "MVI_20011",
+   "MVI_20051",
+   "MVI_20065",
+   "MVI_39821",
+   "MVI_40152",
+   "MVI_40191",
+   "MVI_40213",
+   "MVI_40752",
+   "MVI_40992",
+   "MVI_63554"
+  ],
+  "frames_per_sequence": 300,
+  "fps": 25.0,
+  "note": "Кадры в проект не копируются и не публикуются; сохранены только метрики."
+ },
+ "detectors": {
+  "background": "background-subtraction (OpenCV)",
+  "yolox_tiny": "YOLOX-tiny (COCO, Apache-2.0), OpenCV DNN, вход 416×416, порог 0,3; без дообучения"
+ },
+ "protocol": {
+  "iou": [
+   0.5,
+   0.3
+  ],
+  "ignored_regions": "детекции с центром в игнорируемой области не оцениваются",
+  "warmup_frames": 10,
+  "background_prime": "фон классического детектора — медиана каждого 10-го кадра отрезка",
+  "road_mask": "+mask — учитываются только детекции с центром в маске дороги (где по разметке ездят машины; заменяет многоугольник, который рисуют один раз на камеру)",
+  "count_line": "горизонталь на 60 % высоты кадра; трек считается, если нижняя середина рамки пересекла линию",
+  "cpu_note": "время на кадр — на облачном сервере с 2 ядрами при параллельной нагрузке, ориентир, а не замер для ноутбука"
+ },
+ "total": {
+  "background": {
+   "iou05": {
+    "tp": 5258,
+    "fp": 94528,
+    "fn": 17064,
+    "precision": 0.053,
+    "recall": 0.236,
+    "f1": 0.086
+   },
+   "iou03": {
+    "tp": 8273,
+    "fp": 91513,
+    "fn": 14049,
+    "precision": 0.083,
+    "recall": 0.371,
+    "f1": 0.136
+   },
+   "merged_fp": 4555,
+   "count_gt": 128,
+   "count_ours": 211,
+   "count_error_pct": 64.8,
+   "count_abs_error_pct_mean": 100.0,
+   "ms_per_frame": 153.3
+  },
+  "background+mask": {
+   "iou05": {
+    "tp": 5276,
+    "fp": 58995,
+    "fn": 17046,
+    "precision": 0.082,
+    "recall": 0.236,
+    "f1": 0.122
+   },
+   "iou03": {
+    "tp": 8380,
+    "fp": 55891,
+    "fn": 13942,
+    "precision": 0.13,
+    "recall": 0.375,
+    "f1": 0.194
+   },
+   "merged_fp": 4684,
+   "count_gt": 128,
+   "count_ours": 180,
+   "count_error_pct": 40.6,
+   "count_abs_error_pct_mean": 77.5,
+   "ms_per_frame": 139.6
+  },
+  "yolox_tiny": {
+   "iou05": {
+    "tp": 16530,
+    "fp": 1631,
+    "fn": 5792,
+    "precision": 0.91,
+    "recall": 0.741,
+    "f1": 0.817
+   },
+   "iou03": {
+    "tp": 16861,
+    "fp": 1300,
+    "fn": 5461,
+    "precision": 0.928,
+    "recall": 0.755,
+    "f1": 0.833
+   },
+   "merged_fp": 115,
+   "count_gt": 128,
+   "count_ours": 125,
+   "count_error_pct": -2.3,
+   "count_abs_error_pct_mean": 14.2,
+   "ms_per_frame": 283.0
+  },
+  "yolox_tiny+mask": {
+   "iou05": {
+    "tp": 16530,
+    "fp": 1226,
+    "fn": 5792,
+    "precision": 0.931,
+    "recall": 0.741,
+    "f1": 0.825
+   },
+   "iou03": {
+    "tp": 16861,
+    "fp": 895,
+    "fn": 5461,
+    "precision": 0.95,
+    "recall": 0.755,
+    "f1": 0.841
+   },
+   "merged_fp": 115,
+   "count_gt": 128,
+   "count_ours": 123,
+   "count_error_pct": -3.9,
+   "count_abs_error_pct_mean": 11.3,
+   "ms_per_frame": 283.0
+  }
+ },
+ "sequences": [
+  {
+   "sequence": "MVI_20011",
+   "frames": 300,
+   "size": [
+    960,
+    540
+   ],
+   "gt_vehicles_per_frame": 10.56,
+   "road_mask_share": 0.557,
+   "results": {
+    "background": {
+     "iou05": {
+      "tp": 435,
+      "fp": 10249,
+      "fn": 2628,
+      "precision": 0.041,
+      "recall": 0.142,
+      "f1": 0.063
+     },
+     "iou03": {
+      "tp": 850,
+      "fp": 9834,
+      "fn": 2213,
+      "precision": 0.08,
+      "recall": 0.278,
+      "f1": 0.124
+     },
+     "merged_fp": 660,
+     "count_gt": 14,
+     "count_ours": 19,
+     "count_error_pct": 35.7,
+     "ms_per_frame": 35.7
+    },
+    "background+mask": {
+     "iou05": {
+      "tp": 444,
+      "fp": 4215,
+      "fn": 2619,
+      "precision": 0.095,
+      "recall": 0.145,
+      "f1": 0.115
+     },
+     "iou03": {
+      "tp": 893,
+      "fp": 3766,
+      "fn": 2170,
+      "precision": 0.192,
+      "recall": 0.292,
+      "f1": 0.231
+     },
+     "merged_fp": 656,
+     "count_gt": 14,
+     "count_ours": 9,
+     "count_error_pct": -35.7,
+     "ms_per_frame": 33.7
+    },
+    "yolox_tiny": {
+     "iou05": {
+      "tp": 2137,
+      "fp": 145,
+      "fn": 926,
+      "precision": 0.936,
+      "recall": 0.698,
+      "f1": 0.8
+     },
+     "iou03": {
+      "tp": 2142,
+      "fp": 140,
+      "fn": 921,
+      "precision": 0.939,
+      "recall": 0.699,
+      "f1": 0.801
+     },
+     "merged_fp": 12,
+     "count_gt": 14,
+     "count_ours": 12,
+     "count_error_pct": -14.3,
+     "ms_per_frame": 161.2
+    },
+    "yolox_tiny+mask": {
+     "iou05": {
+      "tp": 2137,
+      "fp": 106,
+      "fn": 926,
+      "precision": 0.953,
+      "recall": 0.698,
+      "f1": 0.806
+     },
+     "iou03": {
+      "tp": 2142,
+      "fp": 101,
+      "fn": 921,
+      "precision": 0.955,
+      "recall": 0.699,
+      "f1": 0.807
+     },
+     "merged_fp": 12,
+     "count_gt": 14,
+     "count_ours": 12,
+     "count_error_pct": -14.3,
+     "ms_per_frame": 161.2
+    }
+   },
+   "mean_luminance": 116.9
+  },
+  {
+   "sequence": "MVI_20051",
+   "frames": 300,
+   "size": [
+    960,
+    540
+   ],
+   "gt_vehicles_per_frame": 9.26,
+   "road_mask_share": 0.721,
+   "results": {
+    "background": {
+     "iou05": {
+      "tp": 439,
+      "fp": 10954,
+      "fn": 2245,
+      "precision": 0.039,
+      "recall": 0.164,
+      "f1": 0.062
+     },
+     "iou03": {
+      "tp": 958,
+      "fp": 10435,
+      "fn": 1726,
+      "precision": 0.084,
+      "recall": 0.357,
+      "f1": 0.136
+     },
+     "merged_fp": 536,
+     "count_gt": 10,
+     "count_ours": 37,
+     "count_error_pct": 270.0,
+     "ms_per_frame": 361.9
+    },
+    "background+mask": {
+     "iou05": {
+      "tp": 445,
+      "fp": 7153,
+      "fn": 2239,
+      "precision": 0.059,
+      "recall": 0.166,
+      "f1": 0.087
+     },
+     "iou03": {
+      "tp": 972,
+      "fp": 6626,
+      "fn": 1712,
+      "precision": 0.128,
+      "recall": 0.362,
+      "f1": 0.189
+     },
+     "merged_fp": 528,
+     "count_gt": 10,
+     "count_ours": 22,
+     "count_error_pct": 120.0,
+     "ms_per_frame": 465.5
+    },
+    "yolox_tiny": {
+     "iou05": {
+      "tp": 2228,
+      "fp": 375,
+      "fn": 456,
+      "precision": 0.856,
+      "recall": 0.83,
+      "f1": 0.843
+     },
+     "iou03": {
+      "tp": 2251,
+      "fp": 352,
+      "fn": 433,
+      "precision": 0.865,
+      "recall": 0.839,
+      "f1": 0.852
+     },
+     "merged_fp": 8,
+     "count_gt": 10,
+     "count_ours": 10,
+     "count_error_pct": 0.0,
+     "ms_per_frame": 756.2
+    },
+    "yolox_tiny+mask": {
+     "iou05": {
+      "tp": 2228,
+      "fp": 249,
+      "fn": 456,
+      "precision": 0.899,
+      "recall": 0.83,
+      "f1": 0.863
+     },
+     "iou03": {
+      "tp": 2251,
+      "fp": 226,
+      "fn": 433,
+      "precision": 0.909,
+      "recall": 0.839,
+      "f1": 0.872
+     },
+     "merged_fp": 8,
+     "count_gt": 10,
+     "count_ours": 10,
+     "count_error_pct": 0.0,
+     "ms_per_frame": 756.2
+    }
+   },
+   "mean_luminance": 114.1
+  },
+  {
+   "sequence": "MVI_20065",
+   "frames": 300,
+   "size": [
+    960,
+    540
+   ],
+   "gt_vehicles_per_frame": 13.37,
+   "road_mask_share": 0.761,
+   "results": {
+    "background": {
+     "iou05": {
+      "tp": 477,
+      "fp": 11157,
+      "fn": 3401,
+      "precision": 0.041,
+      "recall": 0.123,
+      "f1": 0.062
+     },
+     "iou03": {
+      "tp": 1006,
+      "fp": 10628,
+      "fn": 2872,
+      "precision": 0.086,
+      "recall": 0.259,
+      "f1": 0.13
+     },
+     "merged_fp": 738,
+     "count_gt": 7,
+     "count_ours": 22,
+     "count_error_pct": 214.3,
+     "ms_per_frame": 706.3
+    },
+    "background+mask": {
+     "iou05": {
+      "tp": 477,
+      "fp": 8441,
+      "fn": 3401,
+      "precision": 0.053,
+      "recall": 0.123,
+      "f1": 0.075
+     },
+     "iou03": {
+      "tp": 1034,
+      "fp": 7884,
+      "fn": 2844,
+      "precision": 0.116,
+      "recall": 0.267,
+      "f1": 0.162
+     },
+     "merged_fp": 709,
+     "count_gt": 7,
+     "count_ours": 22,
+     "count_error_pct": 214.3,
+     "ms_per_frame": 470.0
+    },
+    "yolox_tiny": {
+     "iou05": {
+      "tp": 2386,
+      "fp": 381,
+      "fn": 1492,
+      "precision": 0.862,
+      "recall": 0.615,
+      "f1": 0.718
+     },
+     "iou03": {
+      "tp": 2529,
+      "fp": 238,
+      "fn": 1349,
+      "precision": 0.914,
+      "recall": 0.652,
+      "f1": 0.761
+     },
+     "merged_fp": 52,
+     "count_gt": 7,
+     "count_ours": 9,
+     "count_error_pct": 28.6,
+     "ms_per_frame": 1017.7
+    },
+    "yolox_tiny+mask": {
+     "iou05": {
+      "tp": 2386,
+      "fp": 274,
+      "fn": 1492,
+      "precision": 0.897,
+      "recall": 0.615,
+      "f1": 0.73
+     },
+     "iou03": {
+      "tp": 2529,
+      "fp": 131,
+      "fn": 1349,
+      "precision": 0.951,
+      "recall": 0.652,
+      "f1": 0.774
+     },
+     "merged_fp": 52,
+     "count_gt": 7,
+     "count_ours": 7,
+     "count_error_pct": 0.0,
+     "ms_per_frame": 1017.7
+    }
+   },
+   "mean_luminance": 114.8
+  },
+  {
+   "sequence": "MVI_39821",
+   "frames": 300,
+   "size": [
+    960,
+    540
+   ],
+   "gt_vehicles_per_frame": 3.89,
+   "road_mask_share": 0.572,
+   "results": {
+    "background": {
+     "iou05": {
+      "tp": 141,
+      "fp": 14264,
+      "fn": 986,
+      "precision": 0.01,
+      "recall": 0.125,
+      "f1": 0.018
+     },
+     "iou03": {
+      "tp": 198,
+      "fp": 14207,
+      "fn": 929,
+      "precision": 0.014,
+      "recall": 0.176,
+      "f1": 0.025
+     },
+     "merged_fp": 233,
+     "count_gt": 7,
+     "count_ours": 13,
+     "count_error_pct": 85.7,
+     "ms_per_frame": 211.7
+    },
+    "background+mask": {
+     "iou05": {
+      "tp": 141,
+      "fp": 7591,
+      "fn": 986,
+      "precision": 0.018,
+      "recall": 0.125,
+      "f1": 0.032
+     },
+     "iou03": {
+      "tp": 198,
+      "fp": 7534,
+      "fn": 929,
+      "precision": 0.026,
+      "recall": 0.176,
+      "f1": 0.045
+     },
+     "merged_fp": 342,
+     "count_gt": 7,
+     "count_ours": 11,
+     "count_error_pct": 57.1,
+     "ms_per_frame": 208.1
+    },
+    "yolox_tiny": {
+     "iou05": {
+      "tp": 950,
+      "fp": 85,
+      "fn": 177,
+      "precision": 0.918,
+      "recall": 0.843,
+      "f1": 0.879
+     },
+     "iou03": {
+      "tp": 975,
+      "fp": 60,
+      "fn": 152,
+      "precision": 0.942,
+      "recall": 0.865,
+      "f1": 0.902
+     },
+     "merged_fp": 0,
+     "count_gt": 7,
+     "count_ours": 7,
+     "count_error_pct": 0.0,
+     "ms_per_frame": 324.5
+    },
+    "yolox_tiny+mask": {
+     "iou05": {
+      "tp": 950,
+      "fp": 85,
+      "fn": 177,
+      "precision": 0.918,
+      "recall": 0.843,
+      "f1": 0.879
+     },
+     "iou03": {
+      "tp": 975,
+      "fp": 60,
+      "fn": 152,
+      "precision": 0.942,
+      "recall": 0.865,
+      "f1": 0.902
+     },
+     "merged_fp": 0,
+     "count_gt": 7,
+     "count_ours": 7,
+     "count_error_pct": 0.0,
+     "ms_per_frame": 324.5
+    }
+   },
+   "mean_luminance": 114.1
+  },
+  {
+   "sequence": "MVI_40152",
+   "frames": 300,
+   "size": [
+    960,
+    540
+   ],
+   "gt_vehicles_per_frame": 3.88,
+   "road_mask_share": 0.669,
+   "results": {
+    "background": {
+     "iou05": {
+      "tp": 615,
+      "fp": 9826,
+      "fn": 510,
+      "precision": 0.059,
+      "recall": 0.547,
+      "f1": 0.106
+     },
+     "iou03": {
+      "tp": 851,
+      "fp": 9590,
+      "fn": 274,
+      "precision": 0.082,
+      "recall": 0.756,
+      "f1": 0.147
+     },
+     "merged_fp": 30,
+     "count_gt": 13,
+     "count_ours": 17,
+     "count_error_pct": 30.8,
+     "ms_per_frame": 37.8
+    },
+    "background+mask": {
+     "iou05": {
+      "tp": 618,
+      "fp": 3136,
+      "fn": 507,
+      "precision": 0.165,
+      "recall": 0.549,
+      "f1": 0.253
+     },
+     "iou03": {
+      "tp": 864,
+      "fp": 2890,
+      "fn": 261,
+      "precision": 0.23,
+      "recall": 0.768,
+      "f1": 0.354
+     },
+     "merged_fp": 30,
+     "count_gt": 13,
+     "count_ours": 17,
+     "count_error_pct": 30.8,
+     "ms_per_frame": 36.1
+    },
+    "yolox_tiny": {
+     "iou05": {
+      "tp": 966,
+      "fp": 73,
+      "fn": 159,
+      "precision": 0.93,
+      "recall": 0.859,
+      "f1": 0.893
+     },
+     "iou03": {
+      "tp": 997,
+      "fp": 42,
+      "fn": 128,
+      "precision": 0.96,
+      "recall": 0.886,
+      "f1": 0.921
+     },
+     "merged_fp": 0,
+     "count_gt": 13,
+     "count_ours": 12,
+     "count_error_pct": -7.7,
+     "ms_per_frame": 120.3
+    },
+    "yolox_tiny+mask": {
+     "iou05": {
+      "tp": 966,
+      "fp": 73,
+      "fn": 159,
+      "precision": 0.93,
+      "recall": 0.859,
+      "f1": 0.893
+     },
+     "iou03": {
+      "tp": 997,
+      "fp": 42,
+      "fn": 128,
+      "precision": 0.96,
+      "recall": 0.886,
+      "f1": 0.921
+     },
+     "merged_fp": 0,
+     "count_gt": 13,
+     "count_ours": 12,
+     "count_error_pct": -7.7,
+     "ms_per_frame": 120.3
+    }
+   },
+   "mean_luminance": 126.0
+  },
+  {
+   "sequence": "MVI_40191",
+   "frames": 300,
+   "size": [
+    960,
+    540
+   ],
+   "gt_vehicles_per_frame": 14.47,
+   "road_mask_share": 0.754,
+   "results": {
+    "background": {
+     "iou05": {
+      "tp": 1822,
+      "fp": 7482,
+      "fn": 2373,
+      "precision": 0.196,
+      "recall": 0.434,
+      "f1": 0.27
+     },
+     "iou03": {
+      "tp": 2371,
+      "fp": 6933,
+      "fn": 1824,
+      "precision": 0.255,
+      "recall": 0.565,
+      "f1": 0.351
+     },
+     "merged_fp": 817,
+     "count_gt": 26,
+     "count_ours": 26,
+     "count_error_pct": 0.0,
+     "ms_per_frame": 36.4
+    },
+    "background+mask": {
+     "iou05": {
+      "tp": 1822,
+      "fp": 6004,
+      "fn": 2373,
+      "precision": 0.233,
+      "recall": 0.434,
+      "f1": 0.303
+     },
+     "iou03": {
+      "tp": 2371,
+      "fp": 5455,
+      "fn": 1824,
+      "precision": 0.303,
+      "recall": 0.565,
+      "f1": 0.394
+     },
+     "merged_fp": 880,
+     "count_gt": 26,
+     "count_ours": 25,
+     "count_error_pct": -3.8,
+     "ms_per_frame": 38.6
+    },
+    "yolox_tiny": {
+     "iou05": {
+      "tp": 3657,
+      "fp": 101,
+      "fn": 538,
+      "precision": 0.973,
+      "recall": 0.872,
+      "f1": 0.92
+     },
+     "iou03": {
+      "tp": 3662,
+      "fp": 96,
+      "fn": 533,
+      "precision": 0.974,
+      "recall": 0.873,
+      "f1": 0.921
+     },
+     "merged_fp": 12,
+     "count_gt": 26,
+     "count_ours": 26,
+     "count_error_pct": 0.0,
+     "ms_per_frame": 121.1
+    },
+    "yolox_tiny+mask": {
+     "iou05": {
+      "tp": 3657,
+      "fp": 83,
+      "fn": 538,
+      "precision": 0.978,
+      "recall": 0.872,
+      "f1": 0.922
+     },
+     "iou03": {
+      "tp": 3662,
+      "fp": 78,
+      "fn": 533,
+      "precision": 0.979,
+      "recall": 0.873,
+      "f1": 0.923
+     },
+     "merged_fp": 12,
+     "count_gt": 26,
+     "count_ours": 26,
+     "count_error_pct": 0.0,
+     "ms_per_frame": 121.1
+    }
+   },
+   "mean_luminance": 116.6
+  },
+  {
+   "sequence": "MVI_40213",
+   "frames": 300,
+   "size": [
+    960,
+    540
+   ],
+   "gt_vehicles_per_frame": 4.06,
+   "road_mask_share": 0.895,
+   "results": {
+    "background": {
+     "iou05": {
+      "tp": 267,
+      "fp": 7219,
+      "fn": 910,
+      "precision": 0.036,
+      "recall": 0.227,
+      "f1": 0.062
+     },
+     "iou03": {
+      "tp": 377,
+      "fp": 7109,
+      "fn": 800,
+      "precision": 0.05,
+      "recall": 0.32,
+      "f1": 0.087
+     },
+     "merged_fp": 344,
+     "count_gt": 5,
+     "count_ours": 16,
+     "count_error_pct": 220.0,
+     "ms_per_frame": 35.7
+    },
+    "background+mask": {
+     "iou05": {
+      "tp": 267,
+      "fp": 5573,
+      "fn": 910,
+      "precision": 0.046,
+      "recall": 0.227,
+      "f1": 0.076
+     },
+     "iou03": {
+      "tp": 377,
+      "fp": 5463,
+      "fn": 800,
+      "precision": 0.065,
+      "recall": 0.32,
+      "f1": 0.107
+     },
+     "merged_fp": 344,
+     "count_gt": 5,
+     "count_ours": 16,
+     "count_error_pct": 220.0,
+     "ms_per_frame": 37.9
+    },
+    "yolox_tiny": {
+     "iou05": {
+      "tp": 920,
+      "fp": 86,
+      "fn": 257,
+      "precision": 0.915,
+      "recall": 0.782,
+      "f1": 0.843
+     },
+     "iou03": {
+      "tp": 932,
+      "fp": 74,
+      "fn": 245,
+      "precision": 0.926,
+      "recall": 0.792,
+      "f1": 0.854
+     },
+     "merged_fp": 11,
+     "count_gt": 5,
+     "count_ours": 8,
+     "count_error_pct": 60.0,
+     "ms_per_frame": 120.5
+    },
+    "yolox_tiny+mask": {
+     "iou05": {
+      "tp": 920,
+      "fp": 86,
+      "fn": 257,
+      "precision": 0.915,
+      "recall": 0.782,
+      "f1": 0.843
+     },
+     "iou03": {
+      "tp": 932,
+      "fp": 74,
+      "fn": 245,
+      "precision": 0.926,
+      "recall": 0.792,
+      "f1": 0.854
+     },
+     "merged_fp": 11,
+     "count_gt": 5,
+     "count_ours": 8,
+     "count_error_pct": 60.0,
+     "ms_per_frame": 120.5
+    }
+   },
+   "mean_luminance": 115.6
+  },
+  {
+   "sequence": "MVI_40752",
+   "frames": 300,
+   "size": [
+    960,
+    540
+   ],
+   "gt_vehicles_per_frame": 8.53,
+   "road_mask_share": 0.873,
+   "results": {
+    "background": {
+     "iou05": {
+      "tp": 433,
+      "fp": 7527,
+      "fn": 2042,
+      "precision": 0.054,
+      "recall": 0.175,
+      "f1": 0.083
+     },
+     "iou03": {
+      "tp": 778,
+      "fp": 7182,
+      "fn": 1697,
+      "precision": 0.098,
+      "recall": 0.314,
+      "f1": 0.149
+     },
+     "merged_fp": 610,
+     "count_gt": 24,
+     "count_ours": 30,
+     "count_error_pct": 25.0,
+     "ms_per_frame": 36.4
+    },
+    "background+mask": {
+     "iou05": {
+      "tp": 433,
+      "fp": 6527,
+      "fn": 2042,
+      "precision": 0.062,
+      "recall": 0.175,
+      "f1": 0.092
+     },
+     "iou03": {
+      "tp": 778,
+      "fp": 6182,
+      "fn": 1697,
+      "precision": 0.112,
+      "recall": 0.314,
+      "f1": 0.165
+     },
+     "merged_fp": 612,
+     "count_gt": 24,
+     "count_ours": 30,
+     "count_error_pct": 25.0,
+     "ms_per_frame": 34.8
+    },
+    "yolox_tiny": {
+     "iou05": {
+      "tp": 1394,
+      "fp": 165,
+      "fn": 1081,
+      "precision": 0.894,
+      "recall": 0.563,
+      "f1": 0.691
+     },
+     "iou03": {
+      "tp": 1419,
+      "fp": 140,
+      "fn": 1056,
+      "precision": 0.91,
+      "recall": 0.573,
+      "f1": 0.704
+     },
+     "merged_fp": 9,
+     "count_gt": 24,
+     "count_ours": 18,
+     "count_error_pct": -25.0,
+     "ms_per_frame": 69.1
+    },
+    "yolox_tiny+mask": {
+     "iou05": {
+      "tp": 1394,
+      "fp": 78,
+      "fn": 1081,
+      "precision": 0.947,
+      "recall": 0.563,
+      "f1": 0.706
+     },
+     "iou03": {
+      "tp": 1419,
+      "fp": 53,
+      "fn": 1056,
+      "precision": 0.964,
+      "recall": 0.573,
+      "f1": 0.719
+     },
+     "merged_fp": 9,
+     "count_gt": 24,
+     "count_ours": 18,
+     "count_error_pct": -25.0,
+     "ms_per_frame": 69.1
+    }
+   },
+   "mean_luminance": 106.7
+  },
+  {
+   "sequence": "MVI_40992",
+   "frames": 300,
+   "size": [
+    960,
+    540
+   ],
+   "gt_vehicles_per_frame": 1.84,
+   "road_mask_share": 0.456,
+   "results": {
+    "background": {
+     "iou05": {
+      "tp": 114,
+      "fp": 8389,
+      "fn": 420,
+      "precision": 0.013,
+      "recall": 0.213,
+      "f1": 0.025
+     },
+     "iou03": {
+      "tp": 140,
+      "fp": 8363,
+      "fn": 394,
+      "precision": 0.016,
+      "recall": 0.262,
+      "f1": 0.031
+     },
+     "merged_fp": 80,
+     "count_gt": 6,
+     "count_ours": 12,
+     "count_error_pct": 100.0,
+     "ms_per_frame": 35.8
+    },
+    "background+mask": {
+     "iou05": {
+      "tp": 114,
+      "fp": 4104,
+      "fn": 420,
+      "precision": 0.027,
+      "recall": 0.213,
+      "f1": 0.048
+     },
+     "iou03": {
+      "tp": 149,
+      "fp": 4069,
+      "fn": 385,
+      "precision": 0.035,
+      "recall": 0.279,
+      "f1": 0.063
+     },
+     "merged_fp": 76,
+     "count_gt": 6,
+     "count_ours": 9,
+     "count_error_pct": 50.0,
+     "ms_per_frame": 35.9
+    },
+    "yolox_tiny": {
+     "iou05": {
+      "tp": 377,
+      "fp": 107,
+      "fn": 157,
+      "precision": 0.779,
+      "recall": 0.706,
+      "f1": 0.741
+     },
+     "iou03": {
+      "tp": 413,
+      "fp": 71,
+      "fn": 121,
+      "precision": 0.853,
+      "recall": 0.773,
+      "f1": 0.811
+     },
+     "merged_fp": 0,
+     "count_gt": 6,
+     "count_ours": 6,
+     "count_error_pct": 0.0,
+     "ms_per_frame": 67.7
+    },
+    "yolox_tiny+mask": {
+     "iou05": {
+      "tp": 377,
+      "fp": 79,
+      "fn": 157,
+      "precision": 0.827,
+      "recall": 0.706,
+      "f1": 0.762
+     },
+     "iou03": {
+      "tp": 413,
+      "fp": 43,
+      "fn": 121,
+      "precision": 0.906,
+      "recall": 0.773,
+      "f1": 0.834
+     },
+     "merged_fp": 0,
+     "count_gt": 6,
+     "count_ours": 6,
+     "count_error_pct": 0.0,
+     "ms_per_frame": 67.7
+    }
+   },
+   "mean_luminance": 78.9
+  },
+  {
+   "sequence": "MVI_63554",
+   "frames": 300,
+   "size": [
+    960,
+    540
+   ],
+   "gt_vehicles_per_frame": 7.12,
+   "road_mask_share": 0.807,
+   "results": {
+    "background": {
+     "iou05": {
+      "tp": 515,
+      "fp": 7461,
+      "fn": 1549,
+      "precision": 0.065,
+      "recall": 0.25,
+      "f1": 0.103
+     },
+     "iou03": {
+      "tp": 744,
+      "fp": 7232,
+      "fn": 1320,
+      "precision": 0.093,
+      "recall": 0.36,
+      "f1": 0.148
+     },
+     "merged_fp": 507,
+     "count_gt": 16,
+     "count_ours": 19,
+     "count_error_pct": 18.8,
+     "ms_per_frame": 35.1
+    },
+    "background+mask": {
+     "iou05": {
+      "tp": 515,
+      "fp": 6251,
+      "fn": 1549,
+      "precision": 0.076,
+      "recall": 0.25,
+      "f1": 0.117
+     },
+     "iou03": {
+      "tp": 744,
+      "fp": 6022,
+      "fn": 1320,
+      "precision": 0.11,
+      "recall": 0.36,
+      "f1": 0.169
+     },
+     "merged_fp": 507,
+     "count_gt": 16,
+     "count_ours": 19,
+     "count_error_pct": 18.8,
+     "ms_per_frame": 35.2
+    },
+    "yolox_tiny": {
+     "iou05": {
+      "tp": 1515,
+      "fp": 113,
+      "fn": 549,
+      "precision": 0.931,
+      "recall": 0.734,
+      "f1": 0.821
+     },
+     "iou03": {
+      "tp": 1541,
+      "fp": 87,
+      "fn": 523,
+      "precision": 0.947,
+      "recall": 0.747,
+      "f1": 0.835
+     },
+     "merged_fp": 11,
+     "count_gt": 16,
+     "count_ours": 17,
+     "count_error_pct": 6.2,
+     "ms_per_frame": 72.0
+    },
+    "yolox_tiny+mask": {
+     "iou05": {
+      "tp": 1515,
+      "fp": 113,
+      "fn": 549,
+      "precision": 0.931,
+      "recall": 0.734,
+      "f1": 0.821
+     },
+     "iou03": {
+      "tp": 1541,
+      "fp": 87,
+      "fn": 523,
+      "precision": 0.947,
+      "recall": 0.747,
+      "f1": 0.835
+     },
+     "merged_fp": 11,
+     "count_gt": 16,
+     "count_ours": 17,
+     "count_error_pct": 6.2,
+     "ms_per_frame": 72.0
+    }
+   },
+   "mean_luminance": 124.7
+  }
+ ]
+}

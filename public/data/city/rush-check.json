@@ -1,0 +1,179 @@
+{
+ "format": "smartflow-city-rush-check/1",
+ "generated": "2026-10-21T22:06:41.787Z",
+ "note": "Синтетическая модель карты (не SUMO): одна полоса на направление, маршруты без объезда пробок, постоянный спрос часа пик. Иллюстрация, не прогноз.",
+ "params": {
+  "demand": "morning",
+  "vehicles": 3000,
+  "minutes": 20,
+  "dt_s": 0.5,
+  "measured": "вторая половина прогона",
+  "seeds": [
+   2026,
+   2027,
+   2028,
+   2029,
+   2030,
+   2031,
+   2032,
+   2033,
+   2034,
+   2035
+  ]
+ },
+ "summary": {
+  "fixed_speed_kmh": 24.58,
+  "adaptive_speed_kmh": 28.8,
+  "speed_diff": {
+   "diff": 4.22,
+   "ci95": [
+    3.82,
+    4.62
+   ],
+   "better": 10,
+   "n": 10
+  },
+  "trips_diff": {
+   "diff": 282.5,
+   "ci95": [
+    250.51,
+    314.49
+   ],
+   "better": 10,
+   "n": 10
+  },
+  "red_runs": 0
+ },
+ "runs": [
+  {
+   "seed": 2026,
+   "fixed": {
+    "speed_kmh": 24.46,
+    "trips": 1760,
+    "red_runs": 0
+   },
+   "adaptive": {
+    "speed_kmh": 29.47,
+    "trips": 2081,
+    "red_runs": 0
+   }
+  },
+  {
+   "seed": 2027,
+   "fixed": {
+    "speed_kmh": 24.25,
+    "trips": 1684,
+    "red_runs": 0
+   },
+   "adaptive": {
+    "speed_kmh": 28.56,
+    "trips": 1989,
+    "red_runs": 0
+   }
+  },
+  {
+   "seed": 2028,
+   "fixed": {
+    "speed_kmh": 24.62,
+    "trips": 1739,
+    "red_runs": 0
+   },
+   "adaptive": {
+    "speed_kmh": 28.35,
+    "trips": 2002,
+    "red_runs": 0
+   }
+  },
+  {
+   "seed": 2029,
+   "fixed": {
+    "speed_kmh": 23.97,
+    "trips": 1691,
+    "red_runs": 0
+   },
+   "adaptive": {
+    "speed_kmh": 28.65,
+    "trips": 2011,
+    "red_runs": 0
+   }
+  },
+  {
+   "seed": 2030,
+   "fixed": {
+    "speed_kmh": 25.15,
+    "trips": 1817,
+    "red_runs": 0
+   },
+   "adaptive": {
+    "speed_kmh": 29.03,
+    "trips": 2025,
+    "red_runs": 0
+   }
+  },
+  {
+   "seed": 2031,
+   "fixed": {
+    "speed_kmh": 24.41,
+    "trips": 1736,
+    "red_runs": 0
+   },
+   "adaptive": {
+    "speed_kmh": 27.87,
+    "trips": 1985,
+    "red_runs": 0
+   }
+  },
+  {
+   "seed": 2032,
+   "fixed": {
+    "speed_kmh": 24.56,
+    "trips": 1749,
+    "red_runs": 0
+   },
+   "adaptive": {
+    "speed_kmh": 28.53,
+    "trips": 1996,
+    "red_runs": 0
+   }
+  },
+  {
+   "seed": 2033,
+   "fixed": {
+    "speed_kmh": 25.35,
+    "trips": 1785,
+    "red_runs": 0
+   },
+   "adaptive": {
+    "speed_kmh": 30.5,
+    "trips": 2138,
+    "red_runs": 0
+   }
+  },
+  {
+   "seed": 2034,
+   "fixed": {
+    "speed_kmh": 25.01,
+    "trips": 1769,
+    "red_runs": 0
+   },
+   "adaptive": {
+    "speed_kmh": 29.03,
+    "trips": 2074,
+    "red_runs": 0
+   }
+  },
+  {
+   "seed": 2035,
+   "fixed": {
+    "speed_kmh": 24.07,
+    "trips": 1710,
+    "red_runs": 0
+   },
+   "adaptive": {
+    "speed_kmh": 28.03,
+    "trips": 1964,
+    "red_runs": 0
+   }
+  }
+ ]
+}
