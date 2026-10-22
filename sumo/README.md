@@ -263,6 +263,8 @@ python -m smartflow_sumo.experiment --out ../public/data/sumo   # 270 прого
 
 Эксперимент собирает сеть в `sumo/build/` и складывает маршруты и tripinfo в `public/data/sumo/_work/` (в git не попадает). Результат — `results.json`, `results-runs.csv`, `trace-fixed.json` и `trace-adaptive.json` в `public/data/sumo/`. Ключи: `--loads low medium`, `--seeds 1 2`, `--controllers fixed adaptive`, `--duration 1200`, `--jobs 2`, `--no-trace`.
 
+Посмотреть прогон «вживую» в окне SUMO (`sumo-gui`), где светофором управляет тот же Python-контроллер: `python -m smartflow_sumo.watch` (ключи `--controller fixed|fixed_tuned|adaptive`, `--load low|medium|high`, `--seed`, `--minutes`, `--delay`). Нужен компьютер с экраном.
+
 Посмотреть запись в браузере: `npm install && npm run dev`, затем `http://localhost:5173/#sumo`. Проверка данных на стороне веба: `npm test` (файл `tests/sumoTrace.test.ts`).
 
 Обновить факты OSM (нужен доступ к Overpass API):

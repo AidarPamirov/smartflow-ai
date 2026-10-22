@@ -394,7 +394,10 @@ function Params({ results }: { results: Results }) {
       <pre className="sumo-code">{`pip install eclipse-sumo==1.28.0 traci==1.28.0 sumolib==1.28.0
 cd sumo
 python -m unittest discover -s tests -t .
-python -m smartflow_sumo.experiment --out ../public/data/sumo   # --jobs N — параллельных прогонов`}</pre>
+python -m smartflow_sumo.experiment --out ../public/data/sumo   # --jobs N — параллельных прогонов
+
+# посмотреть прогон в окне SUMO (нужен компьютер с экраном)
+python -m smartflow_sumo.watch --controller adaptive --load high`}</pre>
       <p className="hint">Маршруты каждого seed генерируются один раз и используются всеми контроллерами (SHA-256 файлов записан в results.json); сырые данные по каждому прогону — <a href={`${BASE}results-runs.csv`}>results-runs.csv</a>.</p>
       <p className="hint">Сгенерировано {new Date(results.generated).toLocaleString('ru-RU')}, расчёт занял {nf(results.elapsed_s / 60, 1)} мин. Данные о дорогах © OpenStreetMap contributors, ODbL.</p>
     </section>

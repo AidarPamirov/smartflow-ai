@@ -153,7 +153,7 @@ def _traci(libsumo: bool):
 def run(sc: Scenario, controller_kind: str, load: str, demand: Demand, seed: int, *, timing: Timing = Timing(),
         fixed_greens: list[float] | None = None, drain: float = 1800.0, step: float = 1.0, libsumo: bool = False,
         trace: TraceRecorder | None = None, keep_states: bool = False, work_dir: Path | None = None,
-        faults: Faults | None = None, routes_file: Path | None = None) -> RunResult:
+        faults: Faults | None = None, routes_file: Path | None = None, gui: bool = False, gui_delay_ms: int = 0) -> RunResult:
     """Один прогон. routes_file — готовый файл маршрутов (общий для всех контроллеров этого seed); без него файл
     генерируется здесь из seed."""
     net = BUILD_DIR / sc.id / "net.net.xml"
@@ -173,11 +173,13 @@ def run(sc: Scenario, controller_kind: str, load: str, demand: Demand, seed: int
     decisions: list[Decision] = []
     overrides = 0
     tc = _traci(libsumo)
-    cmd = [sumo_bin("sumo"), "-n", str(net), "-r", str(routes), "--step-length", str(step), "--seed", str(seed),
+    cmd = [sumo_bin("sumo-gui" if gui else "sumo"), "-n", str(net), "-r", str(routes), "--step-length", str(step), "--seed", str(seed),
            "--no-step-log", "true", "--no-warnings", "true", "--time-to-teleport", "300",
            "--collision.action", "warn", "--collision.check-junctions", "true",
            "--tripinfo-output", str(tripinfo), "--waiting-time-memory", "10000",
            "--end", str(demand.duration + drain)]
+    if gui:  # окно SUMO: запуск сразу, задержка шага для наблюдения, закрыть по окончании
+        cmd += ["--start", "true", "--quit-on-end", "true", "--delay", str(gui_delay_ms)]
     label = f"sf-{os.getpid()}-{controller_kind}-{load}-{seed}"
     if libsumo:
         tc.start(cmd)
